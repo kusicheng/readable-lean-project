@@ -1,0 +1,11 @@
+theorem	statement	proof	exit	pending
+Nat.dvd_refl	supported	incomplete	1	of_eq_true
+Nat.dvd_zero	supported	incomplete	1	of_eq_true
+Nat.one_dvd	supported	complete	0	
+Nat.dvd_mul_right	supported	incomplete	1	rfl
+Nat.dvd_mul_left	supported	complete	0	
+Nat.dvd_trans	supported	incomplete	1	Nat.dvd_trans.match_1
+Nat.dvd_add	supported	incomplete	1	Nat.dvd_add.match_1
+Nat.dvd_mul_right_of_dvd	supported	complete	0	
+Nat.dvd_mul_left_of_dvd	supported	complete	0	
+Nat.dvd_add_iff_left	unsupported	incomplete	1	unsupported theorem statement

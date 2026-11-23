@@ -1,0 +1,12 @@
+{
+  "title": "Parity in Arithmetic Progressions",
+  "introduction": "Adding an even multiple preserves parity. We first establish how divisibility behaves when a divisible quantity is added, then apply this fact to even increments.",
+  "theorems": [
+    "Progressions.dvd_translate_iff",
+    "Progressions.dvd_translate_multiple_iff",
+    "Progressions.even_double_multiple_translate_iff",
+    "Progressions.even_product",
+    "Progressions.even_progression_iff"
+  ],
+  "main": "Progressions.even_progression_iff"
+}

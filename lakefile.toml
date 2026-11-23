@@ -1,0 +1,14 @@
+name = "lean-to-latex"
+defaultTargets = ["DevelopmentProofs", "AutomatedProofs"]
+
+[[lean_lib]]
+name = "DevelopmentProofs"
+roots = ["proofs.Development"]
+
+[[lean_lib]]
+name = "AutomatedProofs"
+roots = ["proofs.Automation"]
+
+[[lean_lib]]
+name = "ReservedProofs"
+roots = ["proofs.Reserved"]
