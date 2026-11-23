@@ -1,0 +1,55 @@
+{
+  "title": "Divisibility and parity in the natural numbers",
+  "introduction": "Divisibility begins with a factor witness. The same idea explains why divisibility passes through sums and products, and why adding an even increment preserves parity.",
+  "terminology": {
+    "witness": "factor witness",
+    "induction_hypothesis": "inductive hypothesis"
+  },
+  "glossary": [
+    {
+      "term": "Factor witness",
+      "definition": "A natural number that exhibits the required product for a divisibility claim. For an expression of evenness as a sum of two equal terms, it is the repeated summand."
+    },
+    {
+      "term": "Even",
+      "definition": "Divisible by two. The second section gives the equivalent description as a sum of two equal terms."
+    },
+    {
+      "term": "Inductive hypothesis",
+      "definition": "The claim at the current index, assumed only while proving the claim at its successor."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Divisibility and its closure rules",
+      "introduction": "The first five results exhibit witnesses directly. The remaining results show how to combine witnesses or use the resulting closure rules.",
+      "theorems": [
+        "Nat.dvd_refl",
+        "Nat.dvd_zero",
+        "Nat.one_dvd",
+        "Nat.dvd_mul_right",
+        "Nat.dvd_mul_left",
+        "Nat.dvd_trans",
+        "Nat.dvd_add",
+        "Nat.dvd_mul_right_of_dvd",
+        "Nat.dvd_mul_left_of_dvd",
+        "Nat.dvd_add_iff_left"
+      ]
+    },
+    {
+      "title": "Even numbers",
+      "introduction": "Specializing divisibility to the divisor two gives both a witness description of even numbers and methods for proving that sums and products are even.",
+      "theorems": [
+        "Pilot.two_dvd_double",
+        "Pilot.even_has_double",
+        "Pilot.even_of_double",
+        "Pilot.double_characterization",
+        "Pilot.even_add",
+        "Pilot.even_mul_right",
+        "Pilot.even_square_has_double",
+        "Pilot.even_progression"
+      ]
+    },
+    "progressions.json"
+  ]
+}

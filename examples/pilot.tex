@@ -1,0 +1,372 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\begin{document}
+\section*{Divisibility and parity in the natural numbers}
+
+Divisibility begins with a factor witness. The same idea explains why divisibility passes through sums and products, and why adding an even increment preserves parity.
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries Factor witness}] A natural number that exhibits the required product for a divisibility claim. For an expression of evenness as a sum of two equal terms, it is the repeated summand.
+\item[{\normalfont\bfseries Even}] Divisible by two. The second section gives the equivalent description as a sum of two equal terms.
+\item[{\normalfont\bfseries Inductive hypothesis}] The claim at the current index, assumed only while proving the claim at its successor.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \textbf{Multiplication by one on the right.} Let \(n\) be a natural number. Then \(n \cdot 1 = n\).
+\item[P2.] \textbf{Multiplication by one on the left.} Let \(n\) be a natural number. Then \(1 \cdot n = n\).
+\item[P3.] \textbf{Multiplication commutativity.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot m = m \cdot n\).
+\item[P4.] \textbf{Multiplication associativity.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n \cdot m \cdot k = n \cdot (m \cdot k)\).
+\item[P5.] \textbf{Multiplication distributes over addition.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n \cdot (m + k) = n \cdot m + n \cdot k\).
+\item[P6.] \textbf{Addition commutativity.} Let \(n\) and \(m\) be natural numbers. Then \(n + m = m + n\).
+\item[P7.] \textbf{Divisibility after adding a known multiple.} Let \(k\), \(m\) and \(n\) be natural numbers. If \(k \mid m\), then \(k \mid n \iff k \mid m + n\).
+\item[P8.] \textbf{Doubling by addition.} Let \(n\) be a natural number. Then \(2 \cdot n = n + n\).
+\item[P9.] \textbf{Multiplication by zero.} Let \(n\) be a natural number. Then \(n \cdot 0 = 0\).
+\item[P10.] \textbf{Adding zero on the right.} Let \(n\) be a natural number. Then \(n + 0 = n\).
+\item[P11.] \textbf{Multiplication by a successor.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot (m + 1) = n \cdot m + n\).
+\item[P12.] \textbf{Addition associativity.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n + m + k = n + (m + k)\).
+\end{description}
+
+\section{Divisibility and its closure rules}
+The first five results exhibit witnesses directly. The remaining results show how to combine witnesses or use the resulting closure rules.
+
+\begin{theorem}\label{theorem:1}
+Let \(a\) be a natural number. Then \(a \mid a\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) be a natural number.
+By Prerequisite~P1, we have \(a \cdot 1 = a\)~(1).
+By applying (1), we obtain \(a = a \cdot 1\)~(2).
+With factor witness \(1\), (2) shows that \(a \mid a\).
+\end{proof}
+
+\begin{theorem}\label{theorem:2}
+Let \(a\) be a natural number. Then \(a \mid 0\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) be a natural number.
+By computation, we have \(0 = a \cdot 0\)~(1).
+With factor witness \(0\), (1) shows that \(a \mid 0\).
+\end{proof}
+
+\begin{theorem}\label{theorem:3}
+Let \(n\) be a natural number. Then \(1 \mid n\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+By Prerequisite~P2, we have \(1 \cdot n = n\)~(1).
+Reversing the equality in (1) gives \(n = 1 \cdot n\)~(2).
+With factor witness \(n\), (2) shows that \(1 \mid n\).
+\end{proof}
+
+\begin{theorem}\label{theorem:4}
+Let \(a\) and \(b\) be natural numbers. Then \(a \mid a \cdot b\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) and \(b\) be natural numbers.
+By computation, we have
+\begin{equation}\tag{1}
+a \cdot b = a \cdot b.
+\end{equation}
+With factor witness \(b\), (1) shows that \(a \mid a \cdot b\).
+\end{proof}
+
+\begin{theorem}\label{theorem:5}
+Let \(a\) and \(b\) be natural numbers. Then \(a \mid b \cdot a\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) and \(b\) be natural numbers.
+By Prerequisite~P3, we have \(b \cdot a = a \cdot b\)~(1).
+With factor witness \(b\), (1) shows that \(a \mid b \cdot a\).
+\end{proof}
+
+\begin{theorem}\label{theorem:6}
+Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\) and \(b \mid c\), then \(a \mid c\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\), \(b\) and \(c\) be natural numbers.
+Assume \(a \mid b\)~(1).
+Assume \(b \mid c\)~(2).
+By (1), choose a natural number \(d\) such that \(b = a \cdot d\)~(3).
+By (2), choose a natural number \(e\) such that \(c = b \cdot e\)~(4).
+By Prerequisite~P4, we have \(a \cdot d \cdot e = a \cdot (d \cdot e)\)~(5).
+By substituting from (4) and (3) and applying (5), we obtain
+\begin{equation}\tag{6}
+c = a \cdot (d \cdot e).
+\end{equation}
+With factor witness \(d \cdot e\), (6) shows that \(a \mid c\).
+\end{proof}
+
+\begin{theorem}\label{theorem:7}
+Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\) and \(a \mid c\), then \(a \mid b + c\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\), \(b\) and \(c\) be natural numbers.
+Assume \(a \mid b\)~(1).
+Assume \(a \mid c\)~(2).
+By (1), choose a natural number \(d\) such that \(b = a \cdot d\)~(3).
+By (2), choose a natural number \(e\) such that \(c = a \cdot e\)~(4).
+By Prerequisite~P5, we have \(a \cdot (d + e) = a \cdot d + a \cdot e\)~(5).
+By substituting from (3) and (4) and applying (5), we obtain
+\begin{equation}\tag{6}
+b + c = a \cdot (d + e).
+\end{equation}
+With factor witness \(d + e\), (6) shows that \(a \mid b + c\).
+\end{proof}
+
+\begin{theorem}\label{theorem:8}
+Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\), then \(a \mid b \cdot c\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) and \(b\) be natural numbers.
+Assume \(a \mid b\)~(1).
+Let \(c\) be a natural number.
+Record the instance of Theorem~\ref{theorem:4} with its parameters \((a, b)\) set to \((b, c)\) as (2).
+The claim follows from Theorem~\ref{theorem:6} with its parameters \((a, b, c)\) set to \((a, b, b \cdot c)\), using (1) and (2).
+\end{proof}
+
+\begin{theorem}\label{theorem:9}
+Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\), then \(a \mid c \cdot b\).
+\end{theorem}
+
+\begin{proof}
+Let \(a\) and \(b\) be natural numbers.
+Assume \(a \mid b\)~(1).
+Let \(c\) be a natural number.
+Record the instance of Theorem~\ref{theorem:5} with its parameters \((a, b)\) set to \((b, c)\) as (2).
+The claim follows from Theorem~\ref{theorem:6} with its parameters \((a, b, c)\) set to \((a, b, c \cdot b)\), using (1) and (2).
+\end{proof}
+
+\begin{theorem}\label{theorem:10}
+Let \(k\), \(m\) and \(n\) be natural numbers. If \(k \mid n\), then \(k \mid m \iff k \mid m + n\).
+\end{theorem}
+
+\begin{proof}
+Let \(k\), \(m\) and \(n\) be natural numbers.
+Assume \(k \mid n\)~(1).
+By Prerequisite~P6, we have \(m + n = n + m\)~(2).
+By Prerequisite~P7, using (1), we have \(k \mid m \iff k \mid n + m\)~(3).
+Rewriting (3) using (2) gives
+\[
+k \mid m \iff k \mid m + n.
+\]
+\end{proof}
+
+\section{Even numbers}
+Specializing divisibility to the divisor two gives both a witness description of even numbers and methods for proving that sums and products are even.
+
+\begin{theorem}\label{theorem:11}
+Let \(n\) be a natural number. Then \(2 \mid n + n\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+By Prerequisite~P8, we have \(2 \cdot n = n + n\)~(1).
+Reversing the equality in (1) gives
+\begin{equation}\tag{2}
+n + n = 2 \cdot n.
+\end{equation}
+With factor witness \(n\), (2) shows that \(2 \mid n + n\).
+\end{proof}
+
+\begin{theorem}\label{theorem:12}
+Let \(n\) be a natural number. If \(2 \mid n\), then \(\exists k \in \mathbb{N}\; (n = k + k)\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+Assume \(2 \mid n\)~(1).
+By (1), choose a natural number \(k\) such that \(n = 2 \cdot k\)~(2).
+By Prerequisite~P8, we have \(2 \cdot k = k + k\)~(3).
+Combining (2) and (3) gives \(n = k + k\)~(4).
+With factor witness \(k\), (4) shows that
+\[
+\exists k_{1} \in \mathbb{N}\; (n = k_{1} + k_{1}).
+\]
+\end{proof}
+
+\begin{theorem}\label{theorem:13}
+Let \(n\) be a natural number. If \(\exists k \in \mathbb{N}\; (n = k + k)\), then \(2 \mid n\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+Assume
+\begin{equation}\tag{1}
+\exists k \in \mathbb{N}\; (n = k + k).
+\end{equation}
+By (1), choose a natural number \(k\) such that \(n = k + k\)~(2).
+Record the instance of Theorem~\ref{theorem:11} with its parameter \(n\) set to \(k\) as (3).
+Rewriting (3) using (2) gives \(2 \mid n\).
+\end{proof}
+
+\begin{theorem}\label{theorem:14}
+Let \(n\) be a natural number. Then \(2 \mid n \iff \exists k \in \mathbb{N}\; (n = k + k)\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+We prove both implications.
+\begin{description}
+\item[Forward implication.] Assume \(2 \mid n\)~(1).
+The claim follows from Theorem~\ref{theorem:12} with its parameter \(n\) set to \(n\), using (1).
+\item[Reverse implication.] Assume
+\begin{equation}\tag{2}
+\exists k \in \mathbb{N}\; (n = k + k).
+\end{equation}
+The claim follows from Theorem~\ref{theorem:13} with its parameter \(n\) set to \(n\), using (2).
+\end{description}
+This proves the equivalence.
+\end{proof}
+
+\begin{theorem}\label{theorem:15}
+Let \(m\) and \(n\) be natural numbers. If \(2 \mid m\) and \(2 \mid n\), then \(2 \mid m + n\).
+\end{theorem}
+
+\begin{proof}
+Let \(m\) and \(n\) be natural numbers.
+Assume \(2 \mid m\)~(1).
+Assume \(2 \mid n\)~(2).
+The claim follows from Theorem~\ref{theorem:7} with its parameters \((a, b, c)\) set to \((2, m, n)\), using (1) and (2).
+\end{proof}
+
+\begin{theorem}\label{theorem:16}
+Let \(n\) and \(m\) be natural numbers. If \(2 \mid n\), then \(2 \mid n \cdot m\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) and \(m\) be natural numbers.
+Assume \(2 \mid n\)~(1).
+The claim follows from Theorem~\ref{theorem:8} with its parameters \((a, b, c)\) set to \((2, n, m)\), using (1).
+\end{proof}
+
+\begin{theorem}\label{theorem:17}
+Let \(n\) be a natural number. If \(2 \mid n\), then \(\exists k \in \mathbb{N}\; (n \cdot n = k + k)\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) be a natural number.
+Assume \(2 \mid n\)~(1).
+Record the instance of Theorem~\ref{theorem:8} with its parameters \((a, b, c)\) set to \((2, n, n)\), using (1) as (2).
+The claim follows from Theorem~\ref{theorem:12} with its parameter \(n\) set to \(n \cdot n\), using (2).
+\end{proof}
+
+\begin{theorem}\label{theorem:18}
+Let \(k\), \(k_{1}\) and \(n\) be natural numbers. If \(2 \mid k\) and \(2 \mid k_{1}\), then \(2 \mid k + k_{1} \cdot n\).
+\end{theorem}
+
+\begin{proof}
+Let \(k\), \(k_{1}\) and \(n\) be natural numbers.
+Assume \(2 \mid k\)~(1).
+Assume \(2 \mid k_{1}\)~(2).
+We proceed by induction on \(n\).
+\begin{description}
+\item[Base case.] We must show \(2 \mid k + k_{1} \cdot 0\).
+By Prerequisite~P9, we have \(k_{1} \cdot 0 = 0\)~(3).
+Applying \(k_{2} \mapsto k + k_{2}\) to both sides of (3) gives
+\begin{equation}\tag{4}
+k + k_{1} \cdot 0 = k + 0.
+\end{equation}
+By Prerequisite~P10, we have \(k + 0 = k\)~(5).
+Combining (4) and (5) gives
+\begin{equation}\tag{6}
+k + k_{1} \cdot 0 = k.
+\end{equation}
+Rewriting (1) using (6) gives
+\[
+2 \mid k + k_{1} \cdot 0.
+\]
+\item[Inductive step.] Let \(i\) be a natural number.
+As the inductive hypothesis, assume
+\begin{equation}\tag{7}
+2 \mid k + k_{1} \cdot i.
+\end{equation}
+We must show \(2 \mid k + k_{1} \cdot (i + 1)\).
+Record the instance of Theorem~\ref{theorem:7} with its parameters \((a, b, c)\) set to \((2, k + k_{1} \cdot i, k_{1})\), using (7) and (2) as (8).
+By Prerequisite~P11, we have \(k_{1} \cdot (i + 1) = k_{1} \cdot i + k_{1}\)~(9).
+Applying \(k_{2} \mapsto k + k_{2}\) to both sides of (9) gives
+\begin{equation}\tag{10}
+k + k_{1} \cdot (i + 1) = k + (k_{1} \cdot i + k_{1}).
+\end{equation}
+By Prerequisite~P12, we have \(k + k_{1} \cdot i + k_{1} = k + (k_{1} \cdot i + k_{1})\)~(11).
+Reversing the equality in (11) gives
+\begin{equation}\tag{12}
+k + (k_{1} \cdot i + k_{1}) = k + k_{1} \cdot i + k_{1}.
+\end{equation}
+Combining (10) and (12) gives
+\begin{equation}\tag{13}
+k + k_{1} \cdot (i + 1) = k + k_{1} \cdot i + k_{1}.
+\end{equation}
+Rewriting (8) using (13) gives
+\[
+2 \mid k + k_{1} \cdot (i + 1).
+\]
+\end{description}
+This completes the induction.
+\end{proof}
+
+\section{Parity in Arithmetic Progressions}
+Adding an even multiple preserves parity. We first establish how divisibility behaves when a divisible quantity is added, then apply this fact to even increments.
+
+\begin{theorem}\label{theorem:19}
+Let \(q\), \(n\) and \(k\) be natural numbers. If \(q \mid k\), then \(q \mid n \iff q \mid n + k\).
+\end{theorem}
+
+\begin{proof}
+Let \(q\), \(n\) and \(k\) be natural numbers.
+Assume \(q \mid k\)~(1).
+The claim follows from Theorem~\ref{theorem:10} with its parameters \((k, m, n)\) set to \((q, n, k)\), using (1).
+\end{proof}
+
+\begin{theorem}\label{theorem:20}
+Let \(q\), \(n\), \(k\) and \(k_{1}\) be natural numbers. If \(q \mid k\), then \(q \mid n \iff q \mid n + k \cdot k_{1}\).
+\end{theorem}
+
+\begin{proof}
+Let \(q\), \(n\), \(k\) and \(k_{1}\) be natural numbers.
+Assume \(q \mid k\)~(1).
+Record the instance of Theorem~\ref{theorem:8} with its parameters \((a, b, c)\) set to \((q, k, k_{1})\), using (1) as (2).
+The claim follows from Theorem~\ref{theorem:10} with its parameters \((k, m, n)\) set to \((q, n, k \cdot k_{1})\), using (2).
+\end{proof}
+
+\begin{theorem}\label{theorem:21}
+Let \(n\), \(d\) and \(k\) be natural numbers. Then \(2 \mid n \iff 2 \mid n + (d + d) \cdot k\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\), \(d\) and \(k\) be natural numbers.
+Record the instance of Theorem~\ref{theorem:11} with its parameter \(n\) set to \(d\) as (1).
+The claim follows from Theorem~\ref{theorem:20} with its parameters \((q, n, k, k_{1})\) set to \((2, n, d + d, k)\), using (1).
+\end{proof}
+
+\begin{theorem}\label{theorem:22}
+Let \(n\) and \(k\) be natural numbers. If \(2 \mid n\), then \(2 \mid n \cdot k\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\) and \(k\) be natural numbers.
+Assume \(2 \mid n\)~(1).
+The claim follows from Theorem~\ref{theorem:8} with its parameters \((a, b, c)\) set to \((2, n, k)\), using (1).
+\end{proof}
+
+\begin{theorem}[Main result]\label{theorem:23}
+Let \(n\), \(k\) and \(k_{1}\) be natural numbers. If \(2 \mid k\), then \(2 \mid n \iff 2 \mid n + k \cdot k_{1}\).
+\end{theorem}
+
+\begin{proof}
+Let \(n\), \(k\) and \(k_{1}\) be natural numbers.
+Assume \(2 \mid k\)~(1).
+The claim follows from Theorem~\ref{theorem:20} with its parameters \((q, n, k, k_{1})\) set to \((2, n, k, k_{1})\), using (1).
+\end{proof}
+
+\end{document}

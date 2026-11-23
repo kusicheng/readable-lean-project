@@ -1,0 +1,11 @@
+theorem	statement	proof	exit	pending
+Nat.dvd_refl	supported	complete	0	
+Nat.dvd_zero	supported	complete	0	
+Nat.one_dvd	supported	complete	0	
+Nat.dvd_mul_right	supported	complete	0	
+Nat.dvd_mul_left	supported	complete	0	
+Nat.dvd_trans	supported	complete	0	
+Nat.dvd_add	supported	complete	0	
+Nat.dvd_mul_right_of_dvd	supported	complete	0	
+Nat.dvd_mul_left_of_dvd	supported	complete	0	
+Nat.dvd_add_iff_left	supported	complete	0	

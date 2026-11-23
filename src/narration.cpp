@@ -180,19 +180,45 @@ std::string theoremReference(std::size_t ordinal) {
     return "Theorem~\\ref{theorem:" + std::to_string(ordinal) + "}";
 }
 
-std::vector<std::string> instances(const Statement& signature, const Substitution& substitutions,
-                                   const Scope& scope) {
+std::string instanceSuffix(const Statement& signature, const Substitution& substitutions,
+                           const Scope& scope, bool chapterStyle) {
     Names formal;
     std::vector<std::string> bindings;
+    std::vector<std::string> parameters;
+    std::vector<std::string> values;
     for (const auto& parameter : signature.parameters) {
         if (parameter.type.kind != Kind::nat) continue;
         const auto name = bindName(formal, parameter.id, parameter.hint);
         const auto argument = substitutions.find(parameter.id);
-        if (argument != substitutions.end() && argument->second.supported())
-            bindings.push_back("\\(" + name + " = " + latex(argument->second, scope.names) + "\\)");
+        if (argument == substitutions.end() || !argument->second.supported()) continue;
+        const auto value = latex(argument->second, scope.names);
+        if (chapterStyle) {
+            parameters.push_back(name);
+            values.push_back(value);
+        } else {
+            bindings.push_back("\\(" + name + " = " + value + "\\)");
+        }
     }
-    return bindings;
+    if (!bindings.empty()) return " with " + join(bindings);
+    if (parameters.empty()) return "";
+    if (parameters.size() == 1)
+        return " with its parameter \\(" + parameters.front() + "\\) set to \\(" +
+               values.front() + "\\)";
+    const auto tuple = [](const std::vector<std::string>& elements) {
+        std::string text;
+        for (const auto& element : elements) {
+            if (!text.empty()) text += ", ";
+            text += element;
+        }
+        return "\\((" + text + ")\\)";
+    };
+    return " with its parameters " + tuple(parameters) + " set to " + tuple(values);
 }
+
+struct RewriteEvidence {
+    std::vector<std::string> substitutions;
+    std::vector<std::string> equalities;
+};
 
 void theoremDependencies(const Node& expression, const std::map<std::string, const Node*>& records,
                          std::set<std::string>& dependencies) {
@@ -207,11 +233,32 @@ void theoremDependencies(const Node& expression, const std::map<std::string, con
     }
 }
 
-std::vector<const Node*> orderTheorems(const Node& records) {
+std::string alternate(const Node& record) {
+    return record.children.size() > 3 ? record.at(3).atom : "";
+}
+
+std::vector<const Node*> orderTheorems(const Node& records, const Chapter* chapter) {
     std::map<std::string, const Node*> byName;
     for (const auto& record : records.children) {
         if (!byName.emplace(record.at(0).atom, &record).second)
             throw std::runtime_error("Duplicate theorem in document");
+    }
+    std::vector<const Node*> selected;
+    std::map<std::string, std::size_t> sectionIds;
+    if (chapter) {
+        for (std::size_t index = 0; index < chapter->sections.size(); ++index) {
+            for (const auto& theorem : chapter->sections[index].theorems) {
+                const auto found = byName.find(theorem.theorem);
+                if (found == byName.end() || alternate(*found->second) != theorem.alternate)
+                    throw std::runtime_error("Missing checked proof selection " + theorem.request());
+                selected.push_back(found->second);
+                sectionIds.emplace(theorem.theorem, index);
+            }
+        }
+        if (selected.size() != byName.size())
+            throw std::runtime_error("Unexpected checked theorems outside the chapter selection");
+    } else {
+        for (const auto& record : records.children) selected.push_back(&record);
     }
     std::set<std::string> visited;
     std::set<std::string> active;
@@ -222,14 +269,18 @@ std::vector<const Node*> orderTheorems(const Node& records) {
         if (!active.insert(name).second) throw std::runtime_error("Cyclic theorem dependency");
         std::set<std::string> dependencies;
         theoremDependencies(record.at(2), byName, dependencies);
-        for (const auto& candidate : records.children) {
-            if (dependencies.count(candidate.at(0).atom) != 0) visit(candidate);
+        for (const auto* candidate : selected) {
+            const auto& dependency = candidate->at(0).atom;
+            if (dependencies.count(dependency) == 0) continue;
+            if (chapter && sectionIds.at(dependency) > sectionIds.at(name))
+                throw std::runtime_error(name + " depends on a later section via " + dependency);
+            visit(*candidate);
         }
         active.erase(name);
         visited.insert(name);
         ordered.push_back(&record);
     };
-    for (const auto& record : records.children) visit(record);
+    for (const auto* record : selected) visit(*record);
     return ordered;
 }
 
@@ -238,17 +289,19 @@ public:
     Narrator(std::ostream& out, std::ostream& diagnostics, Prerequisites& prerequisites,
              std::vector<const Prerequisite*>& used, const std::vector<Earlier>& earlier,
              const std::map<std::string, std::size_t>& documentTheorems, const Matchers& matchers,
-             std::size_t threshold)
+             const Terms& terms, std::size_t threshold, bool chapterStyle)
         : out_(out), diagnostics_(diagnostics), prerequisites_(prerequisites), used_(used),
           earlier_(earlier), documentTheorems_(documentTheorems), matchers_(matchers),
-          threshold_(threshold) {}
+          terms_(terms), threshold_(threshold), chapterStyle_(chapterStyle) {}
 
     bool theorem(const Node& type, const Node& expression, const Statement& signature,
-                 std::size_t ordinal) {
-        out_ << "\\begin{theorem}\\label{theorem:" << ordinal << "}\n";
+                 std::size_t ordinal, bool main, bool alternateProof) {
+        out_ << "\\begin{theorem}" << (main ? "[Main result]" : "") << "\\label{theorem:"
+             << ordinal << "}\n";
         if (signature.supported()) out_ << describe(signature) << '\n';
         else out_ << "The statement of this theorem could not be rendered.\n";
         out_ << "\\end{theorem}\n\n\\begin{proof}\n";
+        if (alternateProof) out_ << "\\textit{A separately checked proof is given here.}\n";
         if (signature.supported()) {
             Scope scope;
             Names headerNames;
@@ -298,7 +351,9 @@ private:
     const std::vector<Earlier>& earlier_;
     const std::map<std::string, std::size_t>& documentTheorems_;
     const Matchers& matchers_;
+    const Terms& terms_;
     std::size_t threshold_;
+    bool chapterStyle_;
     std::size_t missing_ = 0;
     std::size_t facts_ = 0;
 
@@ -353,8 +408,7 @@ private:
     Fact citeEarlier(const Earlier& earlier, const Math& claim, const Scope& scope, bool conclusion,
                      const Substitution& substitutions, const std::vector<std::string>& premises) {
         auto citation = theoremReference(earlier.ordinal);
-        const auto bindings = instances(earlier.signature, substitutions, scope);
-        if (!bindings.empty()) citation += " with " + join(bindings);
+        citation += instanceSuffix(earlier.signature, substitutions, scope, chapterStyle_);
         if (!premises.empty()) citation += ", using " + join(premises);
         if (conclusion) {
             out_ << "The claim follows from " << citation << ".\n";
@@ -560,7 +614,8 @@ private:
                                        Scope& scope, bool conclusion) {
         const auto fact = obtain(evidence, scope, condition.supported() ? &condition : nullptr);
         if (!fact) return std::nullopt;
-        return say(claim, scope, "With witness " + inlineMath(choice, scope.names) +
+        return say(claim, scope, "With " + escapeLatex(terms_.witness) + " " +
+                   inlineMath(choice, scope.names) +
                    ", " + fact->reference + " shows that", conclusion);
     }
 
@@ -621,36 +676,41 @@ private:
         return witnessBranch(&argument(raw, 0), premises, claim, scope, conclusion);
     }
 
-    bool rewriteReasons(const Node& certificate, Scope& scope, std::vector<std::string>& reasons) {
+    bool rewriteReasons(const Node& certificate, Scope& scope, RewriteEvidence& evidence) {
         const auto name = head(certificate);
         if (name == "Eq.refl" || name == "rfl" || name == "eq_self") return true;
         if (name == "Eq.trans" || name == "congr") {
-            const auto first = rewriteReasons(argument(certificate, 1), scope, reasons);
-            const auto second = rewriteReasons(argument(certificate, 0), scope, reasons);
+            const auto first = rewriteReasons(argument(certificate, 1), scope, evidence);
+            const auto second = rewriteReasons(argument(certificate, 0), scope, evidence);
             return first && second;
         }
         if (name == "Eq.symm" || name == "congrArg" || name == "id")
-            return rewriteReasons(argument(certificate, 0), scope, reasons);
+            return rewriteReasons(argument(certificate, 0), scope, evidence);
         if (name == "congrFun")
-            return rewriteReasons(argument(certificate, 1), scope, reasons);
+            return rewriteReasons(argument(certificate, 1), scope, evidence);
         const auto fact = obtain(certificate, scope);
         if (!fact) return false;
         if (fact->claim.kind != Kind::equal) {
             pending("unsupported simplification certificate");
             return false;
         }
-        if (std::find(reasons.begin(), reasons.end(), fact->reference) == reasons.end())
-            reasons.push_back(fact->reference);
+        auto& references = term(certificate).is("v") ? evidence.substitutions : evidence.equalities;
+        if (std::find(references.begin(), references.end(), fact->reference) == references.end())
+            references.push_back(fact->reference);
         return true;
     }
 
     std::optional<Fact> simplify(const Node& certificate, const Math& claim, Scope& scope,
                                  bool conclusion) {
-        std::vector<std::string> reasons;
-        if (!rewriteReasons(certificate, scope, reasons)) return std::nullopt;
-        if (reasons.empty()) return say(claim, scope, "By computation, we have", conclusion);
-        return say(claim, scope, "Using " + join(reasons) +
-                   " to simplify the two sides gives", conclusion);
+        RewriteEvidence evidence;
+        if (!rewriteReasons(certificate, scope, evidence)) return std::nullopt;
+        std::vector<std::string> actions;
+        if (!evidence.substitutions.empty())
+            actions.push_back("substituting from " + join(evidence.substitutions));
+        if (!evidence.equalities.empty()) actions.push_back("applying " + join(evidence.equalities));
+        const auto reason = actions.empty() ? "By computation, we have" : "By " + join(actions) +
+                            ", we obtain";
+        return say(claim, scope, reason, conclusion);
     }
 
     std::optional<Fact> equivalence(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
@@ -712,7 +772,8 @@ private:
         Scope successorScope = scope;
         const auto variable = bindName(successorScope.names, index.value, step.at(2).atom);
         out_ << "\\item[Inductive step.] Let \\(" << variable << "\\) be a natural number.\n";
-        assume(assumed, hypothesis.at(1).atom, successorScope, "As the induction hypothesis, assume");
+        assume(assumed, hypothesis.at(1).atom, successorScope,
+               "As the " + escapeLatex(terms_.inductionHypothesis) + ", assume");
         out_ << "We must show " << inlineMath(next, successorScope.names) << ".\n";
         const auto stepResult = prove(hypothesis.at(4), next, successorScope, true);
         out_ << "\\end{description}\n";
@@ -726,7 +787,7 @@ private:
 } // namespace
 
 Result writeDocument(const Node& input, std::ostream& output, std::ostream& diagnostics,
-                     std::size_t threshold) {
+                     std::size_t threshold, const Chapter* chapter) {
     const auto& records = input.at(0);
     const auto& library = input.at(1);
     if (!records.array || records.children.empty() || !library.array)
@@ -740,22 +801,40 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
                                                   record.at(2).atom == "public"});
     }
     std::map<std::string, std::size_t> documentTheorems;
-    const auto ordered = orderTheorems(records);
+    const auto ordered = orderTheorems(records, chapter);
     for (const auto* record : ordered)
         documentTheorems.emplace(record->at(0).atom, documentTheorems.size() + 1);
     std::vector<Earlier> earlier;
     std::vector<const Prerequisite*> used;
     std::ostringstream body;
     Result result;
+    const Terms defaults;
+    std::size_t sectionIndex = 0;
+    std::size_t nextSection = 0;
+    const Section* section = nullptr;
     for (const auto* item : ordered) {
+        if (chapter && result.theorems == nextSection) {
+            section = &chapter->sections.at(sectionIndex++);
+            nextSection += section->theorems.size();
+            body << "\\section{" << escapeLatex(section->title) << "}\n";
+            if (!section->introduction.empty())
+                body << escapeLatex(section->introduction) << "\n\n";
+        }
         const auto& record = *item;
         const auto& name = record.at(0).atom;
         const auto signature = statement(record.at(1));
-        diagnostics << name << '\n';
+        const auto alternateName = alternate(record);
+        diagnostics << name;
+        if (!alternateName.empty()) {
+            ++result.alternates;
+            diagnostics << " (alternate: " << alternateName << ')';
+        }
+        diagnostics << '\n';
         Narrator narrator(body, diagnostics, prerequisites, used, earlier, documentTheorems,
-                          matchers, threshold);
+                          matchers, chapter ? chapter->terms : defaults, threshold, chapter != nullptr);
         ++result.theorems;
-        if (narrator.theorem(record.at(1), record.at(2), signature, result.theorems))
+        if (narrator.theorem(record.at(1), record.at(2), signature, result.theorems,
+                             section && section->main == name, !alternateName.empty()))
             earlier.push_back({name, signature, result.theorems});
         else
             ++result.incomplete;
@@ -764,8 +843,21 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
     output << "\\documentclass{article}\n"
            << "\\usepackage{amsmath,amssymb,amsthm}\n"
            << "\\newtheorem{theorem}{Theorem}\n"
-           << "\\begin{document}\n"
-           << "\\section*{Proofs in elementary number theory}\n\n";
+           << "\\begin{document}\n";
+    if (chapter) {
+        output << "\\section*{" << escapeLatex(chapter->title) << "}\n\n";
+        if (!chapter->introduction.empty())
+            output << escapeLatex(chapter->introduction) << "\n\n";
+        if (!chapter->glossary.empty()) {
+            output << "\\subsection*{Glossary}\n\\begin{description}\n";
+            for (const auto& entry : chapter->glossary)
+                output << "\\item[{\\normalfont\\bfseries " << escapeLatex(entry.first) << "}] "
+                       << escapeLatex(entry.second) << '\n';
+            output << "\\end{description}\n\n";
+        }
+    } else {
+        output << "\\section*{Proofs in elementary number theory}\n\n";
+    }
     if (!used.empty()) {
         output << "\\subsection*{Prerequisites}\n\\begin{description}\n";
         for (const auto* prerequisite : used) {

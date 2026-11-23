@@ -200,7 +200,8 @@ std::string format(const Math& expression, const Names& names, int enclosing) {
     case Kind::add: precedence = 2; break;
     case Kind::equal: case Kind::divides: precedence = 1; break;
     case Kind::iff:
-        rendered = format(parts[0], names, 0) + " \\iff " + format(parts[1], names, 0);
+        rendered = format(parts[0], names, parts[0].kind == Kind::iff || parts[0].kind == Kind::exists) +
+                   " \\iff " + format(parts[1], names, parts[1].kind == Kind::iff);
         return enclosing > 0 ? "(" + rendered + ")" : rendered;
     case Kind::exists: {
         Names inner = names;

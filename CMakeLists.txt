@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(lean_to_latex LANGUAGES CXX)
 
-add_executable(lean-to-latex src/main.cpp src/expressions.cpp src/narration.cpp)
+add_executable(lean-to-latex src/main.cpp src/chapter.cpp src/expressions.cpp src/narration.cpp)
 target_compile_features(lean-to-latex PRIVATE cxx_std_17)
 set_target_properties(lean-to-latex PROPERTIES CXX_EXTENSIONS OFF)
 if(MSVC)

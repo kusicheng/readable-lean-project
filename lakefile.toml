@@ -12,3 +12,11 @@ roots = ["proofs.Automation"]
 [[lean_lib]]
 name = "ReservedProofs"
 roots = ["proofs.Reserved"]
+
+[[lean_lib]]
+name = "ParityProofs"
+roots = ["proofs.PilotParity"]
+
+[[lean_lib]]
+name = "ProgressionProofs"
+roots = ["proofs.PilotProgressions"]

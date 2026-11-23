@@ -116,7 +116,7 @@ private def exportDocument (names : List String) : MetaM Json := do
 def run (output moduleList : String) (names : List String) : IO Unit := do
   initSearchPath (← getBuildDir)
   let imports := (moduleList.splitOn ",").toArray.map fun name => {module := name.toName : Import}
-  let env ← importModules imports {}
+  let env ← importModules (loadExts := true) imports {}
   let action := exportDocument names
   let (document, _) ← action.run'.toIO {fileName := "Adapter.lean", fileMap := default} {env}
   if output == "-" then
