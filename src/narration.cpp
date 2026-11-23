@@ -1,6 +1,7 @@
 #include "narration.hpp"
 
 #include <algorithm>
+#include <charconv>
 #include <functional>
 #include <map>
 #include <ostream>
@@ -84,12 +85,51 @@ struct Prerequisite {
 
 using Prerequisites = std::map<std::string, Prerequisite>;
 
+struct Matcher {
+    std::size_t parameters;
+    std::size_t scrutinees;
+    std::vector<std::size_t> alternatives;
+    std::size_t equations;
+};
+
+using Matchers = std::map<std::string, Matcher>;
+
+std::size_t count(const Node& node) {
+    std::size_t value = 0;
+    const auto* end = node.atom.data() + node.atom.size();
+    const auto parsed = std::from_chars(node.atom.data(), end, value);
+    if (!node.isString() || parsed.ec != std::errc{} || parsed.ptr != end)
+        throw std::runtime_error("Malformed matcher metadata");
+    return value;
+}
+
+Matchers readMatchers(const Node& input) {
+    Matchers result;
+    if (input.children.size() < 3) return result;
+    const auto& entries = input.at(2);
+    if (!entries.array) throw std::runtime_error("Expected a matcher catalog");
+    for (const auto& entry : entries.children) {
+        const auto& alternatives = entry.at(3);
+        if (!alternatives.array) throw std::runtime_error("Malformed matcher alternatives");
+        Matcher info{count(entry.at(1)), count(entry.at(2)), {}, count(entry.at(4))};
+        for (const auto& size : alternatives.children) info.alternatives.push_back(count(size));
+        result.emplace(entry.at(0).atom, std::move(info));
+    }
+    return result;
+}
+
 std::string prerequisiteTitle(const std::string& name) {
     static const std::map<std::string, std::string> titles = {
+        {"Nat.add_zero", "Adding zero on the right"},
         {"Nat.dvd_add", "Divisibility of a sum"},
+        {"Nat.dvd_add_iff_right", "Divisibility after adding a known multiple"},
         {"Nat.dvd_zero", "Divisibility of zero"},
+        {"Nat.left_distrib", "Multiplication distributes over addition"},
+        {"Nat.mul_add", "Multiplication distributes over addition"},
+        {"Nat.mul_one", "Multiplication by one on the right"},
         {"Nat.mul_succ", "Multiplication by a successor"},
         {"Nat.mul_zero", "Multiplication by zero"},
+        {"Nat.one_mul", "Multiplication by one on the left"},
         {"Nat.two_mul", "Doubling by addition"},
     };
     if (const auto title = titles.find(name); title != titles.end()) return title->second;
@@ -197,9 +237,11 @@ class Narrator {
 public:
     Narrator(std::ostream& out, std::ostream& diagnostics, Prerequisites& prerequisites,
              std::vector<const Prerequisite*>& used, const std::vector<Earlier>& earlier,
-             const std::map<std::string, std::size_t>& documentTheorems, std::size_t threshold)
+             const std::map<std::string, std::size_t>& documentTheorems, const Matchers& matchers,
+             std::size_t threshold)
         : out_(out), diagnostics_(diagnostics), prerequisites_(prerequisites), used_(used),
-          earlier_(earlier), documentTheorems_(documentTheorems), threshold_(threshold) {}
+          earlier_(earlier), documentTheorems_(documentTheorems), matchers_(matchers),
+          threshold_(threshold) {}
 
     bool theorem(const Node& type, const Node& expression, const Statement& signature,
                  std::size_t ordinal) {
@@ -255,6 +297,7 @@ private:
     std::vector<const Prerequisite*>& used_;
     const std::vector<Earlier>& earlier_;
     const std::map<std::string, std::size_t>& documentTheorems_;
+    const Matchers& matchers_;
     std::size_t threshold_;
     std::size_t missing_ = 0;
     std::size_t facts_ = 0;
@@ -322,13 +365,19 @@ private:
         return {claim, tag, ""};
     }
 
-    std::optional<Fact> obtain(const Node& expression, Scope& scope) {
+    std::optional<Fact> obtain(const Node& expression, Scope& scope, const Math* expected = nullptr) {
         const auto& raw = term(expression);
         if (raw.is("v")) {
-            if (const auto* existing = scope.byId(raw.at(1).atom)) return *existing;
+            if (const auto* existing = scope.byId(raw.at(1).atom)) {
+                if (!expected || same(existing->claim, *expected)) return *existing;
+                auto fact = say(*expected, scope, "Using " + existing->reference +
+                                " and computation, we have", false);
+                scope.facts.push_back(fact);
+                return fact;
+            }
         }
-        if (!expression.is("p")) return pending("missing type of supporting fact");
-        const auto claim = math(expression.at(1));
+        if (!expected && !expression.is("p")) return pending("missing type of supporting fact");
+        const auto claim = expected ? *expected : math(expression.at(1));
         if (const auto* existing = scope.byClaim(claim)) return *existing;
         Scope inner = scope;
         auto fact = prove(expression, claim, inner, false);
@@ -359,13 +408,28 @@ private:
         const auto& raw = term(expression);
         if (raw.is("t")) return local(raw, claim, scope, conclusion);
         const auto name = head(raw);
-        if (name == "Eq.refl") return say(claim, scope, "By computation, we have", conclusion);
+        if ((name == "Eq.refl" || name == "rfl") && claim.kind == Kind::equal)
+            return say(claim, scope, "By computation, we have", conclusion);
+        if (name == "id") return prove(argument(raw, 0), claim, scope, conclusion);
+        if (name == "letFun") {
+            const auto& lambda = term(argument(raw, 0));
+            if (!lambda.is("l")) return pending("unsupported local binding");
+            return binding(lambda.at(1).atom, lambda.at(2).atom, lambda.at(3),
+                           argument(raw, 1), lambda.at(4), claim, scope, conclusion);
+        }
+        if (name == "of_eq_true" && claim.kind == Kind::equal)
+            return simplify(argument(raw, 0), claim, scope, conclusion);
         if (name == "Eq.symm" || name == "Eq.trans" || name == "congrArg")
             return equality(name, raw, claim, scope, conclusion);
         if (name == "Eq.mp" || name == "Eq.mpr")
             return transport(raw, claim, scope, conclusion);
         if (name == "Exists.intro") return witness(raw, claim, scope, conclusion);
         if (name == "Exists.elim") return eliminate(raw, claim, scope, conclusion);
+        if (const auto matcher = matchers_.find(name); matcher != matchers_.end())
+            return matchWitnesses(raw, matcher->second, claim, scope, conclusion);
+        if (name == "Iff.intro") return equivalence(raw, claim, scope, conclusion);
+        if (name == "Iff.mp" || name == "Iff.mpr")
+            return implication(name, raw, claim, scope, conclusion);
         if (name == "Nat.rec" || name == "Nat.recOn")
             return induction(name, raw, claim, scope, conclusion);
 
@@ -416,22 +480,28 @@ private:
     }
 
     std::optional<Fact> local(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
-        const auto& id = raw.at(1).atom;
-        const auto type = math(raw.at(3));
+        return binding(raw.at(1).atom, raw.at(2).atom, raw.at(3), raw.at(4), raw.at(5),
+                       claim, scope, conclusion);
+    }
+
+    std::optional<Fact> binding(const std::string& id, const std::string& hint, const Node& domain,
+                                const Node& expression, const Node& body, const Math& claim,
+                                Scope& scope, bool conclusion) {
+        const auto type = math(domain);
         if (type.kind == Kind::nat) {
-            const auto value = math(raw.at(4));
+            const auto value = math(expression);
             if (!value.supported()) return pending("unsupported local definition");
-            const auto local = bindName(scope.names, id, raw.at(2).atom);
+            const auto local = bindName(scope.names, id, hint);
             out_ << "Set \\(" << local << " = " << latex(value, scope.names) << "\\).\n";
         } else {
             Scope inner = scope;
-            auto fact = prove(raw.at(4), type, inner, false);
+            auto fact = prove(expression, type, inner, false);
             if (fact) {
                 fact->id = id;
                 scope.facts.push_back(*fact);
             }
         }
-        return prove(raw.at(5), claim, scope, conclusion);
+        return prove(body, claim, scope, conclusion);
     }
 
     std::optional<Fact> equality(const std::string& name, const Node& raw, const Math& claim,
@@ -461,8 +531,9 @@ private:
     }
 
     std::optional<Fact> transport(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
-        const auto& rewrite = argument(raw, 1);
-        const auto equality = obtain(head(rewrite) == "congrArg" ? argument(rewrite, 0) : rewrite,
+        const auto* rewrite = &argument(raw, 1);
+        while (head(*rewrite) == "id") rewrite = &argument(*rewrite, 0);
+        const auto equality = obtain(head(*rewrite) == "congrArg" ? argument(*rewrite, 0) : *rewrite,
                                      scope);
         const auto original = obtain(argument(raw, 0), scope);
         if (!equality || !original) return std::nullopt;
@@ -475,31 +546,144 @@ private:
             return pending("unsupported witness statement");
         const auto choice = math(argument(raw, 1));
         if (!choice.supported()) return pending("unsupported witness");
-        const auto fact = obtain(argument(raw, 0), scope);
+        const auto& evidence = argument(raw, 0);
+        if (claim.kind == Kind::divides) {
+            const Math condition(Kind::equal, {}, {}, {claim.parts[1],
+                Math(Kind::mul, {}, {}, {claim.parts[0], choice})});
+            return concludeWitness(condition, evidence, choice, claim, scope, conclusion);
+        }
+        return concludeWitness(Math(), evidence, choice, claim, scope, conclusion);
+    }
+
+    std::optional<Fact> concludeWitness(const Math& condition, const Node& evidence,
+                                       const Math& choice, const Math& claim,
+                                       Scope& scope, bool conclusion) {
+        const auto fact = obtain(evidence, scope, condition.supported() ? &condition : nullptr);
         if (!fact) return std::nullopt;
         return say(claim, scope, "With witness " + inlineMath(choice, scope.names) +
                    ", " + fact->reference + " shows that", conclusion);
     }
 
-    std::optional<Fact> eliminate(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
-        const auto& lambda = term(argument(raw, 0));
-        if (!lambda.is("l") || !term(lambda.at(4)).is("l"))
-            return pending("unsupported witness elimination");
+    bool chooseWitness(const Node*& branch, const Node& premise, Scope& scope) {
+        const auto& lambda = term(*branch);
+        if (!lambda.is("l") || head(lambda.at(3)) != "Nat" || !term(lambda.at(4)).is("l")) {
+            pending("unsupported witness elimination");
+            return false;
+        }
         const auto& hypothesis = term(lambda.at(4));
         const auto property = math(hypothesis.at(3));
-        if (!property.supported() || !property.proposition()) return pending("unsupported witness condition");
-        const auto existential = obtain(argument(raw, 1), scope);
-        if (!existential) return std::nullopt;
-        Scope inner = scope;
-        const auto choice = bindName(inner.names, lambda.at(1).atom, lambda.at(2).atom);
-        if (!conclusion) out_ << "\\begin{quote}\n";
-        assume(property, hypothesis.at(1).atom, inner, "By " + existential->reference +
+        if (!property.supported() || !property.proposition()) {
+            pending("unsupported witness condition");
+            return false;
+        }
+        const auto existential = obtain(premise, scope);
+        if (!existential) return false;
+        if (existential->claim.kind != Kind::divides && existential->claim.kind != Kind::exists) {
+            pending("unsupported witness premise");
+            return false;
+        }
+        const auto choice = bindName(scope.names, lambda.at(1).atom, lambda.at(2).atom);
+        assume(property, hypothesis.at(1).atom, scope, "By " + existential->reference +
                ", choose a natural number \\(" + choice + "\\) such that");
-        const auto branch = prove(hypothesis.at(4), claim, inner, true);
+        branch = &hypothesis.at(4);
+        return true;
+    }
+
+    std::optional<Fact> witnessBranch(const Node* body, const std::vector<const Node*>& premises,
+                                      const Math& claim, Scope& scope, bool conclusion) {
+        Scope inner = scope;
+        if (!conclusion) out_ << "\\begin{quote}\n";
+        std::optional<Fact> branch;
+        if (std::all_of(premises.begin(), premises.end(), [&](const Node* premise) {
+            return chooseWitness(body, *premise, inner);
+        })) branch = prove(*body, claim, inner, true);
         if (!conclusion) out_ << "\\end{quote}\n";
         if (!branch) return std::nullopt;
         if (conclusion) return branch;
         return say(claim, scope, "The witness argument establishes", false);
+    }
+
+    std::optional<Fact> eliminate(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
+        return witnessBranch(&argument(raw, 0), {&argument(raw, 1)}, claim, scope, conclusion);
+    }
+
+    std::optional<Fact> matchWitnesses(const Node& raw, const Matcher& matcher, const Math& claim,
+                                       Scope& scope, bool conclusion) {
+        const auto available = raw.children.size();
+        if (!raw.is("a") || matcher.parameters >= available || matcher.scrutinees >= available ||
+            matcher.scrutinees == 0 || matcher.alternatives.size() != 1 || matcher.equations != 0 ||
+            matcher.alternatives.front() != 2 * matcher.scrutinees ||
+            available != 4 + matcher.parameters + matcher.scrutinees)
+            return pending("unsupported generated match");
+        std::vector<const Node*> premises;
+        for (std::size_t i = 0; i < matcher.scrutinees; ++i)
+            premises.push_back(&raw.at(3 + matcher.parameters + i));
+        return witnessBranch(&argument(raw, 0), premises, claim, scope, conclusion);
+    }
+
+    bool rewriteReasons(const Node& certificate, Scope& scope, std::vector<std::string>& reasons) {
+        const auto name = head(certificate);
+        if (name == "Eq.refl" || name == "rfl" || name == "eq_self") return true;
+        if (name == "Eq.trans" || name == "congr") {
+            const auto first = rewriteReasons(argument(certificate, 1), scope, reasons);
+            const auto second = rewriteReasons(argument(certificate, 0), scope, reasons);
+            return first && second;
+        }
+        if (name == "Eq.symm" || name == "congrArg" || name == "id")
+            return rewriteReasons(argument(certificate, 0), scope, reasons);
+        if (name == "congrFun")
+            return rewriteReasons(argument(certificate, 1), scope, reasons);
+        const auto fact = obtain(certificate, scope);
+        if (!fact) return false;
+        if (fact->claim.kind != Kind::equal) {
+            pending("unsupported simplification certificate");
+            return false;
+        }
+        if (std::find(reasons.begin(), reasons.end(), fact->reference) == reasons.end())
+            reasons.push_back(fact->reference);
+        return true;
+    }
+
+    std::optional<Fact> simplify(const Node& certificate, const Math& claim, Scope& scope,
+                                 bool conclusion) {
+        std::vector<std::string> reasons;
+        if (!rewriteReasons(certificate, scope, reasons)) return std::nullopt;
+        if (reasons.empty()) return say(claim, scope, "By computation, we have", conclusion);
+        return say(claim, scope, "Using " + join(reasons) +
+                   " to simplify the two sides gives", conclusion);
+    }
+
+    std::optional<Fact> equivalence(const Node& raw, const Math& claim, Scope& scope, bool conclusion) {
+        if (claim.kind != Kind::iff) return pending("unsupported equivalence statement");
+        out_ << "We prove both implications.\n\\begin{description}\n";
+        bool complete = true;
+        for (std::size_t i = 0; i < 2; ++i) {
+            Scope direction = scope;
+            const auto& lambda = term(argument(raw, 1 - i));
+            out_ << (i == 0 ? "\\item[Forward implication.] " : "\\item[Reverse implication.] ");
+            if (!lambda.is("l")) {
+                pending("unsupported implication binder");
+                complete = false;
+                continue;
+            }
+            assume(claim.parts[i], lambda.at(1).atom, direction, "Assume");
+            if (!prove(lambda.at(4), claim.parts[1 - i], direction, true)) complete = false;
+        }
+        out_ << "\\end{description}\n";
+        if (!complete) return std::nullopt;
+        if (!conclusion) return say(claim, scope, "The two implications establish", false);
+        out_ << "This proves the equivalence.\n";
+        return Fact{claim, "", ""};
+    }
+
+    std::optional<Fact> implication(const std::string& name, const Node& raw, const Math& claim,
+                                    Scope& scope, bool conclusion) {
+        const auto equivalence = obtain(argument(raw, 1), scope);
+        const auto premise = obtain(argument(raw, 0), scope);
+        if (!equivalence || !premise) return std::nullopt;
+        return say(claim, scope, std::string("The ") + (name == "Iff.mp" ? "forward" : "reverse") +
+                   " implication in " + equivalence->reference + ", applied to " +
+                   premise->reference + ", gives", conclusion);
     }
 
     std::optional<Fact> induction(const std::string& name, const Node& raw, const Math& claim,
@@ -549,6 +733,7 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
         throw std::runtime_error("Expected ordered theorem records and a prerequisite catalog");
 
     Prerequisites prerequisites;
+    const auto matchers = readMatchers(input);
     for (const auto& record : library.children) {
         const auto& name = record.at(0).atom;
         prerequisites.emplace(name, Prerequisite{prerequisiteTitle(name), statement(record.at(1)),
@@ -568,7 +753,7 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
         const auto signature = statement(record.at(1));
         diagnostics << name << '\n';
         Narrator narrator(body, diagnostics, prerequisites, used, earlier, documentTheorems,
-                          threshold);
+                          matchers, threshold);
         ++result.theorems;
         if (narrator.theorem(record.at(1), record.at(2), signature, result.theorems))
             earlier.push_back({name, signature, result.theorems});
