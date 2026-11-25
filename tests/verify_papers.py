@@ -15,6 +15,10 @@ from verify_chapter import executable
 from verify_property_patterns import verify_property_patterns
 from verify_record_ext import verify_record_ext
 from verify_nat_below import verify_nat_below
+from verify_ring_equality import verify_ring_equality, verify_gosper_certificate
+from verify_equality_decisions import verify_equality_decisions
+from verify_indexed_records import verify_indexed_record_controls, verify_indexed_record_fixture
+from verify_auxiliary_lemmas import verify_auxiliary_lemmas
 
 
 MODULES = ("Counting580", "Incidence580", "Optimization580", "FirstMoment580", "Intersecting580")
@@ -68,6 +72,18 @@ def verify_paper(workspace, env, lake, compiler, tex_command, module, stem):
     print(f"{stem}: {count} original proofs and {len(references)} referenced theorems", flush=True)
 
 
+def verify_private_witness(project, workspace, env, lake, compiler):
+    data = workspace / "private-witness.json"
+    result = workspace / "private-witness.tex"
+    subprocess.run([lake, "env", "lean", "--run", ROOT / "Adapter.lean", data,
+                    ROOT / "tests/fixtures/PrivateWitness.lean"], cwd=project, env=env, check=True)
+    run(workspace, env, compiler, data, result)
+    front, proof = result.read_text(encoding="utf-8").split(r"\begin{proof}", 1)
+    check(r"\paragraph{Witness number.}" in front and " = n + 7" in front and
+          r"Choose the witness \(\operatorname{witness\,Number}" in proof and PENDING not in proof,
+          "A private witness used with a constant predicate must have a mathematical definition")
+
+
 def verify_invalid_symbols(workspace, env, compiler):
     layout = json.loads((workspace / "chapter/counting580.json").read_text(encoding="utf-8"))
     filename = Path("chapter") / "invalid-symbol.json"
@@ -95,6 +111,19 @@ def verify_source_headings(workspace, env, lake, compiler):
     explicit = workspace / "relations-explicit.tex"
     run(workspace, env, compiler, data, explicit, "--paper", "Mathematical proofs")
     check(article.read_bytes() == explicit.read_bytes(), "The default command must use the article renderer")
+
+
+def verify_conditional_equations(workspace, env, lake, compiler):
+    data = workspace / "conditional.json"
+    article = workspace / "conditional.tex"
+    run(workspace, env, lake, "env", "lean", "--run", "Adapter.lean", data,
+        ROOT / "tests/fixtures/ConditionalEquations.lean")
+    run(workspace, env, compiler, data, article)
+    definitions = article.read_text(encoding="utf-8").split(r"\section{Results}")[0]
+    check(r"If \(n > 0\), then" in definitions and "Otherwise" in definitions and
+          r"Given a proof \(h\) of \(n > 0\)" in definitions and r"k=h" in definitions and
+          r"n + 1 + \left(n + 1\right)" in definitions and r"\begin{cases}" not in definitions,
+          "Conditional equations must give both branches and preserve a used proof or data value")
 
 
 def verify_source_and_budget(workspace, env, lake, compiler):
@@ -342,8 +371,21 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
     verify_repeated_addition(project, workspace, env, lake, compiler)
     verify_record_ext(project, workspace, env, lake, compiler)
     verify_nat_below(project, workspace, env, lake, compiler)
+    verify_ring_equality(project, workspace, env, lake, compiler)
+    verify_private_witness(project, workspace, env, lake, compiler)
+    verify_equality_decisions(project, workspace, env, lake, compiler)
+    verify_indexed_record_fixture(project, workspace, env, lake, compiler)
     verify_natural_subtraction(project, workspace, env, lake, compiler)
     verify_grading_submissions(project, workspace, env, lake, compiler)
+    families = workspace / "finite-families.json"
+    run(project, env, lake, "env", "lean", "--run", ROOT / "Adapter.lean", families, ROOT / "tests/fixtures/FiniteFamilies.lean")
+    article = workspace / "finite-families.tex"
+    run(workspace, env, compiler, families, article)
+    statements = article.read_text(encoding="utf-8").split(r"\begin{proof}")
+    check(len(statements) == 4 and "its neighbors in" in statements[0] and
+          r"finite enumeration of \(N_{M}(f\left(v\right))\)" in statements[1] and
+          r"finite enumeration of \(F\left(v\right)\)" in statements[2],
+          "Indexed finite sets must retain the chosen vertex and distinguish arbitrary families")
     source = ROOT / "tests/fixtures/Arithmetic.lean"
     data = workspace / "mathlib-arithmetic.json"
     with data.open("wb") as export:
@@ -398,6 +440,8 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         ("Combinatorics/SimpleGraph/Matching", "mathlib-matching", "Matchings in graphs", 46),
         ("Combinatorics/Enumerative/Bell", "mathlib-bell", "Product and factorial formulas for refined Bell numbers", 11),
         ("Combinatorics/Enumerative/DyckWord", "mathlib-dyck-words", "Dyck words and binary trees", 44),
+        ("Combinatorics/Enumerative/Catalan", "mathlib-catalan", "Catalan numbers and binary trees", 14),
+        ("Combinatorics/Enumerative/Partition", "mathlib-integer-partitions", "Integer partitions", 13),
     ]:
         source = project / f"Mathlib/{module}.lean"
         if not source.is_file():
@@ -411,6 +455,25 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         check(len(records) == count and output.read_bytes() == (ROOT / "papers" / output.name).read_bytes(),
               f"{stem} differs from the direct compilation of the entire Mathlib 4.19 file")
         article = output.read_text(encoding="utf-8")
+        if stem == "mathlib-integer-partitions":
+            explanation = next((s for s in article.splitlines() if "rewrite their common index" in s), "")
+            check(all(word in explanation for word in ("sum", "parts", "proof irrelevance")) and PENDING not in article,
+                  "The partition proof must explain why the sum of the parts fixes their common index")
+            verify_indexed_record_controls(data, workspace, env, compiler, "Nat.Partition", 9, 13)
+        if stem == "mathlib-catalan":
+            front = article.split(r"\section*{Prerequisites}", 1)[0].split(r"\begin{proof}", 1)[0]
+            equation = next((line for line in front.splitlines() if line.startswith(r"\paragraph{Gosper")), "")
+            check(all(token in equation for token in (
+                      r"\label{defeq:", r"\mathbb{Q}", r"\frac{\binom{2 \cdot j}{j}",
+                      r"\max\{n - j,0\}", r"(2 \cdot j - n)}{2 \cdot n \cdot (n + 1)}",
+                      "zero when its denominator is zero")) and "splitter" not in front.lower(),
+                  "The private telescoping function must be defined with the correct sign and arithmetic domains")
+            check("The central binomial formula for Catalan numbers" in article and
+                  "The Catalan count for binary trees with a fixed number of nodes" in article and
+                  r"\binom{" in article.split(r"\label{theorem:5}", 1)[1].split(r"\begin{proof}", 1)[0] and
+                  "same 16 terms on both sides" in article and PENDING not in article,
+                  "The Catalan paper must explain the decisive checked polynomial calculation")
+            verify_gosper_certificate(workspace, env, compiler, data)
         if stem == "mathlib-bell":
             check("Recurrence for one additional block" in article and "final factor at index" in article and
                   "Factorial quotient for uniform Bell numbers" in article and
@@ -418,6 +481,8 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
                   "The Bell paper must show its predecessor induction, last factor and factorial quotient")
         if stem == "mathlib-dyck-words":
             check("Compare the underlying lists" in article and "the two records field by field" in article and
+                  "Semilength equals the node count of the corresponding tree" in article and
+                  "The Catalan count for Dyck words of fixed semilength" in article and
                   "Some defining equations could not be rendered" not in article and PENDING not in article,
                   "The Dyck paper must justify record equality and finish both recursive proofs")
         if stem == "mathlib-pigeonhole":
@@ -552,6 +617,9 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         run(workspace, env, compiler, data, out, "--paper", title)
         check(out.read_bytes() == (ROOT / "papers" / out.name).read_bytes(),
               f"The two-proof {stem} paper must match direct compilation of the original declarations")
+        if stem == "matching-parity":
+            check("The degree-one characterization of a matching" in out.read_text(encoding="utf-8"),
+                  "The first lemma must identify exactly what the degree condition characterizes")
 
 
 def main():
@@ -590,6 +658,8 @@ def main():
         verify_source_and_budget(workspace, env, lake, compiler)
         if run_name == "first":
             verify_source_headings(workspace, env, lake, compiler)
+            verify_auxiliary_lemmas(workspace, env, lake, compiler)
+            verify_conditional_equations(workspace, env, lake, compiler)
             verify_property_patterns(workspace, env, lake, compiler)
             verify_invalid_symbols(workspace, env, compiler)
             if args.mathlib_project:

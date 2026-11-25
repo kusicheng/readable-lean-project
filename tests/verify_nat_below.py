@@ -54,6 +54,10 @@ def verify_nat_below(project, workspace, env, lake, compiler):
     missing_branch = copy.deepcopy(document)
     case(missing_branch)[5][4][4] = ["u", "missing successor proof"]
 
+    premature_conclusion = copy.deepcopy(document)
+    successor = case(premature_conclusion)[5][4][4]
+    successor[2] = application(successor, "congrArg")[-1]
+
     missing_conversion = copy.deepcopy(document)
     case(missing_conversion)[4][4].pop()
 
@@ -64,6 +68,6 @@ def verify_nat_below(project, workspace, env, lake, compiler):
         article = render(document, budget, 2)
         for phrase in ("Base case.", "Successor step.", "Assume as induction hypothesis"):
             check(article.count(phrase) == 2, f"Both proofs must show {phrase}")
-        for damaged in (tail, swapped_arguments, missing_branch, missing_conversion):
+        for damaged in (tail, swapped_arguments, missing_branch, premature_conclusion, missing_conversion):
             render(damaged, budget, 1)
         render(reversed_constructors, budget, 0)

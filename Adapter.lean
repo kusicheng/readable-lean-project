@@ -96,15 +96,26 @@ private def binaryInductionCase? (domain table proof : Expr) : MetaM (Option (Ex
 
 /-- Export kernel expressions while opening binders for local type inference.
     Proof annotations are suppressed in type trees and on application heads. -/
-private partial def serialize (expression : Expr) (annotateProofs : Bool) : MetaM Json := do
+private partial def serialize (expression : Expr) (annotateProofs : Bool)
+    (compactRing : Bool := false) : MetaM Json := do
   let e ← if annotateProofs then pure expression else expandPairMatch expression.headBeta
+  -- A ring certificate proves that both sides have the same normal form. In
+  -- the bounded retry, retain its original equality. C++ recomputes both
+  -- polynomials from that equality and checks all rational operations.
+  if compactRing && annotateProofs && e.isAppOfArity `Mathlib.Tactic.Ring.of_eq 6 then
+    let args := e.getAppArgs
+    let isNormalization := fun (p : Expr) =>
+      p.getAppFn.constName?.any fun n => n == ``Eq.refl || n.getPrefix == `Mathlib.Tactic.Ring
+    if args[0]!.isConstOf `Rat && isNormalization args[4]! && isNormalization args[5]! then
+      let typeJson ← serialize (← inferType e) false
+      return Json.arr #[text "p", typeJson, Json.arr #[text "ringEquality", text "Mathlib.Tactic.Ring.of_eq"]]
   let raw ← match e with
     | .const .. | .fvar _ => namedHead e e
     | .lam name domain body info => do
       let domainJson ← serialize domain false
       withLocalDecl name info domain fun var => do
         let proof := body.instantiate1 var
-        let bodyJson ← serialize proof annotateProofs
+        let bodyJson ← serialize proof annotateProofs compactRing
         let fields := #[text "l", binderId var, binderName name, domainJson, bodyJson,
           binderKind info, ← roleFromType domain, ← roleFromType (← inferType e)]
         -- A branch may prove P(k) in a definitionally different form, for example
@@ -135,19 +146,19 @@ private partial def serialize (expression : Expr) (annotateProofs : Bool) : Meta
           binderKind info, ← roleFromType domain, ← roleFromType (← inferType e)]
     | .letE name domain value body _ => do
       let domainJson ← serialize domain false
-      let valueJson ← serialize value annotateProofs
+      let valueJson ← serialize value annotateProofs compactRing
       withLetDecl name domain value fun var => do
-        let bodyJson ← serialize (body.instantiate1 var) annotateProofs
+        let bodyJson ← serialize (body.instantiate1 var) annotateProofs compactRing
         return Json.arr #[text "t", binderId var, binderName name, domainJson, valueJson, bodyJson,
           ← roleFromType (← inferType e)]
     | .app .. => do
       let head := e.getAppFn
       let fn ← if head.isConst || head.isFVar then namedHead head e else serialize head false
-      let args ← e.getAppArgs.mapM fun arg => serialize arg annotateProofs
+      let args ← e.getAppArgs.mapM fun arg => serialize arg annotateProofs compactRing
       pure <| Json.arr (#[text "a", fn] ++ args)
     | .lit (.natVal n) => pure <| Json.arr #[text "n", text (toString n)]
     | .sort level => pure <| Json.arr #[text "s", text (toString level)]
-    | .mdata _ body => serialize body annotateProofs
+    | .mdata _ body => serialize body annotateProofs compactRing
     | .proj structureName i value =>
       return Json.arr #[text "proj", text structureName.toString, text (toString i),
         ← serialize value false, ← roleFromType (← inferType e)]
@@ -226,7 +237,11 @@ private def proofEvidence (name : Name) (value : Expr) : MetaM Json := withCurrH
   tryCatchRuntimeEx (serialize value true) fun ex => do
     if !ex.isMaxHeartbeat then throw ex
     IO.eprintln s!"Extraction heartbeat limit reached for checked proof '{name}'"
-    withCurrHeartbeats (bindingEvidence value)
+    if value.getUsedConstants.contains `Mathlib.Tactic.Ring.of_eq then
+      tryCatchRuntimeEx (withCurrHeartbeats (serialize value true true)) fun retry => do
+        if !retry.isMaxHeartbeat then throw retry
+        withCurrHeartbeats (bindingEvidence value)
+    else withCurrHeartbeats (bindingEvidence value)
 
 private def exportTheorem (selection : Selection) : MetaM Json := withCurrHeartbeats do
   let typeJson ← serialize selection.original.type false

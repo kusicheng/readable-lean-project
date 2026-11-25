@@ -109,6 +109,8 @@ ProofCost measureProof(const Node& proof, const Node* document, const ProofWeigh
         pending.pop_back();
         if (raw.is("u")) {
             cost.available = false;
+        } else if (raw.is("ringEquality")) {
+            ++cost.counts[certificate];
         } else if (raw.is("l")) {
             ++cost.counts[binding];
             pending.push_back(&raw.at(4));

@@ -12,6 +12,6 @@ namespace proof {
 std::optional<std::string> generalProof(const Node& record, const Node& input,
     const std::map<std::string, std::string>& earlierReferences,
     const DefinitionRules& definitions, std::set<std::string>& externalPremises,
-    bool compact = true, std::string* failure = nullptr);
+    bool compact = true, std::string* failure = nullptr, std::size_t resultNumber = 0);
 
 } // namespace proof

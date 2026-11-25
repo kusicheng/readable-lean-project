@@ -56,7 +56,7 @@
 \begin{description}
 \item[\paperlineanchor{premise:416e642e696d705f6c656674}\paperlink{premise:416e642e696d705f6c656674}{P1.}] \refstepcounter{paperpremise}\label{premise:416e642e696d705f6c656674}\textbf{Imp left.} Let \(a\), \(b\), and \(c\) be propositions. Assume \(a \implies b\). Assume \(a \land c\). Then \(b \land c\).
 \item[\paperlineanchor{premise:436c6173736963616c2e6e6f745f6e6f74}\paperlink{premise:436c6173736963616c2e6e6f745f6e6f74}{P2.}] \refstepcounter{paperpremise}\label{premise:436c6173736963616c2e6e6f745f6e6f74}\textbf{Not not.} Let \(a\) be a proposition. Then \(\neg \left(\neg a\right) \iff a\).
-\item[\paperlineanchor{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}\paperlink{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}{P3.}] \refstepcounter{paperpremise}\label{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}\textbf{At most compl left.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Heyting\,Algebra}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(\operatorname{Disjoint}\left(b, a\right)\). Then \(a \le \operatorname{compl}\left(b\right)\).
+\item[\paperlineanchor{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}\paperlink{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}{P3.}] \refstepcounter{paperpremise}\label{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}\textbf{Alias.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Heyting\,Algebra}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(\operatorname{Disjoint}\left(b, a\right)\). Then \(a \le \operatorname{compl}\left(b\right)\).
 \item[\paperlineanchor{premise:4469736a6f696e742e6d6f6e6f5f6c656674}\paperlink{premise:4469736a6f696e742e6d6f6e6f5f6c656674}{P4.}] \refstepcounter{paperpremise}\label{premise:4469736a6f696e742e6d6f6e6f5f6c656674}\textbf{Mono left.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(\operatorname{Disjoint}\left(b, c\right)\). Then \(\operatorname{Disjoint}\left(a, c\right)\).
 \item[\paperlineanchor{premise:4469736a6f696e742e73796d6d}\paperlink{premise:4469736a6f696e742e73796d6d}{P5.}] \refstepcounter{paperpremise}\label{premise:4469736a6f696e742e73796d6d}\textbf{Symm.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(\operatorname{Disjoint}\left(a, b\right)\). Then \(\operatorname{Disjoint}\left(b, a\right)\).
 \item[\paperlineanchor{premise:4578697374732e696d70}\paperlink{premise:4578697374732e696d70}{P6.}] \refstepcounter{paperpremise}\label{premise:4578697374732e696d70}\textbf{Imp.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) \implies q\left(a\right)\). Assume \(\exists a_{1}\, :\, \alpha,\; p\left(a_{1}\right)\). Then \(\exists a_{1}\, :\, \alpha,\; q\left(a_{1}\right)\).
@@ -83,11 +83,11 @@
 \item[\paperlineanchor{premise:46696e7365742e73696e676c65746f6e5f6e655f656d707479}\paperlink{premise:46696e7365742e73696e676c65746f6e5f6e655f656d707479}{P27.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73696e676c65746f6e5f6e655f656d707479}\textbf{Singleton differs from empty.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Then \(\{a\} \ne \varnothing\).
 \item[\paperlineanchor{premise:46696e7365742e7375627365745f696e73657274}\paperlink{premise:46696e7365742e7375627365745f696e73657274}{P28.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e7375627365745f696e73657274}\textbf{Subset insert.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(s \subseteq \{a\} \cup s\).
 \item[\paperlineanchor{premise:46756e6374696f6e2e456d62656464696e672e636f65466e5f6d6b}\paperlink{premise:46756e6374696f6e2e456d62656464696e672e636f65466e5f6d6b}{P29.}] \refstepcounter{paperpremise}\label{premise:46756e6374696f6e2e456d62656464696e672e636f65466e5f6d6b}\textbf{Coercion fn mk.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(f\) be a function of type \(\alpha \to \beta\). Let \(i\) be a proof of \(f\text{ is injective}\). Then \(\operatorname{coe}\left(\operatorname{mk}\left(f\right)\right) = f\).
-\item[\paperlineanchor{premise:4861735375627365742e5375627365742e7472616e73}\paperlink{premise:4861735375627365742e5375627365742e7472616e73}{P30.}] \refstepcounter{paperpremise}\label{premise:4861735375627365742e5375627365742e7472616e73}\textbf{Trans.} Let \(\alpha\) be a type. Equip \(\alpha\) with a subset relation. Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Is\,Trans}(\alpha,\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \subseteq b\). Assume \(b \subseteq c\). Then \(a \subseteq c\).
-\item[\paperlineanchor{premise:4966662e6e6f74}\paperlink{premise:4966662e6e6f74}{P31.}] \refstepcounter{paperpremise}\label{premise:4966662e6e6f74}\textbf{Not.} Let \(a\) and \(b\) be propositions. Assume \(a \iff b\). Then \(\neg a \iff \neg b\).
+\item[\paperlineanchor{premise:4861735375627365742e5375627365742e7472616e73}\paperlink{premise:4861735375627365742e5375627365742e7472616e73}{P30.}] \refstepcounter{paperpremise}\label{premise:4861735375627365742e5375627365742e7472616e73}\textbf{Alias.} Let \(\alpha\) be a type. Equip \(\alpha\) with a subset relation. Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Is\,Trans}(\alpha,\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \subseteq b\). Assume \(b \subseteq c\). Then \(a \subseteq c\).
+\item[\paperlineanchor{premise:4966662e6e6f74}\paperlink{premise:4966662e6e6f74}{P31.}] \refstepcounter{paperpremise}\label{premise:4966662e6e6f74}\textbf{Alias.} Let \(a\) and \(b\) be propositions. Assume \(a \iff b\). Then \(\neg a \iff \neg b\).
 \item[\paperlineanchor{premise:497355707065725365742e6e6f745f746f705f6d656d}\paperlink{premise:497355707065725365742e6e6f745f746f705f6d656d}{P32.}] \refstepcounter{paperpremise}\label{premise:497355707065725365742e6e6f745f746f705f6d656d}\textbf{Not top membership.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(s\) be a subset of \(\alpha\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Top}\left(\alpha\right)\). Assume \(\operatorname{Is\,Upper\,Set}\left(s\right)\). Then \(\operatorname{top} \notin s \iff s = \varnothing\).
-\item[\paperlineanchor{premise:4c452e6c652e7472616e735f6571}\paperlink{premise:4c452e6c652e7472616e735f6571}{P33.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e735f6571}\textbf{Trans equals.} Let \(\alpha\) be a type. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{LE}\left(\alpha\right)\). Assume \(a \le b\). Assume \(b = c\). Then \(a \le c\).
-\item[\paperlineanchor{premise:4c452e6c652e7472616e735f657127}\paperlink{premise:4c452e6c652e7472616e735f657127}{P34.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e735f657127}\textbf{Trans eq'.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(b \le c\). Assume \(a = b\). Then \(a \le c\).
+\item[\paperlineanchor{premise:4c452e6c652e7472616e735f6571}\paperlink{premise:4c452e6c652e7472616e735f6571}{P33.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e735f6571}\textbf{Alias.} Let \(\alpha\) be a type. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{LE}\left(\alpha\right)\). Assume \(a \le b\). Assume \(b = c\). Then \(a \le c\).
+\item[\paperlineanchor{premise:4c452e6c652e7472616e735f657127}\paperlink{premise:4c452e6c652e7472616e735f657127}{P34.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e735f657127}\textbf{Alias.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(b \le c\). Assume \(a = b\). Then \(a \le c\).
 \item[\paperlineanchor{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}\paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}{P35.}] \refstepcounter{paperpremise}\label{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}\textbf{Not forall equals.} Let \(\alpha\) be a sort. Let \(s\) be a function of type \(\alpha \to \mathsf{Prop}\). Then \((\neg (\forall x\, :\, \alpha,\; s(x))) = (\exists x\, :\, \alpha,\; \neg s(x))\).
 \item[\paperlineanchor{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f696d706c6965735f6571}\paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f696d706c6965735f6571}{P36.}] \refstepcounter{paperpremise}\label{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f696d706c6965735f6571}\textbf{Not implies equals.} Let \(p\) and \(q\) be propositions. Then \(\left(\neg \left(p \implies q\right)\right) = \left(p \land \neg q\right)\).
 \item[\paperlineanchor{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6f725f6571}\paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6f725f6571}{P37.}] \refstepcounter{paperpremise}\label{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6f725f6571}\textbf{Not or equals.} Let \(p\) and \(q\) be propositions. Then \(\left(\neg \left(p \lor q\right)\right) = \left(\neg p \land \neg q\right)\).
@@ -97,7 +97,7 @@
 \item[\paperlineanchor{premise:4e61742e74776f5f6d756c}\paperlink{premise:4e61742e74776f5f6d756c}{P41.}] \refstepcounter{paperpremise}\label{premise:4e61742e74776f5f6d756c}\textbf{Doubling by addition.} Let \(n\) be a natural number. Then \(2 \cdot n = n + n\).
 \item[\paperlineanchor{premise:4e61742e74776f5f706f73}\paperlink{premise:4e61742e74776f5f706f73}{P42.}] \refstepcounter{paperpremise}\label{premise:4e61742e74776f5f706f73}\textbf{Two positivity.} \(0 < 2\).
 \item[\paperlineanchor{premise:4e652e73796d6d}\paperlink{premise:4e652e73796d6d}{P43.}] \refstepcounter{paperpremise}\label{premise:4e652e73796d6d}\textbf{Symm.} Let \(\alpha\) be a sort. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \ne b\). Then \(b \ne a\).
-\item[\paperlineanchor{premise:5365742e4e6f6e656d7074792e6e655f656d707479}\paperlink{premise:5365742e4e6f6e656d7074792e6e655f656d707479}{P44.}] \refstepcounter{paperpremise}\label{premise:5365742e4e6f6e656d7074792e6e655f656d707479}\textbf{Differs from empty.} Let \(\alpha\) be a type. Let \(s\) be a subset of \(\alpha\). Assume \(s\ne\varnothing\). Then \(s \ne \varnothing\).
+\item[\paperlineanchor{premise:5365742e4e6f6e656d7074792e6e655f656d707479}\paperlink{premise:5365742e4e6f6e656d7074792e6e655f656d707479}{P44.}] \refstepcounter{paperpremise}\label{premise:5365742e4e6f6e656d7074792e6e655f656d707479}\textbf{Alias.} Let \(\alpha\) be a type. Let \(s\) be a subset of \(\alpha\). Assume \(s\ne\varnothing\). Then \(s \ne \varnothing\).
 \item[\paperlineanchor{premise:5365742e50616972776973652e6571}\paperlink{premise:5365742e50616972776973652e6571}{P45.}] \refstepcounter{paperpremise}\label{premise:5365742e50616972776973652e6571}\textbf{Equals.} Let \(\alpha\) be a type. Let \(r\) be a relation from \(\alpha\) to \(\alpha\). Let \(s\) be a subset of \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(\operatorname{Pairwise}\left(s, r\right)\). Assume \(a \in s\). Assume \(b \in s\). Assume \(\neg r\left(a, b\right)\). Then \(a = b\).
 \item[\paperlineanchor{premise:5365742e5375627365742e72666c}\paperlink{premise:5365742e5375627365742e72666c}{P46.}] \refstepcounter{paperpremise}\label{premise:5365742e5375627365742e72666c}\textbf{Rfl.} Let \(\alpha\) be a type. Let \(s\) be a subset of \(\alpha\). Then \(s \subseteq s\).
 \item[\paperlineanchor{premise:5365742e53756273696e676c65746f6e2e65715f73696e676c65746f6e5f6f665f6d656d}\paperlink{premise:5365742e53756273696e676c65746f6e2e65715f73696e676c65746f6e5f6f665f6d656d}{P47.}] \refstepcounter{paperpremise}\label{premise:5365742e53756273696e676c65746f6e2e65715f73696e676c65746f6e5f6f665f6d656d}\textbf{Equals singleton of membership.} Let \(\alpha\) be a type. Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Set\mathord{:}Subsingleton}\left(s\right)\). Let \(x\) be an element of \(\alpha\). Assume \(x \in s\). Then \(s = \{x\}\).
@@ -139,7 +139,7 @@
 \end{description}
 
 \section{Semilattice inf}
-\begin{lemma}[{Mono}]\label{theorem:1}
+\begin{lemma}\label{theorem:1}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) and \(t\) be subsets of \(\alpha\). Assume \(t \subseteq s\). Assume \(\operatorname{Intersecting}\left(s\right)\). Then \(\operatorname{Intersecting}\left(t\right)\).
 \end{lemma}
 
@@ -155,7 +155,7 @@ Applying the hypothesis \(t \subseteq s\), we obtain \(x_{1} \in s\).
 Applying the hypothesis \(\operatorname{Intersecting}\left(s\right)\), we obtain \(\neg \operatorname{Disjoint}\left(x, x_{1}\right)\).
 \end{proof}
 
-\begin{lemma}[{Not bot membership}]\label{theorem:2}
+\begin{lemma}\label{theorem:2}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Then \(\operatorname{bot} \notin s\).
 \end{lemma}
 
@@ -167,7 +167,7 @@ By \paperlink{premise:6469736a6f696e745f626f745f6c656674}{Prerequisite~P\ref{pre
 Applying the hypothesis \(\operatorname{Intersecting}\left(s\right)\), we obtain \(\mathrm{False}\).
 \end{proof}
 
-\begin{lemma}[{Differs from bot}]\label{theorem:3}
+\begin{lemma}\label{theorem:3}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Assume \(a \in s\). Then \(a \ne \operatorname{bot}\).
 \end{lemma}
 
@@ -177,7 +177,7 @@ By \paperlink{theorem:2}{Lemma~\ref{theorem:2}}, we obtain \(\operatorname{bot} 
 By \paperlink{premise:6e655f6f665f6d656d5f6f665f6e6f745f6d656d}{Prerequisite~P\ref{premise:6e655f6f665f6d656d5f6f665f6e6f745f6d656d}} with \(\beta = \mathcal{P}(\alpha)\), we obtain \(a \ne \operatorname{bot}\).
 \end{proof}
 
-\begin{theorem}[{Intersecting empty}]\label{theorem:4}
+\begin{theorem}\label{theorem:4}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Then \(\operatorname{Intersecting}\left(\varnothing\right)\).
 \end{theorem}
 
@@ -186,7 +186,7 @@ Fix \(x\) in \(\alpha\).
 The contradiction rules out this case. Hence \(\mathrm{False} \implies (\forall b\, :\, \alpha,\; b \in \varnothing \implies \neg \operatorname{Disjoint}(x,\allowbreak{} b))\).
 \end{proof}
 
-\begin{lemma}[{Intersecting singleton}]\label{theorem:5}
+\begin{lemma}\label{theorem:5}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Then \(\operatorname{Intersecting}\left(\{a\}\right) \iff a \ne \operatorname{bot}\).
 \end{lemma}
 
@@ -213,7 +213,7 @@ By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696
 Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:666f72616c6c5f6571}{Prerequisite~P\ref{premise:666f72616c6c5f6571}}, \paperlink{premise:6469736a6f696e745f73656c66}{Prerequisite~P\ref{premise:6469736a6f696e745f73656c66}}, \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} and the identity established above gives \(\operatorname{Intersecting}\left(\{a\}\right) \iff a \ne \operatorname{bot}\).
 \end{proof}
 
-\begin{lemma}[{Insert}]\label{theorem:6}
+\begin{lemma}\label{theorem:6}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Assume \(a \ne \operatorname{bot}\). Assume \(\forall b\, :\, \alpha,\; b \in s \implies \neg \operatorname{Disjoint}\left(a, b\right)\). Then \(\operatorname{Intersecting}\left(\{a\} \cup s\right)\).
 \end{lemma}
 
@@ -295,7 +295,7 @@ The two alternatives exhaust the cases. Hence \(\neg \operatorname{Disjoint}\lef
 The two alternatives exhaust the cases. Hence \(\forall b_{1}\, :\, \alpha,\; b_{1} \in \{a\} \cup s \implies \neg \operatorname{Disjoint}(b,\allowbreak{} b_{1})\).
 \end{proof}
 
-\begin{theorem}[{Intersecting insert}]\label{theorem:7}
+\begin{theorem}\label{theorem:7}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \operatorname{Intersecting}(\{a\} \cup s) \iff \operatorname{Intersecting}(s) \land (a \ne \operatorname{bot} \land (\forall b\, :\, \alpha,\; b \in s \implies \neg \operatorname{Disjoint}(a,\allowbreak{} b))).\)
@@ -338,7 +338,7 @@ By \paperlink{theorem:6}{Lemma~\ref{theorem:6}}, we obtain \(\operatorname{Inter
 Together the two implications give the equivalence. Hence \(\operatorname{Intersecting}(\{a\} \cup s) \iff \operatorname{Intersecting}(s) \land (a \ne \operatorname{bot} \land (\forall b\, :\, \alpha,\; b \in s \implies \neg \operatorname{Disjoint}(a,\allowbreak{} b)))\).
 \end{proof}
 
-\begin{lemma}[{Intersecting if and only if pairwise not disjoint}]\label{theorem:8}
+\begin{lemma}\label{theorem:8}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \operatorname{Intersecting}(s) \iff \operatorname{Pairwise}(s,\allowbreak{} a \mapsto b \mapsto \neg \operatorname{Disjoint}(a,\allowbreak{} b)) \land s \ne \{\operatorname{bot}\}.\)
@@ -424,7 +424,7 @@ Taking the second conjunct, we obtain \(\mathrm{False}\).
 Together the two implications give the equivalence. Hence \(\operatorname{Intersecting}(s) \iff \operatorname{Pairwise}(s,\allowbreak{} a \mapsto b \mapsto \neg \operatorname{Disjoint}(a,\allowbreak{} b)) \land s \ne \{\operatorname{bot}\}\).
 \end{proof}
 
-\begin{lemma}[{Intersecting}]\label{theorem:9}
+\begin{lemma}\label{theorem:9}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Set\mathord{:}Subsingleton}\left(s\right)\). Then \(\operatorname{Intersecting}\left(s\right) \iff s \ne \{\operatorname{bot}\}\).
 \end{lemma}
 
@@ -436,7 +436,7 @@ By \paperlink{premise:616e645f6966665f7269676874}{Prerequisite~P\ref{premise:616
 Chaining the equivalences, we obtain \(\operatorname{Intersecting}\left(s\right) \iff s \ne \{\operatorname{bot}\}\).
 \end{proof}
 
-\begin{theorem}[{Intersecting if and only if equals empty}]\label{theorem:10}
+\begin{theorem}\label{theorem:10}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Assume \(\alpha\text{ has at most one element}\). Let \(s\) be a subset of \(\alpha\). Then \(\operatorname{Intersecting}\left(s\right) \iff s = \varnothing\).
 \end{theorem}
 
@@ -468,7 +468,7 @@ Consider the following case.
 \begin{proofstep}
 Assume \(s = \varnothing\).
 By \paperlink{premise:5365742e73696e676c65746f6e5f6e6f6e656d707479}{Prerequisite~P\ref{premise:5365742e73696e676c65746f6e5f6e6f6e656d707479}} with \(\operatorname{bot}\) in place of its parameter \(a\), we obtain \(\{\operatorname{bot}\}\ne\varnothing\).
-By \paperlink{premise:5365742e4e6f6e656d7074792e6e655f656d707479}{Prerequisite~P\ref{premise:5365742e4e6f6e656d7074792e6e655f656d707479}}, we obtain \(\{\operatorname{bot}\} \ne \varnothing\).
+By \paperlink{premise:5365742e4e6f6e656d7074792e6e655f656d707479}{\emph{Alias}} (\paperlink{premise:5365742e4e6f6e656d7074792e6e655f656d707479}{Prerequisite~P\ref{premise:5365742e4e6f6e656d7074792e6e655f656d707479}}), we obtain \(\{\operatorname{bot}\} \ne \varnothing\).
 By \paperlink{premise:4e652e73796d6d}{Prerequisite~P\ref{premise:4e652e73796d6d}} with \(\mathcal{P}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\varnothing \ne \{\operatorname{bot}\}\).
 Use the hypothesis \(s = \varnothing\).
 Reversing the equality, we obtain \(\varnothing = s\).
@@ -478,7 +478,7 @@ Together the two implications give the equivalence. Hence \(s \ne \{\operatornam
 Chaining the equivalences, we obtain \(\operatorname{Intersecting}\left(s\right) \iff s = \varnothing\).
 \end{proof}
 
-\begin{theorem}[{Is upper set}]\label{theorem:11}
+\begin{theorem}\label{theorem:11}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Assume \(\forall t\, :\, \mathcal{P}(\alpha),\; \operatorname{Intersecting}(t) \implies s \subseteq t \implies s = t\). Then \(\operatorname{Is\,Upper\,Set}\left(s\right)\).
 \end{theorem}
 
@@ -503,7 +503,7 @@ By \paperlink{premise:5365742e6d656d5f696e73657274}{Prerequisite~P\ref{premise:5
 Rewriting with \(\forall t\, :\, \mathcal{P}(\alpha),\; \operatorname{Intersecting}(t) \implies s \subseteq t \implies s = t\), \paperlink{theorem:6}{Lemma~\ref{theorem:6}} (using \(\operatorname{Intersecting}\left(s\right)\)), \paperlink{premise:6d74}{Prerequisite~P\ref{premise:6d74}}, \paperlink{premise:65715f626f745f6d6f6e6f}{Prerequisite~P\ref{premise:65715f626f745f6d6f6e6f}} (using \(a \le b\)), \paperlink{theorem:3}{Lemma~\ref{theorem:3}} (using \(\operatorname{Intersecting}\left(s\right)\) and \(a \in s\)), \paperlink{premise:5365742e7375627365745f696e73657274}{Prerequisite~P\ref{premise:5365742e7375627365745f696e73657274}} and the auxiliary result established above in the preceding result gives \(b \in s\).
 \end{proof}
 
-\begin{lemma}[{Is upper set'}]\label{theorem:12}
+\begin{lemma}\label{theorem:12}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semilattice\,Inf}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Order\,Bot}\left(\alpha\right)\). Let \(s\) be a finite subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\). Assume \(\forall t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \implies s \subseteq t \implies s = t\). Then \(\operatorname{Is\,Upper\,Set}\left(\operatorname{underlying\,set}(s)\right)\).
 \end{lemma}
 
@@ -517,7 +517,7 @@ Rewriting with \(\forall t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operator
 \end{proof}
 
 \section{Sets}
-\begin{theorem}[{Exists membership set}]\label{theorem:13}
+\begin{theorem}\label{theorem:13}
 Let \(\alpha\) be a type. Let \(\mathcal{A}\) be a subset of \(\mathcal{P}(\alpha)\). Assume \(\operatorname{Intersecting}\left(\mathcal{A}\right)\). Let \(s\) and \(t\) be subsets of \(\alpha\). Assume \(s \in \mathcal{A}\). Assume \(t \in \mathcal{A}\). Then \(\exists a\, :\, \alpha,\; a \in s \land a \in t\).
 \end{theorem}
 
@@ -529,14 +529,14 @@ Applying the hypothesis \(\operatorname{Intersecting}\left(\mathcal{A}\right)\),
 By the forward implication, we obtain \(\exists a\, :\, \alpha,\; a \in s \land a \in t\).
 \end{proof}
 
-\begin{theorem}[{Exists membership finset}]\label{theorem:14}
+\begin{theorem}\label{theorem:14}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(\mathcal{A}\) be a subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Assume \(\operatorname{Intersecting}\left(\mathcal{A}\right)\). Let \(s\) and \(t\) be finite subsets of \(\alpha\). Assume \(s \in \mathcal{A}\). Assume \(t \in \mathcal{A}\). Then \(\exists a\, :\, \alpha,\; a \in s \land a \in t\).
 \end{theorem}
 
 \begin{proof}
 By \paperlink{premise:5365742e6e6f745f6469736a6f696e745f696666}{Prerequisite~P\ref{premise:5365742e6e6f745f6469736a6f696e745f696666}}, we obtain \(\neg \operatorname{Disjoint}(y \mapsto y \in \operatorname{underlying\,multiset}(s),\allowbreak{} y \mapsto y \in \operatorname{underlying\,multiset}(t)) \iff (\exists x\, :\, \alpha,\; x \in (y \mapsto y \in \operatorname{underlying\,multiset}(s)) \land x \in (y \mapsto y \in \operatorname{underlying\,multiset}(t)))\).
 By \paperlink{premise:46696e7365742e6469736a6f696e745f636f65}{Prerequisite~P\ref{premise:46696e7365742e6469736a6f696e745f636f65}}, we obtain \(\operatorname{Disjoint}(\operatorname{underlying\,set}(s),\allowbreak{} \operatorname{underlying\,set}(t)) \iff \operatorname{Disjoint}(s,\allowbreak{} t)\).
-By \paperlink{premise:4966662e6e6f74}{Prerequisite~P\ref{premise:4966662e6e6f74}}, we obtain \(\neg \operatorname{Disjoint}(\operatorname{underlying\,set}(s),\allowbreak{} \operatorname{underlying\,set}(t)) \iff \neg \operatorname{Disjoint}(s,\allowbreak{} t)\).
+By \paperlink{premise:4966662e6e6f74}{\emph{Alias}} (\paperlink{premise:4966662e6e6f74}{Prerequisite~P\ref{premise:4966662e6e6f74}}), we obtain \(\neg \operatorname{Disjoint}(\operatorname{underlying\,set}(s),\allowbreak{} \operatorname{underlying\,set}(t)) \iff \neg \operatorname{Disjoint}(s,\allowbreak{} t)\).
 Use the hypothesis \(s \in \mathcal{A}\).
 Use the hypothesis \(t \in \mathcal{A}\).
 Applying the hypothesis \(\operatorname{Intersecting}\left(\mathcal{A}\right)\), we obtain \(\neg \operatorname{Disjoint}\left(s, t\right)\).
@@ -544,7 +544,7 @@ By the reverse implication, we obtain \(\neg \operatorname{Disjoint}\left(\opera
 By the forward implication, we obtain \(\exists a\, :\, \alpha,\; a \in s \land a \in t\).
 \end{proof}
 
-\begin{lemma}[{Not compl membership}]\label{theorem:15}
+\begin{lemma}\label{theorem:15}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Let \(a\) be an element of \(\alpha\). Assume \(a \in s\). Then \(\operatorname{compl}\left(a\right) \notin s\).
 \end{lemma}
 
@@ -556,7 +556,7 @@ By \paperlink{premise:6469736a6f696e745f636f6d706c5f7269676874}{Prerequisite~P\r
 Applying the hypothesis \(\operatorname{Intersecting}\left(s\right)\), we obtain \(\mathrm{False}\).
 \end{proof}
 
-\begin{theorem}[{Not membership}]\label{theorem:16}
+\begin{theorem}\label{theorem:16}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Let \(s\) be a subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(s\right)\). Let \(a\) be an element of \(\alpha\). Assume \(\operatorname{compl}\left(a\right) \in s\). Then \(a \notin s\).
 \end{theorem}
 
@@ -568,7 +568,7 @@ By \paperlink{premise:6469736a6f696e745f636f6d706c5f6c656674}{Prerequisite~P\ref
 Applying the hypothesis \(\operatorname{Intersecting}\left(s\right)\), we obtain \(\mathrm{False}\).
 \end{proof}
 
-\begin{lemma}[{Disjoint map compl}]\label{theorem:17}
+\begin{lemma}\label{theorem:17}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Let \(s\) be a finite subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\). Then
 \begin{center}
 \(\displaystyle \operatorname{Disjoint}(s,\allowbreak{} \operatorname{map}(\operatorname{mk}(\operatorname{compl}),\allowbreak{} s)).\)
@@ -608,17 +608,17 @@ Using the existential hypothesis, we obtain \(\mathrm{False}\).
 Rewriting with \paperlink{premise:46696e7365742e6469736a6f696e745f6c656674}{Prerequisite~P\ref{premise:46696e7365742e6469736a6f696e745f6c656674}} in the preceding result gives \(\operatorname{Disjoint}(s,\allowbreak{} \operatorname{map}(\operatorname{mk}(\operatorname{compl}),\allowbreak{} s))\).
 \end{proof}
 
-\begin{lemma}[{Cardinality at most}]\label{theorem:18}
+\begin{lemma}\label{theorem:18}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\). Then \(2 \cdot \left|s\right| \le \left|\alpha\right|\).
 \end{lemma}
 
 \begin{proof}
 By \paperlink{premise:46696e7365742e636172645f6c655f756e6976}{Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f756e6976}} with \(\operatorname{disj\,Union}(s,\allowbreak{} \operatorname{map}(\operatorname{mk}(\operatorname{compl}),\allowbreak{} s))\) in place of its parameter \(s\), we obtain \(|\operatorname{disj\,Union}(s,\allowbreak{} \operatorname{map}(\operatorname{mk}(\operatorname{compl}),\allowbreak{} s))| \le |\alpha|\).
 Rewriting with \paperlink{premise:46696e7365742e636172645f6d6170}{Prerequisite~P\ref{premise:46696e7365742e636172645f6d6170}}, \paperlink{premise:46696e7365742e636172645f6469736a556e696f6e}{Prerequisite~P\ref{premise:46696e7365742e636172645f6469736a556e696f6e}}, \paperlink{theorem:17}{Lemma~\ref{theorem:17}} (using \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\)) and \paperlink{premise:4e61742e74776f5f6d756c}{Prerequisite~P\ref{premise:4e61742e74776f5f6d756c}} gives \(2 \cdot |s| = |\operatorname{disj\,Union}(s,\allowbreak{} \operatorname{map}(\operatorname{mk}(\operatorname{compl}),\allowbreak{} s))|\).
-By \paperlink{premise:4c452e6c652e7472616e735f657127}{Prerequisite~P\ref{premise:4c452e6c652e7472616e735f657127}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(2 \cdot \left|s\right| \le \left|\alpha\right|\).
+By \paperlink{premise:4c452e6c652e7472616e735f657127}{\emph{Alias}} (\paperlink{premise:4c452e6c652e7472616e735f657127}{Prerequisite~P\ref{premise:4c452e6c652e7472616e735f657127}}) with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(2 \cdot \left|s\right| \le \left|\alpha\right|\).
 \end{proof}
 
-\begin{lemma}[{Is max if and only if cardinality equals}]\label{theorem:19}
+\begin{lemma}\label{theorem:19}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Nontrivial}\left(\alpha\right)\). Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\). Then
 \begin{center}
 \(\displaystyle (\forall t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \implies s \subseteq t \implies s = t) \iff 2 \cdot |s| = |\alpha|.\)
@@ -679,7 +679,7 @@ Assume \(\operatorname{Disjoint}\left(a, b\right)\).
 Use the hypothesis \(\neg (a \in \operatorname{underlying\,set}(s) \lor \operatorname{compl}(a) \in \operatorname{underlying\,set}(s))\).
 Rewriting with \paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6f725f6571}{Prerequisite~P\ref{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6f725f6571}} in the preceding result gives \(a \notin \operatorname{underlying\,set}(s) \land \operatorname{compl}(a) \notin \operatorname{underlying\,set}(s)\).
 Use the hypothesis \(\operatorname{Disjoint}\left(a, b\right)\).
-By \paperlink{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}{Prerequisite~P\ref{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}}, we obtain \(b \le \operatorname{compl}\left(a\right)\).
+By \paperlink{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}{\emph{Alias}} (\paperlink{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}{Prerequisite~P\ref{premise:4469736a6f696e742e6c655f636f6d706c5f6c656674}}), we obtain \(b \le \operatorname{compl}\left(a\right)\).
 By \paperlink{theorem:12}{Lemma~\ref{theorem:12}}, we obtain \(\operatorname{compl}\left(a\right) \in \operatorname{underlying\,set}(s)\).
 Taking the second conjunct, we obtain \(\mathrm{False}\).
 \end{proofstep}
@@ -712,7 +712,7 @@ Use the hypothesis \(s \subseteq t\).
 By \paperlink{theorem:18}{Lemma~\ref{theorem:18}}, we obtain \(2 \cdot \left|t\right| \le \left|\alpha\right|\).
 Use the hypothesis \(2 \cdot \left|s\right| = \left|\alpha\right|\).
 Reversing the equality, we obtain \(\left|\alpha\right| = 2 \cdot \left|s\right|\).
-By \paperlink{premise:4c452e6c652e7472616e735f6571}{Prerequisite~P\ref{premise:4c452e6c652e7472616e735f6571}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(2 \cdot \left|t\right| \le 2 \cdot \left|s\right|\).
+By \paperlink{premise:4c452e6c652e7472616e735f6571}{\emph{Alias}} (\paperlink{premise:4c452e6c652e7472616e735f6571}{Prerequisite~P\ref{premise:4c452e6c652e7472616e735f6571}}) with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(2 \cdot \left|t\right| \le 2 \cdot \left|s\right|\).
 By \paperlink{premise:4e61742e74776f5f706f73}{Prerequisite~P\ref{premise:4e61742e74776f5f706f73}}, we obtain \(0 < 2\).
 By \paperlink{premise:4e61742e6c655f6f665f6d756c5f6c655f6d756c5f6c656674}{Prerequisite~P\ref{premise:4e61742e6c655f6f665f6d756c5f6c655f6d756c5f6c656674}}, we obtain \(\left|t\right| \le \left|s\right|\).
 By \paperlink{premise:46696e7365742e65715f6f665f7375627365745f6f665f636172645f6c65}{Prerequisite~P\ref{premise:46696e7365742e65715f6f665f7375627365745f6f665f636172645f6c65}}, we obtain \(s = t\).
@@ -720,7 +720,7 @@ By \paperlink{premise:46696e7365742e65715f6f665f7375627365745f6f665f636172645f6c
 Together the two implications give the equivalence. Hence \((\forall t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \implies s \subseteq t \implies s = t) \iff 2 \cdot |s| = |\alpha|\).
 \end{proof}
 
-\begin{theorem}[{Exists cardinality equals}]\label{theorem:20}
+\begin{theorem}\label{theorem:20}
 Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Boolean\,Algebra}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Nontrivial}\left(\alpha\right)\). Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Assume \(\operatorname{Intersecting}\left(\operatorname{underlying\,set}(s)\right)\). Then
 \begin{center}
 \(\displaystyle \exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; s \subseteq t \land (2 \cdot |t| = |\alpha| \land \operatorname{Intersecting}(\operatorname{underlying\,set}(t))).\)
@@ -762,7 +762,7 @@ Applying the same function to equal arguments, we obtain \((\operatorname{Inters
 Chaining the equalities, we obtain \((\neg (\operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \implies s_{1} \subseteq t \implies s_{1} = t)) = (\operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \land (s_{1} \subseteq t \land \neg (s_{1} = t)))\).
 \end{proofstep}
 Use the hypothesis \(\neg (\forall t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \implies s_{1} \subseteq t \implies s_{1} = t)\).
-Rewriting with \paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}{Prerequisite~P\ref{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \land (s_{1} \subseteq t \land s_{1} \ne t)\).
+Rewriting with \paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}{Prerequisite~P\ref{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f666f72616c6c5f6571}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}) and the identity established above in the preceding result gives \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; \operatorname{Intersecting}(\operatorname{underlying\,set}(t)) \land (s_{1} \subseteq t \land s_{1} \ne t)\).
 Consider the following case.
 \begin{proofstep}
 Fix \(t\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
@@ -778,7 +778,7 @@ Fix \(u\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
 By \paperlink{premise:46696e7365742e696e737449735472616e73537562736574}{Prerequisite~P\ref{premise:46696e7365742e696e737449735472616e73537562736574}}, we obtain \(\operatorname{Is\,Trans}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
 Use the hypothesis \(s_{1} \subseteq t \land s_{1} \ne t\).
 Taking the first conjunct, we obtain \(s_{1} \subseteq t\).
-By \paperlink{premise:4861735375627365742e5375627365742e7472616e73}{Prerequisite~P\ref{premise:4861735375627365742e5375627365742e7472616e73}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(t \subseteq u \implies s_{1} \subseteq u\).
+By \paperlink{premise:4861735375627365742e5375627365742e7472616e73}{\emph{Alias}} (\paperlink{premise:4861735375627365742e5375627365742e7472616e73}{Prerequisite~P\ref{premise:4861735375627365742e5375627365742e7472616e73}}) with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(t \subseteq u \implies s_{1} \subseteq u\).
 By \paperlink{premise:416e642e696d705f6c656674}{Prerequisite~P\ref{premise:416e642e696d705f6c656674}}, we obtain \(t \subseteq u \land (2 \cdot |u| = |\alpha| \land \operatorname{Intersecting}(\operatorname{underlying\,set}(u))) \implies s_{1} \subseteq u \land (2 \cdot |u| = |\alpha| \land \operatorname{Intersecting}(\operatorname{underlying\,set}(u)))\).
 \end{proofstep}
 By \paperlink{theorem:18}{Lemma~\ref{theorem:18}}, we obtain \(2 \cdot \left|t\right| \le \left|\alpha\right|\).

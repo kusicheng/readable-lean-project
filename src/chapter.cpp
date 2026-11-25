@@ -383,10 +383,14 @@ static std::string resultTitle(const Node& record, bool sourcePaper) {
     const Node* conclusion = &record.at(1);
     while (conclusion->is("q")) conclusion = &conclusion->at(4);
     if (const auto title = paper_titles::parityTitle(record.at(1),*conclusion); !title.empty()) return title;
+    if (const auto title = paper_titles::matchingCharacterization(*conclusion); !title.empty()) return title;
+    if (const auto title = paper_titles::neighborhoodTitle(*conclusion); !title.empty()) return title;
     if (titleApplication(*conclusion,"Function.Surjective",3) &&
         titleApplication(argument(*conclusion,0),"SimpleGraph.Subgraph.IsMatching.toEdge",4))
         return "Every matching edge is the edge assigned to some vertex";
     if (titleApplication(*conclusion,"Eq",3)) {
+        if (const auto title = paper_titles::enumerationTitle(argument(*conclusion,1),argument(*conclusion,0)); !title.empty())
+            return title;
         if (const auto title = paper_titles::uniquenessTitle(record.at(1),*conclusion); !title.empty()) return title;
         if (const auto title = paper_titles::sequenceTitle(*conclusion); !title.empty()) return title;
         if (paper_titles::sameTitleTerm(argument(*conclusion,1),argument(*conclusion,0)))
@@ -768,9 +772,11 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
         definitions.emplace(entry.at(0).atom, &entry);
     std::set<std::string> visited;
     std::vector<std::string> order;
+    std::set<std::string> omittedSplitters;
     const auto visit = [&](auto&& self, const Node& node) -> void {
         if (node.is("c")) {
             const auto& name = node.at(1).atom;
+            if (omittedSplitters.count(name)) return;
             const auto it = definitions.find(name);
             if (it != definitions.end() && visited.insert(name).second) {
                 self(self, it->second->at(1));
@@ -782,6 +788,80 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
             if (child.array) self(self, child);
     };
     for (const auto& record : checked.at(0).children) visit(visit, record.at(1));
+    // A local mathematical function may enter only in an intermediate
+    // assertion, including an assertion in a private helper's proof.
+    // The adapter's definition catalog excludes matchers and projections.
+    const auto statementDefinitions=visited;
+    std::map<std::string,const Node*> privateDefinitions;
+    const auto generatedSplitter=[&](const std::string& name) {
+        // Lean puts a generated splitter under its registered matcher's name,
+        // adding a module-private prefix when the matcher itself is public.
+        for (const auto& row:checked.at(2).children) {
+            const auto splitter=row.at(0).atom+".splitter";
+            if (name==splitter || (name.size()>splitter.size() &&
+                name.compare(name.size()-splitter.size()-1,splitter.size()+1,"."+splitter)==0)) return true;
+        }
+        return false;
+    };
+    for (const auto& [name,entry]:definitions) {
+        if (name.rfind("_private.",0)!=0 || visited.count(name)) continue;
+        if (generatedSplitter(name)) omittedSplitters.insert(name);
+        else privateDefinitions.emplace(name,entry);
+    }
+    if (!privateDefinitions.empty()) {
+        std::map<std::string,const Node*> helpers;
+        if (checked.children.size()>6) for (const auto& row:checked.at(6).children)
+            helpers.emplace(row.at(0).atom,&row);
+        std::set<std::string> reached;
+        const auto visible=[&](auto&& self,const Node& expr)->void {
+            if (expr.is("c")) {
+                if (privateDefinitions.count(expr.at(1).atom)) visit(visit,expr);
+            } else if (expr.is("a")) {
+                const auto& fn=expr.at(1);
+                self(self,fn);
+                if ((fn.is("v") || fn.is("c")) && fn.children.size()>3) {
+                    for (const auto& position:fn.at(3).children) {
+                        const auto& digits=position.atom;
+                        std::size_t index=0;
+                        const auto end=digits.data()+digits.size();
+                        const auto result=std::from_chars(digits.data(),end,index);
+                        if (result.ec==std::errc{} && result.ptr==end && index<expr.children.size()-2)
+                            self(self,expr.at(2+index));
+                    }
+                } else for (std::size_t i=2;i<expr.children.size();++i) self(self,expr.at(i));
+            } else if (expr.is("q") || expr.is("l") || expr.is("t")) {
+                self(self,expr.at(3));
+                self(self,expr.at(4));
+                if (expr.is("t")) self(self,expr.at(5));
+            } else if (expr.is("proj")) self(self,expr.at(3));
+        };
+        const auto walk=[&](auto&& self,const Node& node)->void {
+            if (node.is("p")) {
+                visible(visible,node.at(1));
+                self(self,node.at(2));
+            } else if (node.is("c")) {
+                const auto it=helpers.find(node.at(1).atom);
+                if (it!=helpers.end() && reached.insert(it->first).second) {
+                    visible(visible,it->second->at(1));
+                    self(self,it->second->at(2));
+                }
+            } else if (node.is("l") || node.is("t")) {
+                visible(visible,node.at(3));
+                self(self,node.at(4));
+                if (node.is("t")) self(self,node.at(5));
+            } else if (node.is("a")) {
+                self(self,node.at(1));
+                // A constructive witness is printed even for a constant predicate.
+                if (head(node)=="Exists.intro" && node.children.size()==6) visible(visible,node.at(4));
+                if (head(node)=="Nonempty.intro" && node.children.size()==4) visible(visible,node.at(3));
+                std::vector<const Node*> premises;
+                if (proofArguments(node,premises))
+                    for (const auto* premise:premises) self(self,*premise);
+                else for (std::size_t i=2;i<node.children.size();++i) self(self,node.at(i));
+            } else if (node.is("proj")) self(self,node.at(3));
+        };
+        for (const auto& record:checked.at(0).children) walk(walk,record.at(2));
+    }
     if (order.empty()) return 0;
     std::size_t incomplete = 0;
     std::size_t ordinal = 0;
@@ -806,7 +886,10 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
         bool missing = false;
         for (std::size_t i=0; i<equations.size(); ++i) {
             const auto& equation = equations[i];
-            const auto line = decision ? std::optional<std::string>(decision->second) : describeCheckedStatement(equation);
+            auto line = decision ? std::optional<std::string>(decision->second) : std::nullopt;
+            if (!line && !statementDefinitions.count(name) && privateDefinitions.count(name))
+                line=describeCheckedRationalQuotient(equation);
+            if (!line) line=describeCheckedStatement(equation,true);
             if (!line) { missing = true; continue; }
             const auto [it,inserted] = seen.emplace(*line,ordinal+1);
             if (inserted) {

@@ -1267,7 +1267,8 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
                                    chapter->proofBudget, chapter->proofWeights, &arithmeticCosts);
                 if (!proof) {
                     std::string failure;
-                    proof = generalProof(record, input, earlierReferences, definedRules, candidates, compact, &failure);
+                    proof = generalProof(record, input, earlierReferences, definedRules, candidates, compact, &failure,
+                                         result.theorems);
                     if (!proof && !failure.empty()) messages << "  General proof: " << failure << '\n';
                 }
             }

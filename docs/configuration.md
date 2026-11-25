@@ -51,6 +51,8 @@ lean-to-latex checked.json custom.tex --paper "Homework" --proof-budget 30 --pro
 
 The default budget is 24. Above the budget the renderer groups supported operations into calculations. At or below it, the renderer uses expanded templates. It scores each theorem and each supported arithmetic tactic call separately. Earlier proved theorems retain their citations. `--threshold N` controls the size at which an uncited expression moves into display math. Its default is five mathematical expression nodes.
 
+When a compact proof uses the same lengthy private argument more than once, the compiler can state and prove it as an auxiliary lemma. A candidate must have at least two uses, at least 24 applications in its proof, and at least six lines in its reconstructed derivation. Each use must satisfy the lemma's hypotheses. For example, “Auxiliary lemma 43.1” in the Dyck-word paper proves that converting a word to a tree and back returns the original word. Each use links to that proof. The expanded setting keeps the individual derivations. [Dyck-word PDF](../papers/mathlib-dyck-words.pdf) · [Selection rules](../src/auxiliary_lemmas.hpp)
+
 | Weight key | Default | Operation |
 |---|---:|---|
 | `hypothesis` | 1 | Use of a local hypothesis |
@@ -95,4 +97,4 @@ python3 -B tests/verify_papers.py --mathlib-project /path/to/mathlib4
 
 The first command checks the frozen number-theory examples. The second checks the pilot chapter and its references. The third builds the local paper editions in two fresh directories. The last also checks original Mathlib files and arithmetic examples with a prebuilt Mathlib 4.19 checkout. Use `--lake PATH` and `--generator NAME` to select local build tools. The chapter and paper tests accept `--tectonic PATH` and `--only-cached`. The paper test also accepts repeatable `--font-dir PATH` arguments for local fonts. [Prototype verifier](../tests/verify.py) · [Chapter verifier](../tests/verify_chapter.py) · [Paper verifier](../tests/verify_papers.py)
 
-To test navigation in the published PDFs, run `python3 tests/verify_pdf_navigation.py` with `pypdfium2` installed. It checks the clickable area of each numbered citation and the location of the printed heading it opens. [PDF navigation test](../tests/verify_pdf_navigation.py)
+To test the published PDFs, run `python3 tests/verify_pdf_navigation.py` with `pypdfium2` installed. It checks the clickable area of each numbered citation and the location of the printed heading it opens. It also measures word spacing inside Theorem 1 and Lemma 4 of the Hamiltonian paper. [PDF checks](../tests/verify_pdf_navigation.py)

@@ -17,6 +17,26 @@ inline bool finiteMembership(const Node& n) {
     return titleApplication(n,"Membership.mem",5) && titleApplication(n.at(4),"Finset.instMembership",1);
 }
 
+inline std::string neighborhoodTitle(const Node& claim) {
+    const bool equality = titleApplication(claim,"Eq",3);
+    if (!equality && !titleApplication(claim,"Iff",2)) return {};
+    const auto& left = argument(claim,1);
+    const auto* neighborhood = &left;
+    const bool underlying = equality && titleApplication(left,"Finset.toSet",2);
+    if (underlying) neighborhood = &argument(left,0);
+    if (!equality) {
+        if (!finiteMembership(left)) return {};
+        neighborhood = &argument(left,1);
+    }
+    const bool incoming = titleApplication(*neighborhood,"Finset.bipartiteBelow",6);
+    if (!incoming && !titleApplication(*neighborhood,"Finset.bipartiteAbove",6)) return {};
+    if (!equality) return incoming ? "Membership in an incoming neighborhood" : "Membership in an outgoing neighborhood";
+    if (underlying) return incoming ? "The underlying set of incoming neighbors" : "The underlying set of outgoing neighbors";
+    if (titleApplication(neighborhood->at(4),"Function.swap",4))
+        return incoming ? "Incoming neighbors after reversing the relation" : "Outgoing neighbors after reversing the relation";
+    return {};
+}
+
 inline bool sameTitleVariable(const Node& a, const Node& b) {
     return a.is("v") && titleVariable(b,a.at(1).atom);
 }

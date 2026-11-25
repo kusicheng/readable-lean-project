@@ -1,7 +1,8 @@
-"""Check clickable citations in typeset papers. Run with Python and pypdfium2."""
+"""Check PDF citation targets and the spacing of the reported Hamiltonian proofs."""
 
 import argparse
 from collections import Counter
+from contextlib import closing
 import ctypes as ct
 from pathlib import Path
 import re
@@ -11,8 +12,59 @@ import pypdfium2.raw as raw
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CITATION = re.compile(r"\b(Prerequisite|Lemma|Theorem|Corollary|Definition|defining\s+equation)\s+([PD]?\d+)\b", re.I)
-TARGET = re.compile(r"(?m)^(?:(Theorem|Lemma|Corollary) (\d+)(?:\s*\(|\.)|(P\d+)\.)")
+CITATION = re.compile(r"\b(Auxiliary\s+lemma|Prerequisite|Lemma|Theorem|Corollary|Definition|defining\s+equation)\s+([PD]?\d+(?:\.\d+)?)\b", re.I)
+TARGET = re.compile(r"(?m)^(?:(Auxiliary lemma|Theorem|Lemma|Corollary) (\d+(?:\.\d+)?)(?:\s*\(|\.)|(P\d+)\.)")
+WORD_PAIR = re.compile(r"\b([A-Za-z]{2,}[,.;]?)(?= +([A-Za-z]{2,})\b)")
+
+
+def indexed_text(text_page):
+    # Keep one character per PDFium index so that matches map to printed glyphs.
+    return "".join(chr(raw.FPDFText_GetUnicode(text_page, n)) for n in range(text_page.count_chars()))
+
+
+def validate_hamiltonian_spacing(path):
+    """Measure visible gaps in the proof body, allowing room for ordinary justification."""
+    widest = dict.fromkeys(("Theorem 1", "Lemma 4"))
+    result, in_proof = None, False
+    with closing(pdf.PdfDocument(path)) as document:
+        for index in range(len(document)):
+            with closing(document[index]) as page, closing(page.get_textpage()) as text_page:
+                for line in re.finditer(r"[^\r\n]+", indexed_text(text_page)):
+                    heading = TARGET.match(line[0])
+                    if heading and heading[1] and raw.FPDFText_GetFontWeight(text_page, line.start()) >= 500:
+                        # A citation wrapped to column one can also begin with "Lemma 4".
+                        result, in_proof = f"{heading[1]} {heading[2]}", False
+                    if result not in widest:
+                        continue
+                    if line[0].startswith("Proof."):
+                        in_proof = True
+                    if not in_proof:
+                        continue
+                    for pair in WORD_PAIR.finditer(line[0]):
+                        # A prose word on either side rules out gaps between aligned formulas.
+                        words = {word.casefold().rstrip(",.;") for word in pair.groups()}
+                        if words.isdisjoint({"by", "the", "we"}):
+                            continue
+                        left = line.start() + pair.end(1) - 1
+                        right = line.start() + pair.start(2)
+                        gap = text_page.get_charbox(right)[0] - text_page.get_charbox(left)[2]
+                        em = raw.FPDFText_GetFontSize(text_page, left)
+                        if em <= 0:
+                            raise ValueError(f"Missing font size in the proof of {result}")
+                        sample = (gap / em, gap, " ".join(pair.groups()), index + 1)
+                        if widest[result] is None or sample[0] > widest[result][0]:
+                            widest[result] = sample
+    problems = []
+    for label, sample in widest.items():
+        if sample is None:
+            problems.append(f"No measurable prose in the proof of {label}")
+        elif sample[0] > 1.5:
+            ratio, gap, words, page = sample
+            problems.append(f"{label}, page {page}: {words!r} has a {gap:.1f} pt gap "
+                            f"({ratio:.2f} em, limit 1.5 em)")
+    if problems:
+        raise ValueError("\n".join(problems))
+    return widest
 
 
 def link_target(document, link):
@@ -33,7 +85,7 @@ def link_target(document, link):
     return page, y.value
 
 
-def validate(path):
+def validate(path, require_mixed=True):
     targets = {}
     visits = []
     counts = Counter()
@@ -42,8 +94,7 @@ def validate(path):
         for page_index, page in enumerate(document):
             text_page = page.get_textpage()
             try:
-                # Use one character per PDFium index so that matching text can also be hit-tested.
-                text = "".join(chr(raw.FPDFText_GetUnicode(text_page, n)) for n in range(text_page.count_chars()))
+                text = indexed_text(text_page)
                 headings = set()
                 for target in TARGET.finditer(text):
                     key = (target[1], target[2]) if target[1] else ("Prerequisite", target[3])
@@ -60,7 +111,7 @@ def validate(path):
                     if citation.start() in headings:
                         continue
                     name, number = citation.groups()
-                    key = ("Definition" if name.lower().startswith("defin") else name.capitalize(), number)
+                    key = ("Definition" if name.lower().startswith("defin") else " ".join(name.split()).capitalize(), number)
                     counts[key[0]] += 1
                     where = f"{citation[0]!r} on page {page_index + 1}"
                     destinations = set()
@@ -93,7 +144,7 @@ def validate(path):
                 page.close()
     finally:
         document.close()
-    if not counts["Prerequisite"] or not any(counts[k] for k in ("Lemma", "Theorem", "Corollary")):
+    if require_mixed and (not counts["Prerequisite"] or not any(counts[k] for k in ("Lemma", "Theorem", "Corollary"))):
         raise ValueError("The paper must exercise both prerequisite and numbered-result citations")
     for key, where, (actual_page, anchor_y) in visits:
         if key not in targets:
@@ -115,7 +166,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("papers", nargs="*", type=Path, help="PDFs with prerequisite and result citations",
                         default=[ROOT / "papers" / f"mathlib-{name}.pdf" for name in
-                                 ("hamiltonian-linked", "double-counting", "derangements", "powerset")])
+                                 ("hamiltonian", "double-counting", "derangements", "powerset")])
     for paper in parser.parse_args().papers:
+        if "hamiltonian" in paper.stem.casefold():
+            for label, (ratio, gap, words, page) in validate_hamiltonian_spacing(paper).items():
+                print(f"{paper.name}: {label}, page {page}, widest measured prose gap "
+                      f"{gap:.1f} pt ({ratio:.2f} em) between {words!r}")
         checked = validate(paper)
         print(f"{paper.name}: {sum(checked.values())} complete citation links verified ({dict(sorted(checked.items()))})")

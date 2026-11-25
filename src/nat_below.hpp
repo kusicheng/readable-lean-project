@@ -31,16 +31,35 @@ inline bool zero(const Node& n) {
 
 // The recursion table for k+1 has P(k) in its first field. A use of its
 // tail would require an earlier induction hypothesis, beyond ordinary induction.
-inline bool replacePredecessor(Node& n, const Node& history) {
+template<class Required>
+bool replacePredecessor(Node& n, const Node& history, Required required,
+                        const Node* parent=nullptr, std::size_t slot=0) {
     if (n.is("proj") && n.children.size()==5 && n.at(1).atom=="PProd" && n.at(2).atom=="0" &&
         n.at(4).atom=="proof" && local(n.at(3),history)) {
+        if (!parent || !required(*parent,slot)) return false;
         Node ih=n.at(3);
         ih.children[2].atom="proof";
         n=std::move(ih);
         return true;
     }
-    return !local(n,history) && std::all_of(n.children.begin(),n.children.end(),
-        [&](Node& child) { return !child.array || replacePredecessor(child,history); });
+    if (local(n,history)) return false;
+    for (std::size_t i=0;i<n.children.size();++i)
+        if (n.at(i).array && !replacePredecessor(n.children[i],history,required,&n,i)) return false;
+    return true;
+}
+
+// Lean's primitive addition and the concrete Nat addition instance reduce
+// to the same operation. A user-supplied addition instance stays distinct.
+inline void normalizeAddition(Node& n) {
+    if (call(n,"HAdd.hAdd",6) && n.at(2).is("c") && head(n.at(2))=="Nat" &&
+        n.at(3).is("c") && head(n.at(3))=="Nat" && n.at(4).is("c") && head(n.at(4))=="Nat" &&
+        call(n.at(5),"instHAdd",2) && n.at(5).at(2).is("c") && head(n.at(5).at(2))=="Nat" &&
+        n.at(5).at(3).is("c") && head(n.at(5).at(3))=="instAddNat") {
+        n.children[1].children[1].atom="Nat.add";
+        n.children.erase(n.children.begin()+2,n.children.begin()+6);
+    }
+    for (auto& child : n.children)
+        if (child.array) normalizeAddition(child);
 }
 
 using Catalog = std::map<std::string,const Node*>;
@@ -64,9 +83,9 @@ struct Branches {
 
 // Recover ordinary induction only when both original proofs have the right
 // specialization of the motive and the supplied history flows to that match.
-template<class Same, class Apply, class CheckProof>
+template<class Same, class Apply, class CheckProof, class Required>
 std::optional<Branches> branches(const Node& raw, const Node& conclusion, Same same, Apply apply,
-                                 CheckProof checkProof) {
+                                 CheckProof checkProof, Required required) {
     const auto& motive=raw.at(2);
     const auto& step=term(raw.at(4));
     const auto& history=step.at(4);
@@ -115,7 +134,9 @@ std::optional<Branches> branches(const Node& raw, const Node& conclusion, Same s
     auto& ih=result.successor.children[4];
     ih.children[3]=std::move(*hypothesis);
     ih.children[6].atom="proof";
-    if (!replacePredecessor(ih.children[4],atSuccessor)) return {};
+    if (!replacePredecessor(ih.children[4],atSuccessor,[&](const Node& parent,std::size_t slot) {
+        return required(parent,slot,ih.at(3));
+    })) return {};
     return result;
 }
 

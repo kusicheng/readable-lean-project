@@ -143,6 +143,22 @@ bool mentions(const Node& n, const std::string& id) {
                        [&](const Node& child) { return child.array && mentions(child, id); });
 }
 
+// letFun v (fun x => body) reduces to body when x does not occur in it.
+// Elaboration uses these bindings for some termination proofs.
+const Node& withoutUnusedLet(const Node& input) {
+    const Node* value = &term(input);
+    for (;;) {
+        if (value->is("t") && !mentions(value->at(5),value->at(1).atom)) {
+            value = &term(value->at(5));
+        } else if (value->is("a") && value->children.size()==6 && head(*value)=="letFun") {
+            const auto& fn = term(value->at(5));
+            if (!fn.is("l") || mentions(fn.at(4),fn.at(1).atom)) break;
+            value = &term(fn.at(4));
+        } else break;
+    }
+    return *value;
+}
+
 std::string binderBase(const std::string& hint) {
     if (auto shortLabel = indexedLetter(hint); !shortLabel.empty()) return shortLabel;
     if (const auto prime = hint.find('\''); prime != std::string::npos &&
@@ -489,6 +505,15 @@ struct RationalStructure {
 
 RationalStructure rationalStructure(const Node& instance, const std::string& carrier, std::string target) {
     static const std::set<std::string> projections{
+        "MulOneClass.toMul", "Monoid.toMulOneClass", "DivInvMonoid.toMonoid", "DivisionMonoid.toDivInvMonoid",
+        "DivisionRing.toDivInvMonoid", "AddSemigroup.toAdd", "AddMonoid.toAddSemigroup",
+        "SubNegMonoid.toSub", "Distrib.toMul", "NonUnitalNonAssocSemiring.toDistrib",
+        "CommRing.toAddCommGroup", "AddCommGroup.toAddGroup", "AddGroupWithOne.toAddGroup",
+        "SubNegMonoid.toNeg", "CommRing.toNonUnitalCommRing", "Field.toCommRing", "MulZeroClass.toMul",
+        "MonoidWithZero.toMonoid", "Ring.toSemiring", "Ring.toAddCommGroup", "Distrib.toAdd",
+        "Semiring.toMonoidWithZero", "AddCommGroup.toDivisionAddCommMonoid",
+        "SubtractionCommMonoid.toSubtractionMonoid", "SubtractionMonoid.toSubNegZeroMonoid",
+        "SubNegZeroMonoid.toNegZeroClass", "NegZeroClass.toNeg",
         "InvOneClass.toInv", "DivInvMonoid.toInv", "DivInvOneMonoid.toInvOneClass",
         "DivisionMonoid.toDivInvOneMonoid", "GroupWithZero.toDivInvMonoid", "GroupWithZero.toDivisionMonoid",
         "DivisionCommMonoid.toDivisionMonoid", "CommGroupWithZero.toDivisionCommMonoid",
@@ -529,6 +554,8 @@ RationalStructure rationalStructure(const Node& instance, const std::string& car
     }
     const auto base = current->is("c") ? head(*current) : std::string{};
     static const std::map<std::string,std::string> ratStructures{
+        {"Add","Rat.instAdd"}, {"Sub","Rat.instSub"}, {"Mul","Rat.instMul"},
+        {"Neg","Rat.instNeg"}, {"NatCast","Rat.instNatCast"},
         {"Inv","Rat.instInv"}, {"Field","Rat.instField"}, {"DivisionRing","Rat.instDivisionRing"},
         {"CommGroupWithZero","Rat.commGroupWithZero"}, {"Semiring","Rat.semiring"}, {"CommSemiring","Rat.commSemiring"},
         {"CommRing","Rat.commRing"}, {"AddMonoid","Rat.addMonoid"}, {"AddGroup","Rat.addGroup"},
@@ -763,7 +790,7 @@ Display applyBijection(const Node& map, const Display& x, const Names& names) {
 }
 
 Display render(const Node& input, const Names& names) {
-    const Node& raw = term(input);
+    const Node& raw = withoutUnusedLet(input);
     if (raw.is("v")) {
         auto it = names.find(raw.at(1).atom);
         if (it == names.end()) throw Unsupported{};
@@ -813,9 +840,6 @@ Display render(const Node& input, const Names& names) {
     }
     if (raw.is("l") || raw.is("q")) return binder(raw, names);
     if (raw.is("t")) {
-        // A dependent constructor can leave an unused field proof in the
-        // type of its next field. It contributes no term to this formula.
-        if (!mentions(raw.at(5),raw.at(1).atom)) return render(raw.at(5),names);
         Names inner = names;
         const auto label = checkedBinderName(inner, raw.at(1).atom, raw.at(2).atom);
         return {"\\left. " + render(raw.at(5), inner).text + "\\right|_{" + label + "=" +
@@ -826,6 +850,13 @@ Display render(const Node& input, const Names& names) {
     const bool application = raw.is("a");
     const auto count = application ? raw.children.size() - 2 : 0;
     const auto& fn = application ? term(raw.at(1)) : raw;
+    if (key == "letFun" && count == 4 && term(raw.at(5)).is("l")) {
+        const auto& body = term(raw.at(5));
+        Names inner = names;
+        const auto variable = checkedBinderName(inner,body.at(1).atom,body.at(2).atom);
+        return {"\\left. " + render(body.at(4),inner).text + "\\right|_{" + variable +
+                "=" + renderArgument(raw.at(4),names).text + "}",90};
+    }
     // A default tactic or value helps Lean supply an omitted argument. The
     // mathematical parameter still has the first argument as its type.
     if ((key == "autoParam" || key == "optParam") && count == 2)
@@ -1047,6 +1078,26 @@ Display render(const Node& input, const Names& names) {
             return {"\\mathord{\\frac{1}{" + last().text + "}}"};
         }
     }
+    if (names.count("#rational-quotient")) {
+        if (key=="Nat.cast" && count==3 && raw.at(2).is("c") && head(raw.at(2))=="Rat") {
+            if (!rationalStructure(raw.at(3),"Rat","NatCast").standard) throw Unsupported{};
+            return last();
+        }
+        if (key=="HSub.hSub" || key=="HAdd.hAdd" || key=="HMul.hMul") {
+            const std::string op=key=="HSub.hSub" ? "Sub" : key=="HAdd.hAdd" ? "Add" : "Mul";
+            if (count==6 && head(raw.at(2))=="Rat" && head(raw.at(3))=="Rat" && head(raw.at(4))=="Rat" &&
+                (!applicationOf(raw.at(5),("instH"+op).c_str(),2) || head(raw.at(5).at(2))!="Rat" ||
+                 !rationalStructure(raw.at(5).at(3),"Rat",op).standard)) throw Unsupported{};
+        }
+        const bool naturalSub=key=="Nat.sub" && count==2;
+        const bool typedSub=key=="HSub.hSub" && count==6 &&
+            head(raw.at(2))=="Nat" && head(raw.at(3))=="Nat" && head(raw.at(4))=="Nat" &&
+            applicationOf(raw.at(5),"instHSub",2) && head(raw.at(5).at(2))=="Nat" &&
+            raw.at(5).at(3).is("c") && head(raw.at(5).at(3))=="instSubNat";
+        if ((naturalSub || typedSub) && arity(2))
+            return {"\\max\\left\\{" + arg(0).within(60) + " - " + arg(1).within(61) + ",0\\right\\}"};
+        if (key=="HSub.hSub" && count==6 && head(raw.at(4))=="Nat") throw Unsupported{};
+    }
     if (key == "Nat.cast" && count == 3 && head(raw.at(3)) == "AddMonoidWithOne.toNatCast")
         return {"\\operatorname{cast}_{" + render(raw.at(2), names).text + "}\\left(" + last().text + "\\right)"};
     if ((key == "Nat.cast" && count == 3 && head(raw.at(2)) == "Int") ||
@@ -1251,6 +1302,8 @@ Display render(const Node& input, const Names& names) {
         return {"\\operatorname{ncard}(" + arg(0).text + ")"};
     if (key == "Nat.choose" && arity(2))
         return {"\\binom{" + arg(0).text + "}{" + arg(1).text + "}"};
+    if (key == "Nat.centralBinom" && count == 1 && arity(1))
+        return {"\\binom{2 \\cdot " + arg(0).within(71) + "}{" + arg(0).text + "}"};
     // Parenthesize a nested factorial so it cannot be read as a double factorial.
     if (key == "Nat.factorial" && count == 1 && arity(1))
         return {arg(0).within(91) + "!",90};
@@ -1389,6 +1442,8 @@ Display render(const Node& input, const Names& names) {
         return adjacency(*args[0],args[1],args[2],names);
     if (key == "SimpleGraph.Subgraph.degree" && count == 5 && arity(2))
         return {"\\deg_{" + arg(0).text + "}(" + arg(1).text + ")"};
+    if (key == "SimpleGraph.Subgraph.neighborSet" && count == 4 && arity(2))
+        return {"N_{" + arg(0).text + "}(" + arg(1).text + ")"};
     if (key == "SimpleGraph.Subgraph.IsMatching" && count == 3 && arity(1))
         return {arg(0).within(41) + "\\text{ is a matching}",40};
     if (key == "SimpleGraph.Subgraph.IsPerfectMatching" && count == 3 && arity(1))
@@ -1520,7 +1575,8 @@ Display render(const Node& input, const Names& names) {
             const auto body = lambda ? render(value.at(4),inner).text :
                                        render(value,names).within(95) + "(" + variable + ")";
             const auto premise = positive ? condition.text : "\\neg " + condition.within(41);
-            if (lambda && !mentions(value.at(4),value.at(1).atom)) return body + " &\\text{if } " + premise;
+            if (lambda && !mentions(withoutUnusedLet(value.at(4)),value.at(1).atom))
+                return body + " &\\text{if } " + premise;
             return body + " &\\text{given } " + variable + "\\text{ proving } " + premise;
         };
         return {"\\begin{cases}" + branch(argument(raw,1),true) + "\\\\ " +
@@ -1640,6 +1696,22 @@ bool visiblyMentions(const Node& input, const std::string& id) {
 }
 
 std::string instanceAssumption(const Node& domain, const Names& names) {
+    if (domain.is("q") && role(domain,6) == "value" && applicationOf(domain.at(4),"Fintype",1)) {
+        Names inner = names;
+        const auto variable = checkedBinderName(inner,domain.at(1).atom,domain.at(2).atom);
+        bindCarrier(inner,domain,variable);
+        const auto& family = term(argument(domain.at(4),0));
+        const auto prefix = "For each \\(" + variable + " \\in " + render(domain.at(3),names).text +
+                            "\\), fix a finite enumeration of ";
+        if (applicationOf(family,"Set.Elem",2)) {
+            const auto& set = term(argument(family,0));
+            if ((applicationOf(set,"SimpleGraph.Subgraph.neighborSet",4) ||
+                 applicationOf(set,"SimpleGraph.neighborSet",3)) && term(argument(set,0)).is("v") &&
+                term(argument(set,0)).at(1).atom == domain.at(1).atom)
+                return prefix + "its neighbors in \\(" + render(argument(set,1),inner).text + "\\)";
+        }
+        return prefix + "\\(" + render(family,inner).text + "\\)";
+    }
     // A binary decidability instance often elaborates as two value binders
     // ending in Decidable (r a b), without the DecidableRel abbreviation.
     if (domain.is("q") && role(domain,6) == "value" && domain.at(4).is("q")) {
@@ -1766,6 +1838,10 @@ bool isStandardRationalInverse(const Node& instance, const std::string& carrier)
     return rationalStructure(instance,carrier,"Inv").standard;
 }
 
+bool isStandardRationalStructure(const Node& instance, const std::string& target) {
+    return rationalStructure(instance,"Rat",target).standard;
+}
+
 bool isStandardRationalZero(const Node& expression, const std::string& carrier) {
     const auto& raw = term(expression);
     return isStandardRationalNumeral(raw,carrier) && naturalLiteral(raw.at(3)) == "0";
@@ -1836,12 +1912,77 @@ void prepareCheckedNames(Node& document) {
     });
 }
 
-std::optional<std::string> describeCheckedStatement(const Node& type) {
+// Separate equations can wrap across lines. A TeX cases array boxes both
+// a branch value and its condition even when the pair exceeds the page width.
+static std::optional<std::string> conditionalDefinition(const Node& equation, const Names& names) {
+    const auto& decision = term(argument(equation,0));
+    const bool dependent = applicationOf(decision,"dite",5);
+    if (!dependent && !applicationOf(decision,"ite",5)) return {};
+    const auto lhs = render(argument(equation,1),names).within(41);
+    const auto condition = render(decision.at(3),names);
+    std::string result;
+    for (const bool positive : {true,false}) {
+        const Node* value = &term(decision.at(positive ? 5 : 6));
+        Names inner = names;
+        std::string evidence;
+        if (dependent) {
+            if (!value->is("l")) return {};
+            const auto& body = withoutUnusedLet(value->at(4));
+            if (mentions(body,value->at(1).atom)) {
+                const auto variable = checkedBinderName(inner,value->at(1).atom,value->at(2).atom);
+                evidence = variable;
+            }
+            value = &body;
+        }
+        if (!positive) result += " ";
+        if (!evidence.empty()) {
+            const auto premise = positive ? condition.text : "\\neg " + condition.within(41);
+            result += "Given a proof \\(" + evidence + "\\) of \\(" + premise + "\\), ";
+        } else if (positive) result += "If \\(" + condition.text + "\\), then ";
+        else result += "Otherwise, ";
+        result += "\\(" + lhs + " = " + render(*value,inner).within(41) + "\\).";
+    }
+    return result;
+}
+
+// State the field and distinguish its signed subtraction from truncated
+// natural subtraction inside operands of a newly introduced quotient.
+std::optional<std::string> describeCheckedRationalQuotient(const Node& equation) {
+    try {
+        Names names;
+        const Node* eq=&equation;
+        const auto preface=introductions(eq,names);
+        if (!applicationOf(*eq,"Eq",3) || !eq->at(2).is("c") || head(eq->at(2))!="Rat") return {};
+        const auto& quotient=eq->at(4);
+        if (!applicationOf(quotient,"HDiv.hDiv",6)) return {};
+        for (std::size_t i=2;i<5;++i) if (!quotient.at(i).is("c") || head(quotient.at(i))!="Rat") return {};
+        const auto& instance=quotient.at(5);
+        if (!applicationOf(instance,"instHDiv",2) || head(instance.at(2))!="Rat" ||
+            !instance.at(3).is("c") || head(instance.at(3))!="Rat.instDiv") return {};
+        names["#rational-quotient"]="1";
+        return preface + "In \\(\\mathbb{Q}\\), \\(" + render(eq->at(3),names).text + " = \\frac{" +
+            render(quotient.at(6),names).text + "}{" + render(quotient.at(7),names).text +
+            "}\\). The quotient is defined to be zero when its denominator is zero.";
+    } catch (const Unsupported&) { return {}; }
+}
+
+std::optional<std::string> describeCheckedStatement(const Node& type, bool definingEquation) {
     try {
         Names names;
         const Node* conclusion = &type;
         const std::string preface = introductions(conclusion, names);
         if (applicationOf(*conclusion,"Eq",3)) {
+            if (definingEquation) {
+                if (auto cases=conditionalDefinition(*conclusion,names)) return preface + *cases;
+                const auto& rhs = term(argument(*conclusion,0));
+                if (applicationOf(rhs,"Equiv.mk",6)) {
+                    const auto eq = render(argument(*conclusion,1),names).text;
+                    return preface + "The equivalence \\(" + eq + "\\) goes from \\(" +
+                           render(rhs.at(2),names).text + "\\) to \\(" + render(rhs.at(3),names).text +
+                           "\\). Its forward map is \\(" + render(rhs.at(4),names).text +
+                           "\\). Its inverse map is \\(" + render(rhs.at(5),names).text + "\\).";
+                }
+            }
             if (const auto* candidates = duplicateFreeCandidates(argument(*conclusion,0))) {
                 return preface + "Start with " + candidateSource(*candidates,names) +
                     ". Each entry has no repeated elements, so it represents a finite set. "

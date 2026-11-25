@@ -81,8 +81,10 @@ std::optional<std::string> checkedFormula(const Node& expression, const Names& n
 bool isStandardRationalInverse(const Node& instance, const std::string& carrier);
 bool isStandardRationalZero(const Node& expression, const std::string& carrier);
 bool isStandardRationalNumeral(const Node& expression, const std::string& carrier);
+bool isStandardRationalStructure(const Node& instance, const std::string& target);
 bool isStandardRationalOrder(const Node& expression, const std::string& carrier);
-std::optional<std::string> describeCheckedStatement(const Node& type);
+std::optional<std::string> describeCheckedStatement(const Node& type, bool definingEquation = false);
+std::optional<std::string> describeCheckedRationalQuotient(const Node& equation);
 std::optional<std::string> describeCheckedDefinition(const std::string& fullName,
                                                       const Node& type, const Node& value);
 std::string checkedBinderName(Names& names, const std::string& id, const std::string& hint);

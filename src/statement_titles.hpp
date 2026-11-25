@@ -17,6 +17,58 @@ inline bool naturalOperation(const Node& value, const char* operation, const cha
            value.at(5).at(3).is("c") && head(value.at(5).at(3))==instance;
 }
 
+inline std::string enumerationTitle(const Node& left, const Node& right) {
+    if (titleApplication(left,"catalan",1) && naturalOperation(right,"HDiv.hDiv","instHDiv","Nat.instDiv")) {
+        const auto& numerator = argument(right,1);
+        const auto& divisor = argument(right,0);
+        if (titleApplication(numerator,"Nat.centralBinom",1) && naturalOperation(divisor,"HAdd.hAdd","instHAdd","instAddNat") &&
+            sameTitleVariable(argument(left,0),argument(numerator,0)) && sameTitleVariable(argument(left,0),argument(divisor,1)) &&
+            naturalNumber(argument(divisor,0),"1"))
+            return "The central binomial formula for Catalan numbers";
+    }
+    if (titleApplication(left,"Finset.card",2) && titleApplication(argument(left,0),"Tree.treesOfNumNodesEq",1) &&
+        titleApplication(right,"catalan",1) && sameTitleTerm(argument(argument(left,0),0),argument(right,0)))
+        return "The Catalan count for binary trees with a fixed number of nodes";
+    if (titleApplication(left,"DyckWord.semilength",1) && titleApplication(right,"Tree.numNodes",2)) {
+        const auto& image = argument(right,0);
+        if (titleApplication(image,"DFunLike.coe",6) && argument(image,1).is("c") &&
+            head(argument(image,1))=="DyckWord.equivTree" && sameTitleVariable(argument(image,0),argument(left,0)))
+            return "Semilength equals the node count of the corresponding tree";
+    }
+    if (titleApplication(left,"Fintype.card",2) && titleApplication(right,"catalan",1)) {
+        const auto& subtype = left.at(2);
+        if (!titleApplication(subtype,"Subtype",2) || head(subtype.at(2))!="DyckWord") return {};
+        const auto& condition = argument(subtype,0);
+        if (!condition.is("l") || !titleApplication(condition.at(4),"Eq",3)) return {};
+        const auto& measure = argument(condition.at(4),1);
+        if (titleApplication(measure,"DyckWord.semilength",1) && titleVariable(argument(measure,0),condition.at(1).atom) &&
+            sameTitleTerm(argument(condition.at(4),0),argument(right,0)))
+            return "The Catalan count for Dyck words of fixed semilength";
+    }
+    return {};
+}
+
+inline std::string matchingCharacterization(const Node& claim) {
+    if (!titleApplication(claim,"Iff",2)) return {};
+    const auto& property = argument(claim,1);
+    const auto& all = argument(claim,0);
+    if (!titleApplication(property,"SimpleGraph.Subgraph.IsMatching",3) || !all.is("q") ||
+        !all.at(4).is("q") || !sameTitleTerm(all.at(3),property.at(2))) return {};
+    const auto& member = all.at(4).at(3);
+    const auto& conclusion = all.at(4).at(4);
+    if (!titleApplication(member,"Membership.mem",5) || !titleApplication(member.at(4),"Set.instMembership",1) ||
+        !titleVariable(argument(member,0),all.at(1).atom) || !titleApplication(conclusion,"Eq",3) ||
+        !naturalNumber(argument(conclusion,0),"1")) return {};
+    const auto& vertices = argument(member,1);
+    const auto& degree = argument(conclusion,1);
+    if (titleApplication(vertices,"SimpleGraph.Subgraph.verts",3) &&
+        titleApplication(degree,"SimpleGraph.Subgraph.degree",5) &&
+        sameTitleTerm(vertices.at(4),property.at(4)) && sameTitleTerm(degree.at(4),property.at(4)) &&
+        titleVariable(degree.at(5),all.at(1).atom))
+        return "The degree-one characterization of a matching";
+    return {};
+}
+
 // The same rule handles arbitrary named sequences exported with a checked
 // signature Nat -> Nat -> Nat. Parameter positions come from the equation.
 inline std::string sequenceTitle(const Node& equality) {

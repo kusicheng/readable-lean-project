@@ -48,14 +48,20 @@ def verify_record_ext(project, workspace, env, lake, compiler):
               any("condition" in line and "proof irrelevance" in line for line in comparisons),
               "Record equality must identify every data field, including proposition-valued fields")
 
-    for control in ("missing right", "swapped tail", "missing reflexivity", "wrong constructor", "wrong projection"):
+    for control in ("missing right", "swapped tail", "missing reflexivity", "wrong constructor", "wrong projection",
+                    "false transport assumption"):
         damaged = copy.deepcopy(original)
-        family = "Score" if control in ("missing reflexivity", "wrong constructor") else "OrderedPair"
+        score_controls = ("missing reflexivity", "wrong constructor", "false transport assumption")
+        family = "Score" if control in score_controls else "OrderedPair"
         name = f"RecordEquality.{family}.ext"
         proof = next(row[2] for row in damaged[0] if row[0] == name)
         if control == "wrong constructor":
             matcher = next(row for row in damaged[2] if row[0] == name + ".match_1")
             matcher[5] = "RecordEquality.OrderedPair.mk"
+        elif control == "false transport assumption":
+            transfer = application(proof, "Eq.ndrec")
+            check(transfer[5][3][1][:2] == ["c", "LT.lt"], "Expected the positivity assumption")
+            transfer[5][3] = ["c", "False", "prop"]
         elif control in ("missing right", "swapped tail"):
             transfer = application(proof, "Eq.ndrec")
             check(transfer is not None, "The ordered pair must transport its coordinates")
@@ -71,9 +77,18 @@ def verify_record_ext(project, workspace, env, lake, compiler):
         check(PENDING in article and "12/15 proofs complete" in audit,
               f"The unsupported equality and its two uses must stay visible for {control}")
 
-    for control in ("wrong subtree", "missing decrease", "wrong decrease", "wrong motive", "missing order"):
+    for control in ("wrong subtree", "wrong leaf", "missing decrease", "wrong decrease", "wrong motive", "missing order"):
         damaged = copy.deepcopy(original)
-        if control == "wrong subtree":
+        if control == "wrong leaf":
+            proof = next(row[2] for row in damaged[0] if row[0].endswith(".double_reflection"))
+            recursor = application(proof, "RecordEquality.Fork.brecOn")
+            matcher = recursor[5][4][4]
+            if matcher[0] == "p":
+                matcher = matcher[2]
+            leaf = matcher[-3][4][4]
+            check(leaf[2][1][1] in ("rfl", "Eq.refl"), "The leaf case should use reflexivity")
+            leaf[2][3] = ["u", "missing leaf"]
+        elif control == "wrong subtree":
             proof = next(row[2] for row in damaged[0] if row[0].endswith(".double_reflection"))
             def swap_right_use(n):
                 if not isinstance(n, list) or not n:

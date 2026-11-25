@@ -4,10 +4,13 @@
 
 - Made a mathematical article the default output. Anonymous examples use numbered statements, and matching and recurrence headings identify which argument changes. Source-documented names such as the degree-sum formula now accompany their prerequisite citations.
 - Added narration for checked record equalities and recursive hypotheses used in the complete Mathlib files on refined Bell numbers and Dyck words. The Bell recurrence identifies the last binomial factor in the finite product.
+- Compact papers can prove a repeated private argument as a numbered auxiliary lemma and link to it at each use. Conditional definitions wrap by branch, and an equivalence shows its forward and inverse maps separately.
+- Compiled the 14-result Catalan-number file, including the checked polynomial calculation used in the central binomial formula. [Catalan paper](papers/mathlib-catalan.pdf)
+- Compiled all 13 public proofs in the integer-partition file, including the proof that a partition of a fixed integer is determined by its multiset of parts. [Integer partitions](papers/mathlib-integer-partitions.pdf)
 
 - Made entire result and prerequisite citations clickable in the PDF. Separated theorem headings from their statements and prevented long inline formulas from stretching the prose in proof paragraphs.
 - Compiled all 46 results in the original Mathlib graph-matching file and distinguished all 22 headings in the double-counting paper.
-- Compiled a complete 17-result article on Hamiltonian graphs. The path and cycle length proofs show the intermediate counts. The article also states the singleton convention and gives the walk used in the connectivity proof. [Generated paper](papers/mathlib-hamiltonian-linked.pdf)
+- Compiled a complete 17-result article on Hamiltonian graphs. The path and cycle length proofs show the intermediate counts. The article also states the singleton convention and gives the walk used in the connectivity proof. [Generated paper](papers/mathlib-hamiltonian.pdf)
 - Distinguished set families and scalar types in the LYM inequality, and made repeated addition explicit in the weighted pigeonhole exercise. [Reading and grading results](docs/evaluation.md)
 - Added chapter and paper output for Lean proofs, with worked combinatorics examples.
 - Improved the notation for rational reciprocals. Proofs that clear a denominator now show where its positivity was established.

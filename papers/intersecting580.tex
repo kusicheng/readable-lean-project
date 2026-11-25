@@ -55,7 +55,7 @@ Fix a ground set of n plus one points, with one distinguished point. How many su
 
 \section*{Definitions}
 \paragraph{Search.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\paperlineanchor{defeq:1}\textup{(\paperlink{defeq:1}{D1})} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Then \(\operatorname{search}\left(p, 0\right) = 0\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Let \(k\) be a natural number. Then \(\operatorname{search}(p,\allowbreak{} k + 1) = \begin{cases}k + 1 &\text{if } p(k + 1)\\ \operatorname{search}(p,\allowbreak{} k) &\text{otherwise}\end{cases}\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Let \(k\) be a natural number. If \(p\left(k + 1\right)\), then \(\operatorname{search}\left(p, k + 1\right) = k + 1\). Otherwise, \(\operatorname{search}\left(p, k + 1\right) = \operatorname{search}\left(p, k\right)\).
 
 \paragraph{Word.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\paperlineanchor{defeq:3}\textup{(\paperlink{defeq:3}{D3})} \(\operatorname{Word} = \operatorname{List}(\mathbb{B})\).
 

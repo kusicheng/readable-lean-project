@@ -123,7 +123,7 @@
 \item[\paperlineanchor{premise:4d6174686c69622e5461637469632e436f6e747261706f73652e6d7472}\paperlink{premise:4d6174686c69622e5461637469632e436f6e747261706f73652e6d7472}{P63.}] \refstepcounter{paperpremise}\label{premise:4d6174686c69622e5461637469632e436f6e747261706f73652e6d7472}\textbf{Mtr.} Let \(p\) and \(q\) be propositions. Assume \(\neg q \implies \neg p\). Assume \(p\). Then \(q\).
 \item[\paperlineanchor{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6c745f6571}\paperlink{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6c745f6571}{P64.}] \refstepcounter{paperpremise}\label{premise:4d6174686c69622e5461637469632e507573684e65672e6e6f745f6c745f6571}\textbf{Not less than equals.} Let \(\beta\) be a type. Equip \(\beta\) with a linear order. Let \(a\) and \(b\) be elements of \(\beta\). Then \(\left(\neg \left(a < b\right)\right) = \left(b \le a\right)\).
 \item[\paperlineanchor{premise:4d756c74697365742e4e6f6475702e706d6170}\paperlink{premise:4d756c74697365742e4e6f6475702e706d6170}{P65.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e4e6f6475702e706d6170}\textbf{Pmap.} Let \(\alpha\) and \(\beta\) be types. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(f\) be a function of type \(\Pi_{a\, :\, \alpha}\, p\left(a\right) \to \beta\). Let \(s\) be a multiset of elements of \(\alpha\). Let \(H\) be a proof of \(\forall a\, :\, \alpha,\; a \in s \implies p\left(a\right)\). Assume \(\forall a\, :\, \alpha,\; \forall \mathit{ha}\, :\, p(a),\; \forall b\, :\, \alpha,\; \forall \mathit{hb}\, :\, p(b),\; f(a,\allowbreak{} \mathit{ha}) = f(b,\allowbreak{} \mathit{hb}) \implies a = b\). Assume \(s\text{ has no repeated elements}\). Then \(\operatorname{multiset\,map}_{p}(f, s)\text{ has no repeated elements}\).
-\item[\paperlineanchor{premise:4d756c74697365742e4e6f6475702e706f776572736574}\paperlink{premise:4d756c74697365742e4e6f6475702e706f776572736574}{P66.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e4e6f6475702e706f776572736574}\textbf{Power set.} Let \(\alpha\) be a type. Let \(s\) be a multiset of elements of \(\alpha\). Assume \(s\text{ has no repeated elements}\). Then \(\operatorname{multiset\,powerset}(s)\text{ has no repeated elements}\).
+\item[\paperlineanchor{premise:4d756c74697365742e4e6f6475702e706f776572736574}\paperlink{premise:4d756c74697365742e4e6f6475702e706f776572736574}{P66.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e4e6f6475702e706f776572736574}\textbf{Alias.} Let \(\alpha\) be a type. Let \(s\) be a multiset of elements of \(\alpha\). Assume \(s\text{ has no repeated elements}\). Then \(\operatorname{multiset\,powerset}(s)\text{ has no repeated elements}\).
 \item[\paperlineanchor{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}\paperlink{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}{P67.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}\textbf{Power set cardinality.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a multiset of elements of \(\alpha\). Assume \(s\text{ has no repeated elements}\). Then \(\operatorname{multiset\,powerset}_{n}(s)\text{ has no repeated elements}\).
 \item[\paperlineanchor{premise:4d756c74697365742e636172645f706d6170}\paperlink{premise:4d756c74697365742e636172645f706d6170}{P68.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636172645f706d6170}\textbf{Cardinality pmap.} Let \(\alpha\) and \(\beta\) be types. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(f\) be a function of type \(\Pi_{a\, :\, \alpha}\, p\left(a\right) \to \beta\). Let \(s\) be a multiset of elements of \(\alpha\). Let \(H\) be a proof of \(\forall a\, :\, \alpha,\; a \in s \implies p\left(a\right)\). Then \(\left|\operatorname{multiset\,map}_{p}(f, s)\right| = \left|s\right|\).
 \item[\paperlineanchor{premise:4d756c74697365742e636172645f706f776572736574}\paperlink{premise:4d756c74697365742e636172645f706f776572736574}{P69.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636172645f706f776572736574}\textbf{Cardinality power set.} Let \(\alpha\) be a type. Let \(s\) be a multiset of elements of \(\alpha\). Then \(\left|\operatorname{multiset\,powerset}(s)\right| = 2^{\left|s\right|}\).
@@ -139,7 +139,7 @@
 \item[\paperlineanchor{premise:4d756c74697365742e6e6f6475705f6f665f6c65}\paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{P79.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6e6f6475705f6f665f6c65}\textbf{Without repetitions of at most.} Let \(\alpha\) be a type. Let \(s\) and \(t\) be multisets of elements of \(\alpha\). Assume \(s \le t\). Assume \(t\text{ has no repeated elements}\). Then \(s\text{ has no repeated elements}\).
 \item[\paperlineanchor{premise:4d756c74697365742e706d61705f65715f6d6170}\paperlink{premise:4d756c74697365742e706d61705f65715f6d6170}{P80.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e706d61705f65715f6d6170}\textbf{Pmap equals map.} Let \(\alpha\) and \(\beta\) be types. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(s\) be a multiset of elements of \(\alpha\). Let \(H\) be a proof of \(\forall a\, :\, \alpha,\; a \in s \implies p\left(a\right)\). Then \(\operatorname{multiset\,map}_{p}(a \mapsto x \mapsto f(a),\allowbreak{} s) = \operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s)\).
 \item[\paperlineanchor{premise:4d756c74697365742e706f776572736574436172645f6f6e65}\paperlink{premise:4d756c74697365742e706f776572736574436172645f6f6e65}{P81.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e706f776572736574436172645f6f6e65}\textbf{Power set cardinality one.} Let \(\alpha\) be a type. Let \(s\) be a multiset of elements of \(\alpha\). Then \(\operatorname{multiset\,powerset}_{1}(s) = \operatorname{Multiset\mathord{:}map}(\operatorname{singleton},\allowbreak{} s)\).
-\item[\paperlineanchor{premise:4e61742e6164645f6c6566745f696e6a}\paperlink{premise:4e61742e6164645f6c6566745f696e6a}{P82.}] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6c6566745f696e6a}\textbf{Sum left injectivity.} Let \(m\), \(k\) and \(n\) be natural numbers. Then \(m + n = k + n \iff m = k\).
+\item[\paperlineanchor{premise:4e61742e6164645f6c6566745f696e6a}\paperlink{premise:4e61742e6164645f6c6566745f696e6a}{P82.}] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6c6566745f696e6a}\textbf{Alias.} Let \(m\), \(k\) and \(n\) be natural numbers. Then \(m + n = k + n \iff m = k\).
 \item[\paperlineanchor{premise:4e61742e63686f6f73655f65715f7a65726f5f6f665f6c74}\paperlink{premise:4e61742e63686f6f73655f65715f7a65726f5f6f665f6c74}{P83.}] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f65715f7a65726f5f6f665f6c74}\textbf{Choose equals zero of less than.} Let \(n\) and \(k\) be natural numbers. Assume \(n < k\). Then \(\binom{n}{k} = 0\).
 \item[\paperlineanchor{premise:4e61742e6c655f7375625f6f6e655f6f665f6c74}\paperlink{premise:4e61742e6c655f7375625f6f6e655f6f665f6c74}{P84.}] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f7375625f6f6e655f6f665f6c74}\textbf{At most difference one of less than.} Let \(a\) and \(b\) be natural numbers. Assume \(a < b\). Then \(a \le b - 1\).
 \item[\paperlineanchor{premise:4e61742e6c745f6164645f72696768745f6966665f706f73}\paperlink{premise:4e61742e6c745f6164645f72696768745f6966665f706f73}{P85.}] \refstepcounter{paperpremise}\label{premise:4e61742e6c745f6164645f72696768745f6966665f706f73}\textbf{Less than sum right if and only if positivity.} Let \(n\) and \(k\) be natural numbers. Then \(n < n + k \iff 0 < k\).
@@ -159,7 +159,7 @@
 \item[\paperlineanchor{premise:616e645f66616c7365}\paperlink{premise:616e645f66616c7365}{P99.}] \refstepcounter{paperpremise}\label{premise:616e645f66616c7365}\textbf{And false.} Let \(p\) be a proposition. Then \(\left(p \land \mathrm{False}\right) = \mathrm{False}\).
 \item[\paperlineanchor{premise:616e645f696d70}\paperlink{premise:616e645f696d70}{P100.}] \refstepcounter{paperpremise}\label{premise:616e645f696d70}\textbf{And imp.} Let \(a\), \(b\), and \(c\) be propositions. Then \(a \land b \implies c \iff a \implies b \implies c\).
 \item[\paperlineanchor{premise:616e645f73656c66}\paperlink{premise:616e645f73656c66}{P101.}] \refstepcounter{paperpremise}\label{premise:616e645f73656c66}\textbf{And self.} Let \(p\) be a proposition. Then \(\left(p \land p\right) = p\).
-\item[\paperlineanchor{premise:636f6e67725f617267}\paperlink{premise:636f6e67725f617267}{P102.}] \refstepcounter{paperpremise}\label{premise:636f6e67725f617267}\textbf{Congruence arg.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(a_{1}\) and \(a_{2}\) be elements of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(a_{1} = a_{2}\). Then \(f\left(a_{1}\right) = f\left(a_{2}\right)\).
+\item[\paperlineanchor{premise:636f6e67725f617267}\paperlink{premise:636f6e67725f617267}{P102.}] \refstepcounter{paperpremise}\label{premise:636f6e67725f617267}\textbf{Alias.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(a_{1}\) and \(a_{2}\) be elements of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(a_{1} = a_{2}\). Then \(f\left(a_{1}\right) = f\left(a_{2}\right)\).
 \item[\paperlineanchor{premise:65715f66616c7365}\paperlink{premise:65715f66616c7365}{P103.}] \refstepcounter{paperpremise}\label{premise:65715f66616c7365}\textbf{Equals false.} Let \(p\) be a proposition. Assume \(\neg p\). Then \(p = \mathrm{False}\).
 \item[\paperlineanchor{premise:65715f74727565}\paperlink{premise:65715f74727565}{P104.}] \refstepcounter{paperpremise}\label{premise:65715f74727565}\textbf{Equals true.} Let \(p\) be a proposition. Assume \(p\). Then \(p = \mathrm{True}\).
 \item[\paperlineanchor{premise:6578697374735f636f6e7374}\paperlink{premise:6578697374735f636f6e7374}{P105.}] \refstepcounter{paperpremise}\label{premise:6578697374735f636f6e7374}\textbf{Exists constant.} Let \(b\) be a proposition. Let \(\alpha\) be a sort. Assume \(\alpha\text{ is nonempty}\). Then \(\left(\exists x\, :\, \alpha,\; b\right) \iff b\).
@@ -189,34 +189,41 @@
 \end{description}
 
 \section{Power sets}
-\begin{lemma}[{Membership power set}]\label{theorem:1}
+\begin{lemma}\label{theorem:1}
 Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(s \in \mathcal P(t) \iff s \subseteq t\).
 \end{lemma}
 
 \begin{proof}
-Consider the following case.
-\begin{proofstep}
-Fix \(\mathit{val}\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(\mathit{val}\text{ has no repeated elements}\).
-Assume \(s = \operatorname{as\,finite\,set}(\mathit{val})\).
-The substitution uses the following argument.
+We first prove the following auxiliary lemma.
+\par\smallskip\noindent\paperlineanchor{aux:1:1}\textbf{Auxiliary lemma~1.1.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{multiset\,map}_{\operatorname{no\,repetitions}}(\operatorname{as\,finite\,set},\allowbreak{} \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s)))\text{ has no repeated elements}\).
+\par\noindent\emph{Proof of the auxiliary lemma.} For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f776572736574}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f776572736574}}, we obtain \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t)) \iff x \le \operatorname{underlying\,multiset}(t)\).
-Use the hypothesis \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t))\).
-By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(t)\).
-By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = t\), we obtain \(\operatorname{underlying\,multiset}(t)\text{ has no repeated elements}\).
+Assume \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s))\).
+By \paperlink{premise:4d756c74697365742e6d656d5f706f776572736574}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f776572736574}}, we obtain \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s)\).
+Use the hypothesis \(x \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s))\).
+By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s)\).
+By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
 By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
 \end{proofstep}
-The substitution uses the following argument.
+For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
 Assume \(x\text{ has no repeated elements}\).
 Fix \(x_{2}\) in \(\operatorname{Multiset}(\alpha)\).
 Assume \(x_{2}\text{ has no repeated elements}\).
-By \paperlink{premise:636f6e67725f617267}{Prerequisite~P\ref{premise:636f6e67725f617267}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \operatorname{Multiset}(\alpha)\) and \(f = \operatorname{val}\), we obtain \(\operatorname{as\,finite\,set}(x) = \operatorname{as\,finite\,set}(x_{2}) \implies \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x)) = \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x_{2}))\).
+By \paperlink{premise:636f6e67725f617267}{\emph{Alias}} (\paperlink{premise:636f6e67725f617267}{Prerequisite~P\ref{premise:636f6e67725f617267}}) with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \operatorname{Multiset}(\alpha)\) and \(f = \operatorname{val}\), we obtain \(\operatorname{as\,finite\,set}(x) = \operatorname{as\,finite\,set}(x_{2}) \implies \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x)) = \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x_{2}))\).
 \end{proofstep}
+By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e4e6f6475702e706f776572736574}{\emph{Alias}} (\paperlink{premise:4d756c74697365742e4e6f6475702e706f776572736574}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706f776572736574}}), we obtain \(\operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s))\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e4e6f6475702e706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706d6170}} with \(\operatorname{Multiset}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\), we obtain \(\operatorname{multiset\,map}_{\operatorname{no\,repetitions}}(\operatorname{as\,finite\,set},\allowbreak{} \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(s)))\text{ has no repeated elements}\).
+
+\par\smallskip\noindent\emph{Proof of the main assertion.}\enspace
+Consider the following case.
+\begin{proofstep}
+Fix \(\mathit{val}\) in \(\operatorname{Multiset}(\alpha)\).
+Assume \(\mathit{val}\text{ has no repeated elements}\).
+Assume \(s = \operatorname{as\,finite\,set}(\mathit{val})\).
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
@@ -251,7 +258,7 @@ By \paperlink{premise:6578697374735f70726f70}{Prerequisite~P\ref{premise:6578697
 By propositional extensionality, we obtain \((a \le \operatorname{underlying\,multiset}(t) \land a = \mathit{val}) = (a \le \operatorname{underlying\,multiset}(t) \land a = \mathit{val})\).
 Chaining the equalities, we obtain \((\exists h_{1}\text{ proving }(a \in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t))),\; \operatorname{as\,finite\,set}(a) = \operatorname{as\,finite\,set}(\mathit{val})) = (a \le \operatorname{underlying\,multiset}(t) \land a = \mathit{val})\).
 \end{proofstep}
-Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6b}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6b}}, \paperlink{premise:4d756c74697365742e4e6f6475702e706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706d6170}}, \paperlink{premise:4d756c74697365742e4e6f6475702e706f776572736574}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706f776572736574}}, \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}}, \paperlink{premise:4d756c74697365742e6d656d5f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706d6170}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}, \paperlink{premise:6578697374735f65715f7269676874}{Prerequisite~P\ref{premise:6578697374735f65715f7269676874}}, \paperlink{premise:46696e7365742e76616c5f6c655f696666}{Prerequisite~P\ref{premise:46696e7365742e76616c5f6c655f696666}}, \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}}, the identity established above and the 3 auxiliary results established above gives \(\operatorname{as\,finite\,set}(\mathit{val}) \in \{\operatorname{as\,finite\,set}(u) \mid u\in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t))\} \iff \operatorname{as\,finite\,set}(\mathit{val}) \subseteq t\).
+Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6b}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6b}}, \paperlink{aux:1:1}{Auxiliary lemma~1.1} with \(t\) in place of its parameter \(s\), \paperlink{premise:4d756c74697365742e6d656d5f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706d6170}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}), \paperlink{premise:6578697374735f65715f7269676874}{Prerequisite~P\ref{premise:6578697374735f65715f7269676874}}, \paperlink{premise:46696e7365742e76616c5f6c655f696666}{Prerequisite~P\ref{premise:46696e7365742e76616c5f6c655f696666}}, \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}}, the identity established above and the auxiliary result established above gives \(\operatorname{as\,finite\,set}(\mathit{val}) \in \{\operatorname{as\,finite\,set}(u) \mid u\in \operatorname{multiset\,powerset}(\operatorname{underlying\,multiset}(t))\} \iff \operatorname{as\,finite\,set}(\mathit{val}) \subseteq t\).
 Use the hypothesis \(s = \operatorname{as\,finite\,set}(\mathit{val})\).
 Reversing the equality, we obtain \(\operatorname{as\,finite\,set}(\mathit{val}) = s\).
 Substituting equals, we obtain \(s \in \mathcal P(t) \iff s \subseteq t\).
@@ -260,7 +267,7 @@ By definition, we obtain \(s = s\).
 A finite set is represented by a multiset without repetitions, we obtain \(s \in \mathcal P(t) \iff s \subseteq t\).
 \end{proof}
 
-\begin{theorem}[{Coercion power set}]\label{theorem:2}
+\begin{theorem}\label{theorem:2}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \operatorname{underlying\,set}(\mathcal P(s)) = \operatorname{underlying\,set}^{-1}[\mathcal P(\operatorname{underlying\,set}(s))].\)
@@ -276,7 +283,7 @@ Rewriting with \paperlink{premise:46696e7365742e6d656d5f636f65}{Prerequisite~P\r
 By \paperlink{premise:5365742e657874}{Prerequisite~P\ref{premise:5365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\operatorname{underlying\,set}(\mathcal P(s)) = \operatorname{underlying\,set}^{-1}[\mathcal P(\operatorname{underlying\,set}(s))]\).
 \end{proof}
 
-\begin{lemma}[{Empty membership power set}]\label{theorem:3}
+\begin{lemma}\label{theorem:3}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\varnothing \in \mathcal P(s)\).
 \end{lemma}
 
@@ -289,7 +296,7 @@ Chaining the equalities, we obtain \(\left(\varnothing \in \mathcal P(s)\right) 
 By \paperlink{premise:6f665f65715f74727565}{Prerequisite~P\ref{premise:6f665f65715f74727565}}, we obtain \(\varnothing \in \mathcal P(s)\).
 \end{proof}
 
-\begin{lemma}[{Membership power set self}]\label{theorem:4}
+\begin{lemma}\label{theorem:4}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(s \in \mathcal P(s)\).
 \end{lemma}
 
@@ -303,7 +310,7 @@ Chaining the equalities, we obtain \(\left(s \in \mathcal P(s)\right) = \mathrm{
 By \paperlink{premise:6f665f65715f74727565}{Prerequisite~P\ref{premise:6f665f65715f74727565}}, we obtain \(s \in \mathcal P(s)\).
 \end{proof}
 
-\begin{theorem}[{Power set nonempty}]\label{theorem:5}
+\begin{theorem}\label{theorem:5}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P(s)\ne\varnothing\).
 \end{theorem}
 
@@ -313,7 +320,7 @@ By \paperlink{theorem:3}{Lemma~\ref{theorem:3}}, we obtain \(\varnothing \in \ma
 This witness proves existence. Hence \(\mathcal P(s)\ne\varnothing\).
 \end{proof}
 
-\begin{lemma}[{Power set mono}]\label{theorem:6}
+\begin{lemma}\label{theorem:6}
 Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(\mathcal P(s) \subseteq \mathcal P(t) \iff s \subseteq t\).
 \end{lemma}
 
@@ -342,7 +349,7 @@ By the reverse implication, we obtain \(x \in \mathcal P(t)\).
 Together the two implications give the equivalence. Hence \(\mathcal P(s) \subseteq \mathcal P(t) \iff s \subseteq t\).
 \end{proof}
 
-\begin{lemma}[{Power set injective}]\label{theorem:7}
+\begin{lemma}\label{theorem:7}
 Let \(\alpha\) be a type. Then \(\operatorname{Finset\mathord{:}powerset}\text{ is injective}\).
 \end{lemma}
 
@@ -357,7 +364,7 @@ By the forward implication, we obtain \(\mathcal P(x) \subseteq \mathcal P(y) \i
 By \paperlink{premise:696e6a6563746976655f6f665f6c655f696d705f6c65}{Prerequisite~P\ref{premise:696e6a6563746976655f6f665f6c655f696d705f6c65}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\mathcal{P}_{\mathrm{fin}}(\alpha))\) and \(f = \operatorname{Finset\mathord{:}powerset}\), we obtain \(\operatorname{Finset\mathord{:}powerset}\text{ is injective}\).
 \end{proof}
 
-\begin{lemma}[{Power set injectivity}]\label{theorem:8}
+\begin{lemma}\label{theorem:8}
 Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(\mathcal P(s) = \mathcal P(t) \iff s = t\).
 \end{lemma}
 
@@ -366,7 +373,7 @@ By \paperlink{theorem:7}{Lemma~\ref{theorem:7}}, we obtain \(\operatorname{Finse
 By \paperlink{premise:46756e6374696f6e2e496e6a6563746976652e65715f696666}{Prerequisite~P\ref{premise:46756e6374696f6e2e496e6a6563746976652e65715f696666}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\mathcal{P}_{\mathrm{fin}}(\alpha))\), we obtain \(\mathcal P(s) = \mathcal P(t) \iff s = t\).
 \end{proof}
 
-\begin{lemma}[{Power set empty}]\label{theorem:9}
+\begin{lemma}\label{theorem:9}
 Let \(\alpha\) be a type. Then \(\mathcal P(\varnothing) = \{\varnothing\}\).
 \end{lemma}
 
@@ -374,7 +381,7 @@ Let \(\alpha\) be a type. Then \(\mathcal P(\varnothing) = \{\varnothing\}\).
 By definition, we obtain \(\mathcal P(\varnothing) = \{\varnothing\}\).
 \end{proof}
 
-\begin{theorem}[{Power set equals singleton empty}]\label{theorem:10}
+\begin{theorem}\label{theorem:10}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P(s) = \{\varnothing\} \iff s = \varnothing\).
 \end{theorem}
 
@@ -409,7 +416,7 @@ By \paperlink{premise:4d756c74697365742e636172645f706f776572736574}{Prerequisite
 Chaining the equalities, we obtain \(\left|\mathcal P(s)\right| = 2^{\left|s\right|}\).
 \end{proof}
 
-\begin{theorem}[{Not membership}]\label{theorem:12}
+\begin{theorem}\label{theorem:12}
 Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume \(t \in \mathcal P(s)\). Assume \(a \notin s\). Then \(a \notin t\).
 \end{theorem}
 
@@ -421,7 +428,7 @@ Use the hypothesis \(a \notin s\).
 By \paperlink{premise:6d74}{Prerequisite~P\ref{premise:6d74}}, we obtain \(a \notin t\).
 \end{proof}
 
-\begin{lemma}[{Power set insert}]\label{theorem:13}
+\begin{lemma}\label{theorem:13}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \mathcal P(\{a\} \cup s) = \mathcal P(s) \cup \operatorname{insert}(a)[\mathcal P(s)].\)
@@ -499,16 +506,16 @@ Applying the same function to equal arguments, we obtain \(\left(u \subseteq s \
 By \paperlink{premise:616e645f66616c7365}{Prerequisite~P\ref{premise:616e645f66616c7365}} with \(p = u \subseteq s\), we obtain \(\left(u \subseteq s \land \mathrm{False}\right) = \mathrm{False}\).
 Chaining the equalities, we obtain \(\left(u \subseteq s \land \{a\} \cup u = t\right) = \mathrm{False}\).
 \end{proofstep}
-Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}, \paperlink{premise:6578697374735f636f6e7374}{Prerequisite~P\ref{premise:6578697374735f636f6e7374}}, \paperlink{premise:696e73744e6f6e656d7074794f66496e68616269746564}{Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564}}, \paperlink{premise:6e6f745f66616c73655f65715f74727565}{Prerequisite~P\ref{premise:6e6f745f66616c73655f65715f74727565}} and the identity established above gives \(\neg \left(\exists u\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; u \subseteq s \land \{a\} \cup u = t\right)\).
+Rewriting with \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}), \paperlink{premise:6578697374735f636f6e7374}{Prerequisite~P\ref{premise:6578697374735f636f6e7374}}, \paperlink{premise:696e73744e6f6e656d7074794f66496e68616269746564}{Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564}}, \paperlink{premise:6e6f745f66616c73655f65715f74727565}{Prerequisite~P\ref{premise:6e6f745f66616c73655f65715f74727565}} and the identity established above gives \(\neg \left(\exists u\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; u \subseteq s \land \{a\} \cup u = t\right)\).
 Rewriting with \paperlink{premise:46696e7365742e65726173655f65715f6f665f6e6f745f6d656d}{Prerequisite~P\ref{premise:46696e7365742e65726173655f65715f6f665f6e6f745f6d656d}} (using \(a \notin t\)), \paperlink{premise:65715f66616c7365}{Prerequisite~P\ref{premise:65715f66616c7365}} (using \(\neg \left(\exists u\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; u \subseteq s \land \{a\} \cup u = t\right)\)), \paperlink{premise:6f725f66616c7365}{Prerequisite~P\ref{premise:6f725f66616c7365}} and \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} gives \(t \setminus \{a\} \subseteq s \iff t \subseteq s \lor (\exists a_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; a_{1} \subseteq s \land \{a\} \cup a_{1} = t)\).
 \end{proofstep}
 The proposition or its negation holds. Hence \(t \setminus \{a\} \subseteq s \iff t \subseteq s \lor (\exists a_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; a_{1} \subseteq s \land \{a\} \cup a_{1} = t)\).
-Rewriting with \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, \paperlink{premise:46696e7365742e7375627365745f696e736572745f696666}{Prerequisite~P\ref{premise:46696e7365742e7375627365745f696e736572745f696666}}, \paperlink{premise:46696e7365742e6d656d5f756e696f6e}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e696f6e}}, \paperlink{premise:46696e7365742e6d656d5f696d616765}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f696d616765}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(t \in \mathcal P(\{a\} \cup s) \iff t \in \mathcal P(s) \cup \operatorname{insert}(a)[\mathcal P(s)]\).
+Rewriting with \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, \paperlink{premise:46696e7365742e7375627365745f696e736572745f696666}{Prerequisite~P\ref{premise:46696e7365742e7375627365745f696e736572745f696666}}, \paperlink{premise:46696e7365742e6d656d5f756e696f6e}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e696f6e}}, \paperlink{premise:46696e7365742e6d656d5f696d616765}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f696d616765}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}) and the identity established above in the preceding result gives \(t \in \mathcal P(\{a\} \cup s) \iff t \in \mathcal P(s) \cup \operatorname{insert}(a)[\mathcal P(s)]\).
 \end{proofstep}
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P(\{a\} \cup s) = \mathcal P(s) \cup \operatorname{insert}\left(a\right)\left[\mathcal P(s)\right]\).
 \end{proof}
 
-\begin{theorem}[{Pairwise disjoint pair insert}]\label{theorem:14}
+\begin{theorem}\label{theorem:14}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Assume \(a \notin s\). Then
 \begin{center}
 \(\displaystyle \operatorname{Pairwise\,Disjoint}(\operatorname{underlying\,set}(\mathcal P(s)),\allowbreak{} t \mapsto \{t\} \cup \{\{a\} \cup t\}).\)
@@ -629,14 +636,14 @@ By \paperlink{premise:46696e7365742e6e6f745f6d656d5f6d6f6e6f}{Prerequisite~P\ref
 By \paperlink{premise:5365742e4c656674496e764f6e2e696e6a4f6e}{Prerequisite~P\ref{premise:5365742e4c656674496e764f6e2e696e6a4f6e}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\), we obtain \(\{a\} \cup i = \{a\} \cup j \implies i = j\).
 Combining the two conclusions, we obtain \(\left(\{a\} \cup i = j \implies i = j\right) \land \left(\{a\} \cup i = \{a\} \cup j \implies i = j\right)\).
 Combining the two conclusions, we obtain \((i = \{a\} \cup j \implies i = j) \land ((\{a\} \cup i = j \implies i = j) \land (\{a\} \cup i = \{a\} \cup j \implies i = j))\).
-Rewriting with \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}, \paperlink{premise:6578697374735f65715f6f725f696d70}{Prerequisite~P\ref{premise:6578697374735f65715f6f725f696d70}}, \paperlink{premise:6578697374735f65715f6c656674}{Prerequisite~P\ref{premise:6578697374735f65715f6c656674}}, \paperlink{premise:6f725f696d70}{Prerequisite~P\ref{premise:6f725f696d70}}, \paperlink{premise:696d705f73656c66}{Prerequisite~P\ref{premise:696d705f73656c66}}, \paperlink{premise:747275655f616e64}{Prerequisite~P\ref{premise:747275655f616e64}} and the identity established above in the preceding result gives \((\{i\} \cup \{\{a\} \cup i\}) \cap (\{j\} \cup \{\{a\} \cup j\})\ne\varnothing \implies i = j\).
+Rewriting with \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}), \paperlink{premise:6578697374735f65715f6f725f696d70}{Prerequisite~P\ref{premise:6578697374735f65715f6f725f696d70}}, \paperlink{premise:6578697374735f65715f6c656674}{Prerequisite~P\ref{premise:6578697374735f65715f6c656674}}, \paperlink{premise:6f725f696d70}{Prerequisite~P\ref{premise:6f725f696d70}}, \paperlink{premise:696d705f73656c66}{Prerequisite~P\ref{premise:696d705f73656c66}}, \paperlink{premise:747275655f616e64}{Prerequisite~P\ref{premise:747275655f616e64}} and the identity established above in the preceding result gives \((\{i\} \cup \{\{a\} \cup i\}) \cap (\{j\} \cup \{\{a\} \cup j\})\ne\varnothing \implies i = j\).
 Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}} and the identity established above in the preceding result gives \(\forall i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in \mathcal P(s) \implies (\forall j\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; j \in \mathcal P(s) \implies (\{i\} \cup \{\{a\} \cup i\}) \cap (\{j\} \cup \{\{a\} \cup j\})\ne\varnothing \implies i = j)\).
 Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}} and the identity established above in the preceding result gives \(\forall i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in \operatorname{underlying\,set}(\mathcal P(s)) \implies (\forall j\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; j \in \operatorname{underlying\,set}(\mathcal P(s)) \implies (\{i\} \cup \{\{a\} \cup i\}) \cap (\{j\} \cup \{\{a\} \cup j\})\ne\varnothing \implies i = j)\).
 Rewriting with \paperlink{premise:5365742e70616972776973654469736a6f696e745f696666}{Prerequisite~P\ref{premise:5365742e70616972776973654469736a6f696e745f696666}} in the preceding result gives \(\operatorname{Pairwise\,Disjoint}(\operatorname{underlying\,set}(\mathcal P(s)),\allowbreak{} t \mapsto \{t\} \cup \{\{a\} \cup t\})\).
 \end{proof}
 
 \section{Proper subsets}
-\begin{lemma}[{Membership proper subsets}]\label{theorem:15}
+\begin{lemma}\label{theorem:15}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(t \in \operatorname{proper\,subsets}(s) \iff t \subsetneq s\).
 \end{lemma}
 
@@ -644,7 +651,7 @@ Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) 
 Rewriting with \paperlink{premise:616e645f636f6d6d}{Prerequisite~P\ref{premise:616e645f636f6d6d}}, \paperlink{premise:46696e7365742e737375627365745f6966665f7375627365745f6e65}{Prerequisite~P\ref{premise:46696e7365742e737375627365745f6966665f7375627365745f6e65}}, \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, \paperlink{premise:46696e7365742e6d656d5f6572617365}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6572617365}} and \paperlink{defeq:2}{defining equation~D\ref{defeq:2}} gives \(t \in \operatorname{proper\,subsets}(s) \iff t \subsetneq s\).
 \end{proof}
 
-\begin{theorem}[{Empty membership proper subsets}]\label{theorem:16}
+\begin{theorem}\label{theorem:16}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Assume \(s\ne\varnothing\). Then \(\varnothing \in \operatorname{proper\,subsets}(s)\).
 \end{theorem}
 
@@ -659,11 +666,45 @@ Rewriting with \paperlink{theorem:15}{Lemma~\ref{theorem:15}} in the preceding r
 \end{proof}
 
 \section{Subsets of prescribed size}
-\begin{lemma}[{Membership power set cardinality}]\label{theorem:17}
+\begin{lemma}\label{theorem:17}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(s \in \mathcal P_{n}(t) \iff s \subseteq t \land \left|s\right| = n\).
 \end{lemma}
 
 \begin{proof}
+We first prove the following auxiliary lemmas.
+\par\smallskip\noindent\paperlineanchor{aux:17:1}\textbf{Auxiliary lemma~17.1.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Let \(x\) be a multiset of elements of \(\alpha\). Assume \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\). Then \(x\text{ has no repeated elements}\).
+\par\noindent\emph{Proof of the auxiliary lemma.} By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s) \land |x| = n\).
+Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\).
+By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s) \land \left|x\right| = n\).
+Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(s)\).
+By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
+
+\par\smallskip\noindent\paperlineanchor{aux:17:2}\textbf{Auxiliary lemma~17.2.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{multiset\,map}_{\operatorname{no\,repetitions}}(\operatorname{as\,finite\,set},\allowbreak{} \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s)))\text{ has no repeated elements}\).
+\par\noindent\emph{Proof of the auxiliary lemma.} For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
+Assume \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\).
+By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s) \land |x| = n\).
+Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\).
+By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s) \land \left|x\right| = n\).
+Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(s)\).
+By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
+\end{proofstep}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
+Assume \(x\text{ has no repeated elements}\).
+Fix \(x_{2}\) in \(\operatorname{Multiset}(\alpha)\).
+Assume \(x_{2}\text{ has no repeated elements}\).
+By \paperlink{premise:636f6e67725f617267}{\emph{Alias}} (\paperlink{premise:636f6e67725f617267}{Prerequisite~P\ref{premise:636f6e67725f617267}}) with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \operatorname{Multiset}(\alpha)\) and \(f = \operatorname{val}\), we obtain \(\operatorname{as\,finite\,set}(x) = \operatorname{as\,finite\,set}(x_{2}) \implies \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x)) = \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x_{2}))\).
+\end{proofstep}
+By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}}, we obtain \(\operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\text{ has no repeated elements}\).
+By \paperlink{premise:4d756c74697365742e4e6f6475702e706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706d6170}} with \(\operatorname{Multiset}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\), we obtain \(\operatorname{multiset\,map}_{\operatorname{no\,repetitions}}(\operatorname{as\,finite\,set},\allowbreak{} \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s)))\text{ has no repeated elements}\).
+
+\par\smallskip\noindent\emph{Proof of the main assertion.}\enspace
 Consider the following case.
 \begin{proofstep}
 Fix \(\mathit{val}\) in \(\operatorname{Multiset}(\alpha)\).
@@ -671,46 +712,12 @@ Assume \(\mathit{val}\text{ has no repeated elements}\).
 Assume \(s = \operatorname{as\,finite\,set}(\mathit{val})\).
 The substitution uses the following argument.
 \begin{proofstep}
-Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t)) \iff x \le \operatorname{underlying\,multiset}(t) \land |x| = n\).
-Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(t) \land \left|x\right| = n\).
-Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(t)\).
-By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = t\), we obtain \(\operatorname{underlying\,multiset}(t)\text{ has no repeated elements}\).
-By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
-\end{proofstep}
-The substitution uses the following argument.
-\begin{proofstep}
-Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x\text{ has no repeated elements}\).
-Fix \(x_{2}\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x_{2}\text{ has no repeated elements}\).
-By \paperlink{premise:636f6e67725f617267}{Prerequisite~P\ref{premise:636f6e67725f617267}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \operatorname{Multiset}(\alpha)\) and \(f = \operatorname{val}\), we obtain \(\operatorname{as\,finite\,set}(x) = \operatorname{as\,finite\,set}(x_{2}) \implies \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x)) = \operatorname{underlying\,multiset}(\operatorname{as\,finite\,set}(x_{2}))\).
-\end{proofstep}
-The substitution uses the following argument.
-\begin{proofstep}
-Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t)) \iff x \le \operatorname{underlying\,multiset}(t) \land |x| = n\).
-Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(t) \land \left|x\right| = n\).
-Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(t)\).
-By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = t\), we obtain \(\operatorname{underlying\,multiset}(t)\text{ has no repeated elements}\).
-By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
-\end{proofstep}
-The substitution uses the following argument.
-\begin{proofstep}
 Fix \(a\) in \(\operatorname{Multiset}(\alpha)\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Assume \(a \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(a \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t)) \iff a \le \operatorname{underlying\,multiset}(t) \land |a| = n\).
 Use the hypothesis \(a \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\).
-By the forward implication, we obtain \(a \le \operatorname{underlying\,multiset}(t) \land \left|a\right| = n\).
-Taking the first conjunct, we obtain \(a \le \operatorname{underlying\,multiset}(t)\).
-By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = t\), we obtain \(\operatorname{underlying\,multiset}(t)\text{ has no repeated elements}\).
-By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(a\text{ has no repeated elements}\).
+By \paperlink{aux:17:1}{Auxiliary lemma~17.1} with \(t\) in place of its parameter \(s\) and \(x = a\) (using \(a \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\)), we obtain \(a\text{ has no repeated elements}\).
 Use the hypothesis \(\mathit{val}\text{ has no repeated elements}\).
 By \paperlink{premise:46696e7365742e6d6b2e696e6a4571}{Prerequisite~P\ref{premise:46696e7365742e6d6b2e696e6a4571}} with \(a\) in place of its parameter \(\mathit{val}\) and \(\mathit{val}_{1} = \mathit{val}\), we obtain \((\operatorname{as\,finite\,set}(a) = \operatorname{as\,finite\,set}(\mathit{val})) = (a = \mathit{val})\).
 By \paperlink{premise:4966662e6f665f6571}{Prerequisite~P\ref{premise:4966662e6f665f6571}}, we obtain \(\operatorname{as\,finite\,set}(a) = \operatorname{as\,finite\,set}(\mathit{val}) \iff a = \mathit{val}\).
@@ -724,7 +731,7 @@ By \paperlink{premise:6578697374735f70726f70}{Prerequisite~P\ref{premise:6578697
 By propositional extensionality, we obtain \(((a \le \operatorname{underlying\,multiset}(t) \land |a| = n) \land a = \mathit{val}) = ((a \le \operatorname{underlying\,multiset}(t) \land |a| = n) \land a = \mathit{val})\).
 Chaining the equalities, we obtain \((\exists h_{1}\text{ proving }(a \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))),\; \operatorname{as\,finite\,set}(a) = \operatorname{as\,finite\,set}(\mathit{val})) = ((a \le \operatorname{underlying\,multiset}(t) \land |a| = n) \land a = \mathit{val})\).
 \end{proofstep}
-Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6b}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6b}}, \paperlink{premise:4d756c74697365742e4e6f6475702e706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706d6170}}, \paperlink{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e4e6f6475702e706f77657273657443617264}}, \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}}, \paperlink{premise:4d756c74697365742e6d656d5f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706d6170}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}, \paperlink{premise:6578697374735f65715f7269676874}{Prerequisite~P\ref{premise:6578697374735f65715f7269676874}}, \paperlink{premise:4966662e73796d6d}{Prerequisite~P\ref{premise:4966662e73796d6d}}, \paperlink{premise:46696e7365742e76616c5f6c655f696666}{Prerequisite~P\ref{premise:46696e7365742e76616c5f6c655f696666}}, \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}}, the identity established above and the 3 auxiliary results established above gives \(\operatorname{as\,finite\,set}(\mathit{val}) \in \{\operatorname{as\,finite\,set}(u) \mid u\in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\} \iff \operatorname{as\,finite\,set}(\mathit{val}) \subseteq t \land |\mathit{val}| = n\).
+Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6b}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6b}}, \paperlink{aux:17:2}{Auxiliary lemma~17.2} with \(t\) in place of its parameter \(s\), \paperlink{premise:4d756c74697365742e6d656d5f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706d6170}}, \paperlink{aux:17:1}{Auxiliary lemma~17.1} with \(t\) in place of its parameter \(s\), \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}), \paperlink{premise:6578697374735f65715f7269676874}{Prerequisite~P\ref{premise:6578697374735f65715f7269676874}}, \paperlink{premise:4966662e73796d6d}{Prerequisite~P\ref{premise:4966662e73796d6d}}, \paperlink{premise:46696e7365742e76616c5f6c655f696666}{Prerequisite~P\ref{premise:46696e7365742e76616c5f6c655f696666}}, \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} and the identity established above gives \(\operatorname{as\,finite\,set}(\mathit{val}) \in \{\operatorname{as\,finite\,set}(u) \mid u\in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(t))\} \iff \operatorname{as\,finite\,set}(\mathit{val}) \subseteq t \land |\mathit{val}| = n\).
 Use the hypothesis \(s = \operatorname{as\,finite\,set}(\mathit{val})\).
 Reversing the equality, we obtain \(\operatorname{as\,finite\,set}(\mathit{val}) = s\).
 Substituting equals, we obtain \(s \in \mathcal P_{n}(t) \iff s \subseteq t \land \left|s\right| = n\).
@@ -733,7 +740,7 @@ By definition, we obtain \(s = s\).
 A finite set is represented by a multiset without repetitions, we obtain \(s \in \mathcal P_{n}(t) \iff s \subseteq t \land \left|s\right| = n\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality mono}]\label{theorem:18}
+\begin{theorem}\label{theorem:18}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Assume \(s \subseteq t\). Then \(\mathcal P_{n}(s) \subseteq \mathcal P_{n}(t)\).
 \end{theorem}
 
@@ -774,7 +781,7 @@ By \paperlink{premise:4d756c74697365742e636172645f706f77657273657443617264}{Prer
 Chaining the equalities, we obtain \(\left|\mathcal P_{n}(s)\right| = \binom{\left|s\right|}{n}\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality zero}]\label{theorem:20}
+\begin{theorem}\label{theorem:20}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P_{0}(s) = \{\varnothing\}\).
 \end{theorem}
 
@@ -804,7 +811,7 @@ Rewriting with \paperlink{theorem:17}{Lemma~\ref{theorem:17}} in the preceding r
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P_{0}(s) = \{\varnothing\}\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality empty subsingleton}]\label{theorem:21}
+\begin{theorem}\label{theorem:21}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Then
 \begin{center}
 \(\displaystyle \operatorname{Subsingleton}(\operatorname{underlying\,set}(\mathcal P_{n}(\varnothing))).\)
@@ -854,7 +861,7 @@ Chaining the equalities, we obtain \((x \in \operatorname{underlying\,set}(\math
 Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:666f72616c6c5f6571}{Prerequisite~P\ref{premise:666f72616c6c5f6571}}, \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}}, \paperlink{premise:696d706c6965735f74727565}{Prerequisite~P\ref{premise:696d706c6965735f74727565}} and the identity established above gives \(\operatorname{Subsingleton}\left(\operatorname{underlying\,set}(\mathcal P_{n}(\varnothing))\right)\).
 \end{proof}
 
-\begin{lemma}[{Map val val power set cardinality}]\label{theorem:22}
+\begin{lemma}\label{theorem:22}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(i\) be a natural number. Then
 \begin{center}
 \(\displaystyle \operatorname{Multiset\mathord{:}map}(\operatorname{val},\allowbreak{} \operatorname{underlying\,multiset}(\mathcal P_{i}(s))) = \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s)).\)
@@ -862,32 +869,20 @@ Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(i\) 
 \end{lemma}
 
 \begin{proof}
-The substitution uses the following argument.
-\begin{proofstep}
-Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s) \land |x| = i\).
-Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
-By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s) \land \left|x\right| = i\).
+We first prove the following auxiliary lemma.
+\par\smallskip\noindent\paperlineanchor{aux:22:1}\textbf{Auxiliary lemma~22.1.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Let \(x\) be a multiset of elements of \(\alpha\). Assume \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\). Then \(x\text{ has no repeated elements}\).
+\par\noindent\emph{Proof of the auxiliary lemma.} By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s) \land |x| = n\).
+Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{n}(\operatorname{underlying\,multiset}(s))\).
+By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s) \land \left|x\right| = n\).
 Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(s)\).
 By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
 By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
-\end{proofstep}
-The substitution uses the following argument.
-\begin{proofstep}
-Fix \(x\) in \(\operatorname{Multiset}(\alpha)\).
-Assume \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
-By \paperlink{premise:4d756c74697365742e6d656d5f706f77657273657443617264}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f706f77657273657443617264}}, we obtain \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s)) \iff x \le \operatorname{underlying\,multiset}(s) \land |x| = i\).
-Use the hypothesis \(x \in \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
-By the forward implication, we obtain \(x \le \operatorname{underlying\,multiset}(s) \land \left|x\right| = i\).
-Taking the first conjunct, we obtain \(x \le \operatorname{underlying\,multiset}(s)\).
-By \paperlink{premise:46696e7365742e6e6f647570}{Prerequisite~P\ref{premise:46696e7365742e6e6f647570}} with \(\mathit{self} = s\), we obtain \(\operatorname{underlying\,multiset}(s)\text{ has no repeated elements}\).
-By \paperlink{premise:4d756c74697365742e6e6f6475705f6f665f6c65}{Prerequisite~P\ref{premise:4d756c74697365742e6e6f6475705f6f665f6c65}}, we obtain \(x\text{ has no repeated elements}\).
-\end{proofstep}
-Rewriting with \paperlink{premise:4d756c74697365742e6d61705f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f706d6170}}, \paperlink{premise:4d756c74697365742e706d61705f65715f6d6170}{Prerequisite~P\ref{premise:4d756c74697365742e706d61705f65715f6d6170}}, \paperlink{premise:4d756c74697365742e6d61705f696427}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f696427}} and the two auxiliary results established above gives \(\operatorname{Multiset\mathord{:}map}(\operatorname{val},\allowbreak{} \operatorname{underlying\,multiset}(\mathcal P_{i}(s))) = \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
+
+\par\smallskip\noindent\emph{Proof of the main assertion.}\enspace
+Rewriting with \paperlink{premise:4d756c74697365742e6d61705f706d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f706d6170}}, \paperlink{aux:22:1}{Auxiliary lemma~22.1} with \(n = i\), \paperlink{premise:4d756c74697365742e706d61705f65715f6d6170}{Prerequisite~P\ref{premise:4d756c74697365742e706d61705f65715f6d6170}} and \paperlink{premise:4d756c74697365742e6d61705f696427}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f696427}} gives \(\operatorname{Multiset\mathord{:}map}(\operatorname{val},\allowbreak{} \operatorname{underlying\,multiset}(\mathcal P_{i}(s))) = \operatorname{multiset\,powerset}_{i}(\operatorname{underlying\,multiset}(s))\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality one}]\label{theorem:23}
+\begin{theorem}\label{theorem:23}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \mathcal P_{1}(s) = \operatorname{Finset\mathord{:}map}(\operatorname{Function\mathord{:}Embedding\mathord{:}mk}(\operatorname{singleton}),\allowbreak{} s).\)
@@ -919,7 +914,7 @@ By \paperlink{premise:4d756c74697365742e6d61705f696e6a656374697665}{Prerequisite
 By \paperlink{premise:46696e7365742e65715f6f665f766571}{Prerequisite~P\ref{premise:46696e7365742e65715f6f665f766571}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P_{1}(s) = \operatorname{Finset\mathord{:}map}(\operatorname{Function\mathord{:}Embedding\mathord{:}mk}(\operatorname{singleton}),\allowbreak{} s)\).
 \end{proof}
 
-\begin{lemma}[{Power set cardinality equals empty}]\label{theorem:24}
+\begin{lemma}\label{theorem:24}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P_{n}(s) = \varnothing \iff \left|s\right| < n\).
 \end{lemma}
 
@@ -955,7 +950,7 @@ By the forward implication, we obtain \(\mathcal P_{n}(s) = \varnothing\).
 Together the two implications give the equivalence. Hence \(\mathcal P_{n}(s) = \varnothing \iff \left|s\right| < n\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality cardinality sum}]\label{theorem:25}
+\begin{theorem}\label{theorem:25}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Assume \(0 < n\). Then \(\mathcal P_{\left|s\right| + n}(s) = \varnothing\).
 \end{theorem}
 
@@ -970,7 +965,7 @@ Use the hypothesis \(0 < n\).
 Substituting along the equality, we obtain \(\mathcal P_{\left|s\right| + n}(s) = \varnothing\).
 \end{proof}
 
-\begin{lemma}[{Power set cardinality equals filter}]\label{theorem:26}
+\begin{lemma}\label{theorem:26}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P_{n}(s) = \{x\in \mathcal P(s) \mid \left|x\right| = n\}\).
 \end{lemma}
 
@@ -983,7 +978,7 @@ Rewriting with \paperlink{theorem:17}{Lemma~\ref{theorem:17}}, \paperlink{premis
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P_{n}(s) = \{x\in \mathcal P(s) \mid \left|x\right| = n\}\).
 \end{proof}
 
-\begin{lemma}[{Power set cardinality successor insert}]\label{theorem:27}
+\begin{lemma}\label{theorem:27}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Assume \(x \notin s\). Let \(n\) be a natural number. Then
 \begin{center}
 \(\displaystyle \mathcal P_{n + 1}(\{x\} \cup s) = \mathcal P_{n + 1}(s) \cup \operatorname{insert}(x)[\mathcal P_{n}(s)].\)
@@ -1019,7 +1014,7 @@ Assume \(x \in t\).
 Use the hypothesis \(x \in t\).
 Applying the hypothesis \(t \subseteq s\), we obtain \(x \in s\).
 Applying the hypothesis \(x \notin s\), we obtain \(\mathrm{False}\).
-Rewriting with \paperlink{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d}{Prerequisite~P\ref{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d}} (using \(x \notin t\)), \paperlink{premise:4e61742e6164645f6c6566745f696e6a}{Prerequisite~P\ref{premise:4e61742e6164645f6c6566745f696e6a}} and \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} gives \(\left|\{x\} \cup t\right| = n + 1 \iff \left|t\right| = n\).
+Rewriting with \paperlink{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d}{Prerequisite~P\ref{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d}} (using \(x \notin t\)), \paperlink{premise:4e61742e6164645f6c6566745f696e6a}{\emph{Alias}} (\paperlink{premise:4e61742e6164645f6c6566745f696e6a}{Prerequisite~P\ref{premise:4e61742e6164645f6c6566745f696e6a}}) and \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} gives \(\left|\{x\} \cup t\right| = n + 1 \iff \left|t\right| = n\).
 Rewriting with \paperlink{premise:46696e7365742e6d656d5f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f66696c746572}}, \paperlink{theorem:1}{Lemma~\ref{theorem:1}} and \paperlink{premise:616e645f636f6e67725f72696768745f696666}{Prerequisite~P\ref{premise:616e645f636f6e67725f72696768745f696666}} in the preceding result gives \(t \in \{a\in \mathcal P(s) \mid |\{x\} \cup a| = n + 1\} \iff t \in \{x_{1}\in \mathcal P(s) \mid |x_{1}| = n\}\).
 \end{proofstep}
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\{a\in \mathcal P(s) \mid |\{x\} \cup a| = n + 1\} = \{x_{1}\in \mathcal P(s) \mid |x_{1}| = n\}\).
@@ -1033,7 +1028,7 @@ Rewriting with \paperlink{theorem:13}{Lemma~\ref{theorem:13}} in the preceding r
 Rewriting with \paperlink{theorem:26}{Lemma~\ref{theorem:26}} in the preceding result gives \(\mathcal P_{n + 1}(\{x\} \cup s) = \mathcal P_{n + 1}(s) \cup \operatorname{insert}(x)[\mathcal P_{n}(s)]\).
 \end{proof}
 
-\begin{lemma}[{Power set cardinality nonempty}]\label{theorem:28}
+\begin{lemma}\label{theorem:28}
 Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P_{n}(s)\ne\varnothing \iff n \le \left|s\right|\).
 \end{lemma}
 
@@ -1071,7 +1066,7 @@ Assume \(n \le \left|s\right|\).
 Rewriting with \paperlink{premise:46696e7365742e6578697374735f7375627365745f636172645f6571}{Prerequisite~P\ref{premise:46696e7365742e6578697374735f7375627365745f636172645f6571}} (using \(n \le \left|s\right|\)) gives \(\exists x\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; x \subseteq s \land \left|x\right| = n\).
 \end{proofstep}
 Together the two implications give the equivalence. Hence \((\exists x\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; x \subseteq s \land |x| = n) \iff n \le |s|\).
-Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\mathcal P_{n}(s)\ne\varnothing \iff n \le \left|s\right|\).
+Rewriting with \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}) and the identity established above in the preceding result gives \(\mathcal P_{n}(s)\ne\varnothing \iff n \le \left|s\right|\).
 \end{proof}
 
 \begin{theorem}[{Alias}]\label{theorem:29}
@@ -1082,7 +1077,7 @@ Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be a finite s
 Apply the reverse implication of \paperlink{theorem:28}{Lemma~\ref{theorem:28}}.
 \end{proof}
 
-\begin{theorem}[{Power set cardinality self}]\label{theorem:30}
+\begin{theorem}\label{theorem:30}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P_{\left|s\right|}(s) = \{s\}\).
 \end{theorem}
 
@@ -1119,7 +1114,7 @@ Rewriting with \paperlink{theorem:17}{Lemma~\ref{theorem:17}} in the preceding r
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P_{\left|s\right|}(s) = \{s\}\).
 \end{proof}
 
-\begin{lemma}[{Pairwise disjoint power set cardinality}]\label{theorem:31}
+\begin{lemma}\label{theorem:31}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \operatorname{Pairwise}(i \mapsto j \mapsto \operatorname{Disjoint}(\mathcal P_{i}(s),\allowbreak{} \mathcal P_{j}(s))).\)
@@ -1151,7 +1146,7 @@ Applying the hypothesis \(x \ne x_{1}\), we obtain \(\mathrm{False}\).
 By the reverse implication, we obtain \(\operatorname{Disjoint}\left(\mathcal P_{x}(s), \mathcal P_{x_{1}}(s)\right)\).
 \end{proof}
 
-\begin{lemma}[{Power set cardinality disji union}]\label{theorem:32}
+\begin{lemma}\label{theorem:32}
 Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \mathcal P(s) = \operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s)).\)
@@ -1217,23 +1212,20 @@ Together the two implications give the equivalence. Hence \(a \in \mathcal P(s) 
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\mathcal P(s) = \operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s))\).
 \end{proof}
 
-\begin{corollary}[{Power set cardinality bi union}]\label{theorem:33}
-Let \(\alpha\) be a type. Assume equality on \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then
-\begin{center}
-\(\displaystyle \mathcal P(s) = \bigcup_{i\in \{i\in\mathbb{N}\mid i<\left|s\right| + 1\}} \mathcal P_{i}(s).\)
-\end{center}
+\begin{corollary}\label{theorem:33}
+Let \(\alpha\) be a type. Assume equality on \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then \(\mathcal P(s) = \bigcup_{0\le i<\left|s\right| + 1} \mathcal P_{i}(s)\).
 \end{corollary}
 
 \begin{proof}
 By \paperlink{theorem:31}{Lemma~\ref{theorem:31}}, we obtain \(\operatorname{Pairwise}(i \mapsto j \mapsto \operatorname{Disjoint}(\mathcal P_{i}(s),\allowbreak{} \mathcal P_{j}(s)))\).
 By \paperlink{premise:50616972776973652e7365745f7061697277697365}{Prerequisite~P\ref{premise:50616972776973652e7365745f7061697277697365}} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(\operatorname{underlying\,set}(\{i\in\mathbb{N}\mid i<\left|s\right| + 1\})\) in place of its parameter \(s\), we obtain \(\operatorname{Set\mathord{:}Pairwise}(\operatorname{underlying\,set}(\{i\in\mathbb{N}\mid i<|s| + 1\}),\allowbreak{} i \mapsto j \mapsto \operatorname{Disjoint}(\mathcal P_{i}(s),\allowbreak{} \mathcal P_{j}(s)))\).
-By \paperlink{premise:46696e7365742e6469736a69556e696f6e5f65715f6269556e696f6e}{Prerequisite~P\ref{premise:46696e7365742e6469736a69556e696f6e5f65715f6269556e696f6e}} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(\{i\in\mathbb{N}\mid i<\left|s\right| + 1\}\) in place of its parameter \(s\) and \(f = i \mapsto \mathcal P_{i}(s)\), we obtain \(\operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s)) = \bigcup_{i\in \{i\in\mathbb{N}\mid i<|s| + 1\}} \mathcal P_{i}(s)\).
-Applying the same function to equal arguments, we obtain \((\mathcal P(s) = \operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s))) = (\mathcal P(s) = \bigcup_{i\in \{i\in\mathbb{N}\mid i<|s| + 1\}} \mathcal P_{i}(s))\).
+By \paperlink{premise:46696e7365742e6469736a69556e696f6e5f65715f6269556e696f6e}{Prerequisite~P\ref{premise:46696e7365742e6469736a69556e696f6e5f65715f6269556e696f6e}} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(\{i\in\mathbb{N}\mid i<\left|s\right| + 1\}\) in place of its parameter \(s\) and \(f = i \mapsto \mathcal P_{i}(s)\), we obtain \(\operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s)) = \bigcup_{0\le i<|s| + 1} \mathcal P_{i}(s)\).
+Applying the same function to equal arguments, we obtain \((\mathcal P(s) = \operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s))) = (\mathcal P(s) = \bigcup_{0\le i<|s| + 1} \mathcal P_{i}(s))\).
 By \paperlink{theorem:32}{Lemma~\ref{theorem:32}}, we obtain \(\mathcal P(s) = \operatorname{disji\,Union}(\{i\in\mathbb{N}\mid i<|s| + 1\},\allowbreak{} i \mapsto \mathcal P_{i}(s))\).
-Substituting along the equality, we obtain \(\mathcal P(s) = \bigcup_{i\in \{i\in\mathbb{N}\mid i<\left|s\right| + 1\}} \mathcal P_{i}(s)\).
+Substituting along the equality, we obtain \(\mathcal P(s) = \bigcup_{0\le i<\left|s\right| + 1} \mathcal P_{i}(s)\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality sup}]\label{theorem:34}
+\begin{theorem}\label{theorem:34}
 Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(u\) be a finite subset of \(\alpha\). Let \(n\) be a natural number. Assume \(n < \left|u\right|\). Then \(\operatorname{sup}\left(\mathcal P_{n + 1}(u), \operatorname{id}\right) = u\).
 \end{theorem}
 
@@ -1290,7 +1282,7 @@ Rewriting with \paperlink{premise:46696e7365742e7375705f65715f6269556e696f6e}{Pr
 \par\smallskip\noindent By \paperlink{premise:6c655f616e746973796d6d}{Prerequisite~P\ref{premise:6c655f616e746973796d6d}} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\operatorname{sup}\left(\mathcal P_{n + 1}(u), \operatorname{id}\right) = u\).
 \end{proof}
 
-\begin{theorem}[{Power set cardinality map}]\label{theorem:35}
+\begin{theorem}\label{theorem:35}
 Let \(\alpha\) and \(\beta\) be types. Let \(f\) be an element of \(\operatorname{Embedding}\left(\alpha, \beta\right)\). Let \(n\) be a natural number. Let \(s\) be a finite subset of \(\alpha\). Then
 \begin{center}
 \(\displaystyle \mathcal P_{n}(\operatorname{Finset\mathord{:}map}(f,\allowbreak{} s)) = \operatorname{Finset\mathord{:}map}(\operatorname{to\,Embedding}(\operatorname{map\,Embedding}(f)),\allowbreak{} \mathcal P_{n}(s)).\)
@@ -1364,7 +1356,7 @@ This witness proves existence. Hence \(\exists a\, :\, \alpha,\; (a \in s \land 
 Using the witnesses and their properties, we obtain \(\exists a\, :\, \alpha,\; (a \in s \land \operatorname{coe}(f,\allowbreak{} a) \in t) \land \operatorname{coe}(f,\allowbreak{} a) = x\).
 \end{proofstep}
 Together the two implications give the equivalence. Hence \((\exists a\, :\, \alpha,\; (a \in s \land \operatorname{coe}(f,\allowbreak{} a) \in t) \land \operatorname{coe}(f,\allowbreak{} a) = x) \iff x \in t\).
-Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6170}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6170}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(x \in \operatorname{Finset\mathord{:}map}(f,\allowbreak{} \{x_{1}\in s \mid \operatorname{coe}(f,\allowbreak{} x_{1}) \in t\}) \iff x \in t\).
+Rewriting with \paperlink{premise:46696e7365742e6d656d5f6d6170}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6170}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}) and the identity established above in the preceding result gives \(x \in \operatorname{Finset\mathord{:}map}(f,\allowbreak{} \{x_{1}\in s \mid \operatorname{coe}(f,\allowbreak{} x_{1}) \in t\}) \iff x \in t\).
 \end{proofstep}
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}}, we obtain \(\operatorname{Finset\mathord{:}map}(f,\allowbreak{} \{x\in s \mid \operatorname{coe}(f,\allowbreak{} x) \in t\}) = t\).
 Choose the witness \(\{x\in s \mid \operatorname{coe}\left(f, x\right) \in t\}\).
@@ -1407,7 +1399,7 @@ Using the two conjuncts, we obtain \(t \subseteq \operatorname{Finset\mathord{:}
 Using the existential hypothesis, we obtain \(t \subseteq \operatorname{Finset\mathord{:}map}\left(f, s\right) \land \left|t\right| = n\).
 \end{proofstep}
 Together the two implications give the equivalence. Hence \(t \subseteq \operatorname{Finset\mathord{:}map}(f,\allowbreak{} s) \land |t| = n \iff (\exists a\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; (a \subseteq s \land |a| = n) \land \operatorname{Finset\mathord{:}map}(f,\allowbreak{} a) = t)\).
-Rewriting with \paperlink{theorem:17}{Lemma~\ref{theorem:17}}, \paperlink{premise:46696e7365742e6d656d5f6d6170}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6170}}, \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(t \in \mathcal P_{n}(\operatorname{Finset\mathord{:}map}(f,\allowbreak{} s)) \iff t \in \operatorname{Finset\mathord{:}map}(\operatorname{to\,Embedding}(\operatorname{map\,Embedding}(f)),\allowbreak{} \mathcal P_{n}(s))\).
+Rewriting with \paperlink{theorem:17}{Lemma~\ref{theorem:17}}, \paperlink{premise:46696e7365742e6d656d5f6d6170}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f6d6170}}, \paperlink{premise:66756e657874}{\emph{Function extensionality}} (\paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}}) and the identity established above in the preceding result gives \(t \in \mathcal P_{n}(\operatorname{Finset\mathord{:}map}(f,\allowbreak{} s)) \iff t \in \operatorname{Finset\mathord{:}map}(\operatorname{to\,Embedding}(\operatorname{map\,Embedding}(f)),\allowbreak{} \mathcal P_{n}(s))\).
 \end{proofstep}
 By \paperlink{premise:46696e7365742e657874}{Prerequisite~P\ref{premise:46696e7365742e657874}} with \(\mathcal{P}_{\mathrm{fin}}(\beta)\) as its type parameter \(\alpha\), we obtain \(\mathcal P_{n}(\operatorname{Finset\mathord{:}map}(f,\allowbreak{} s)) = \operatorname{Finset\mathord{:}map}(\operatorname{to\,Embedding}(\operatorname{map\,Embedding}(f)),\allowbreak{} \mathcal P_{n}(s))\).
 \end{proof}

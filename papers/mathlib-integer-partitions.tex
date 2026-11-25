@@ -1,0 +1,513 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheoremstyle{paperresult}{8pt}{5pt}{\normalfont\raggedright}{}{\bfseries}{.}{\newline}{}
+\theoremstyle{paperresult}
+\newtheorem{theorem}{\paperresultname{Theorem}}
+\newcounter{paperpremise}
+\newtheorem{lemma}[theorem]{\paperresultname{Lemma}}
+\newtheorem{corollary}[theorem]{\paperresultname{Corollary}}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\AddToHook{env/proof/begin}{\raggedright}
+\setlength{\emergencystretch}{\linewidth}
+\title{Integer partitions}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\section*{Definitions}
+\paragraph{Of composition.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\paperlineanchor{defeq:1}\textup{(\paperlink{defeq:1}{D1})} Let \(n\) be a natural number. Let \(c\) be an element of \(\operatorname{Composition}\left(n\right)\). Then \(\operatorname{of\,Composition}(n,\allowbreak{} c) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{of\,List}(\operatorname{blocks}(c)))\).
+
+\paragraph{Of sums.} \par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(n\) be a natural number. Let \(l\) be a multiset of elements of \(\mathbb{N}\). Let \(\mathit{hl}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(l\right) = n\). Then \(\operatorname{of\,Sums}(n,\allowbreak{} l) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{filter}(x \mapsto x \ne 0,\allowbreak{} l))\).
+
+\paragraph{Of multiset.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\paperlineanchor{defeq:3}\textup{(\paperlink{defeq:3}{D3})} Let \(l\) be a multiset of elements of \(\mathbb{N}\). Then \(\operatorname{of\,Multiset}(l) = \operatorname{of\,Sums}(\operatorname{Multiset\mathord{:}sum}(l),\allowbreak{} l)\).
+
+\paragraph{Of sym.} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\paperlineanchor{defeq:4}\textup{(\paperlink{defeq:4}{D4})} Let \(n\) be a natural number. Let \(\sigma\) be a type. Let \(s\) be an element of \(\operatorname{Sym}\left(\sigma, n\right)\). Assume equality on \(\sigma\) is decidable. Then \(\operatorname{of\,Sym}(s) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))))\).
+
+\paragraph{Indiscrete.} \par\noindent\refstepcounter{definingequation}\label{defeq:5}\paperlineanchor{defeq:5}\textup{(\paperlink{defeq:5}{D5})} Let \(n\) be a natural number. Then \(\operatorname{indiscrete}\left(n\right) = \operatorname{of\,Sums}\left(n, \{n\}\right)\).
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[\paperlineanchor{premise:45717569762e696e6a656374697665}\paperlink{premise:45717569762e696e6a656374697665}{P1.}] \refstepcounter{paperpremise}\label{premise:45717569762e696e6a656374697665}\textbf{Injective.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(e\) be a bijection from \(\alpha\) to \(\beta\). Then \(\operatorname{coe}\left(e\right)\text{ is injective}\).
+\item[\paperlineanchor{premise:4966662e6f665f6571}\paperlink{premise:4966662e6f665f6571}{P2.}] \refstepcounter{paperpremise}\label{premise:4966662e6f665f6571}\textbf{Of equals.} Let \(a\) and \(b\) be propositions. Assume \(a = b\). Then \(a \iff b\).
+\item[\paperlineanchor{premise:4c452e6c652e616e746973796d6d}\paperlink{premise:4c452e6c652e616e746973796d6d}{P3.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e616e746973796d6d}\textbf{Alias.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le a\). Then \(a = b\).
+\item[\paperlineanchor{premise:4c452e6c652e7472616e735f6571}\paperlink{premise:4c452e6c652e7472616e735f6571}{P4.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e735f6571}\textbf{Alias.} Let \(\alpha\) be a type. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{LE}\left(\alpha\right)\). Assume \(a \le b\). Assume \(b = c\). Then \(a \le c\).
+\item[\paperlineanchor{premise:4c542e6c742e6e6527}\paperlink{premise:4c542e6c742e6e6527}{P5.}] \refstepcounter{paperpremise}\label{premise:4c542e6c742e6e6527}\textbf{Ne'.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a < b\). Then \(b \ne a\).
+\item[\paperlineanchor{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f6e6567}\paperlink{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f6e6567}{P6.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f6e6567}\textbf{Count filter of neg.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a multiset of elements of \(\alpha\). Assume \(\neg p\left(a\right)\). Then \(\operatorname{count}\left(a, \operatorname{filter}\left(p, s\right)\right) = 0\).
+\item[\paperlineanchor{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f706f73}\paperlink{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f706f73}{P7.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f706f73}\textbf{Count filter of positivity.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a multiset of elements of \(\alpha\). Assume \(p\left(a\right)\). Then \(\operatorname{count}(a,\allowbreak{} \operatorname{filter}(p,\allowbreak{} s)) = \operatorname{count}(a,\allowbreak{} s)\).
+\item[\paperlineanchor{premise:4d756c74697365742e636f756e745f6d61705f65715f636f756e7427}\paperlink{premise:4d756c74697365742e636f756e745f6d61705f65715f636f756e7427}{P8.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636f756e745f6d61705f65715f636f756e7427}\textbf{Count map equals count'.} Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\alpha\) is decidable. Assume equality on \(\beta\) is decidable. Let \(f\) be a function of type \(\alpha \to \beta\). Let \(s\) be a multiset of elements of \(\alpha\). Assume \(f\text{ is injective}\). Let \(x\) be an element of \(\alpha\). Then \(\operatorname{count}(f(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s)) = \operatorname{count}(x,\allowbreak{} s)\).
+\item[\paperlineanchor{premise:4d756c74697365742e636f756e745f706f73}\paperlink{premise:4d756c74697365742e636f756e745f706f73}{P9.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e636f756e745f706f73}\textbf{Count positivity.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(0 < \operatorname{count}\left(a, s\right) \iff a \in s\).
+\item[\paperlineanchor{premise:4d756c74697365742e64656475705f6d61705f6f665f696e6a656374697665}\paperlink{premise:4d756c74697365742e64656475705f6d61705f6f665f696e6a656374697665}{P10.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e64656475705f6d61705f6f665f696e6a656374697665}\textbf{Dedup map of injective.} Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\alpha\) is decidable. Assume equality on \(\beta\) is decidable. Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(f\text{ is injective}\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(\operatorname{dedup}(\operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s)) = \operatorname{Multiset\mathord{:}map}(f,\allowbreak{} \operatorname{dedup}(s))\).
+\item[\paperlineanchor{premise:4d756c74697365742e65715f7265706c69636174655f63617264}\paperlink{premise:4d756c74697365742e65715f7265706c69636174655f63617264}{P11.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e65715f7265706c69636174655f63617264}\textbf{Equals replicate cardinality.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(s = \operatorname{replicate}(|s|,\allowbreak{} a) \iff (\forall b\, :\, \alpha,\; b \in s \implies b = a)\).
+\item[\paperlineanchor{premise:4d756c74697365742e65715f7a65726f5f6f665f666f72616c6c5f6e6f745f6d656d}\paperlink{premise:4d756c74697365742e65715f7a65726f5f6f665f666f72616c6c5f6e6f745f6d656d}{P12.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e65715f7a65726f5f6f665f666f72616c6c5f6e6f745f6d656d}\textbf{Equals zero of forall not membership.} Let \(\alpha\) be a type. Let \(s\) be a multiset of elements of \(\alpha\). Assume \(\forall x\, :\, \alpha,\; x \notin s\). Then \(s = 0\).
+\item[\paperlineanchor{premise:4d756c74697365742e65787427}\paperlink{premise:4d756c74697365742e65787427}{P13.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e65787427}\textbf{Ext'.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) and \(t\) be multisets of elements of \(\alpha\). Assume \(\forall a_{1}\, :\, \alpha,\; \operatorname{count}(a_{1},\allowbreak{} s) = \operatorname{count}(a_{1},\allowbreak{} t)\). Then \(s = t\).
+\item[\paperlineanchor{premise:4d756c74697365742e66696c7465725f636f6e6772}\paperlink{premise:4d756c74697365742e66696c7465725f636f6e6772}{P14.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e66696c7465725f636f6e6772}\textbf{Filter congruence.} Let \(\alpha\) be a type. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Assume the predicate \(q\) is decidable. Let \(s\) be a multiset of elements of \(\alpha\). Assume \(\forall x\, :\, \alpha,\; x \in s \implies \left(p\left(x\right) \iff q\left(x\right)\right)\). Then \(\operatorname{filter}\left(p, s\right) = \operatorname{filter}\left(q, s\right)\).
+\item[\paperlineanchor{premise:4d756c74697365742e66696c7465725f65715f73656c66}\paperlink{premise:4d756c74697365742e66696c7465725f65715f73656c66}{P15.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e66696c7465725f65715f73656c66}\textbf{Filter equals self.} Let \(\alpha\) be a type. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(s\) be a multiset of elements of \(\alpha\). Then \(\operatorname{filter}(p,\allowbreak{} s) = s \iff (\forall a\, :\, \alpha,\; a \in s \implies p(a))\).
+\item[\paperlineanchor{premise:4d756c74697365742e6c655f73756d5f6f665f6d656d}\paperlink{premise:4d756c74697365742e6c655f73756d5f6f665f6d656d}{P16.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6c655f73756d5f6f665f6d656d}\textbf{At most sum of membership.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Let \(m\) be a multiset of elements of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume \(a \in m\). Then \(a \le \operatorname{Multiset\mathord{:}sum}\left(m\right)\).
+\item[\paperlineanchor{premise:4d756c74697365742e6d61705f636f6e6772}\paperlink{premise:4d756c74697365742e6d61705f636f6e6772}{P17.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6d61705f636f6e6772}\textbf{Map congruence.} Let \(\alpha\) and \(\beta\) be types. Let \(f\) and \(g\) be functions of type \(\alpha \to \beta\). Let \(s\) and \(t\) be multisets of elements of \(\alpha\). Assume \(s = t\). Assume \(\forall x\, :\, \alpha,\; x \in t \implies f\left(x\right) = g\left(x\right)\). Then \(\operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s) = \operatorname{Multiset\mathord{:}map}(g,\allowbreak{} t)\).
+\item[\paperlineanchor{premise:4d756c74697365742e6d61705f6d6170}\paperlink{premise:4d756c74697365742e6d61705f6d6170}{P18.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6d61705f6d6170}\textbf{Map map.} Let \(\alpha\), \(\beta\), and \(\gamma\) be types. Let \(g\) be a function of type \(\beta \to \gamma\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(\operatorname{Multiset\mathord{:}map}(g,\allowbreak{} \operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s)) = \operatorname{Multiset\mathord{:}map}(\operatorname{comp}(g,\allowbreak{} f),\allowbreak{} s)\).
+\item[\paperlineanchor{premise:4d756c74697365742e6d656d5f6465647570}\paperlink{premise:4d756c74697365742e6d656d5f6465647570}{P19.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6d656d5f6465647570}\textbf{Membership dedup.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(a \in \operatorname{dedup}\left(s\right) \iff a \in s\).
+\item[\paperlineanchor{premise:4d756c74697365742e6d656d5f6d6170}\paperlink{premise:4d756c74697365742e6d656d5f6d6170}{P20.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6d656d5f6d6170}\textbf{Membership map.} Let \(\alpha\) and \(\beta\) be types. Let \(f\) be a function of type \(\alpha \to \beta\). Let \(b\) be an element of \(\beta\). Let \(s\) be a multiset of elements of \(\alpha\). Then \(b \in \operatorname{Multiset\mathord{:}map}(f,\allowbreak{} s) \iff (\exists a\, :\, \alpha,\; a \in s \land f(a) = b)\).
+\item[\paperlineanchor{premise:4d756c74697365742e6d656d5f73696e676c65746f6e}\paperlink{premise:4d756c74697365742e6d656d5f73696e676c65746f6e}{P21.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e6d656d5f73696e676c65746f6e}\textbf{Membership singleton.} Let \(\alpha\) be a type. Let \(a\) and \(b\) be elements of \(\alpha\). Then \(b \in \{a\} \iff b = a\).
+\item[\paperlineanchor{premise:4d756c74697365742e7265706c69636174655f6f6e65}\paperlink{premise:4d756c74697365742e7265706c69636174655f6f6e65}{P22.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e7265706c69636174655f6f6e65}\textbf{Replicate one.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Then \(\operatorname{replicate}\left(1, a\right) = \{a\}\).
+\item[\paperlineanchor{premise:4d756c74697365742e73756d5f65715f7a65726f5f696666}\paperlink{premise:4d756c74697365742e73756d5f65715f7a65726f5f696666}{P23.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e73756d5f65715f7a65726f5f696666}\textbf{Sum equals zero if and only if.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Let \(m\) be a multiset of elements of \(\alpha\). Assume \(\text{translation preserves order on }\alpha\). Then \(\operatorname{Multiset\mathord{:}sum}(m) = 0 \iff (\forall x\, :\, \alpha,\; x \in m \implies x = 0)\).
+\item[\paperlineanchor{premise:4d756c74697365742e73756d5f7265706c6963617465}\paperlink{premise:4d756c74697365742e73756d5f7265706c6963617465}{P24.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e73756d5f7265706c6963617465}\textbf{Sum replicate.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure. Let \(n\) be a natural number. Let \(a\) be an element of \(\alpha\). Then \(\operatorname{Multiset\mathord{:}sum}(\operatorname{replicate}(n,\allowbreak{} a)) = \sum_{k=1}^{n}(a)\).
+\item[\paperlineanchor{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}\paperlink{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}{P25.}] \refstepcounter{paperpremise}\label{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}\textbf{To finset sum count equals.} Let \(\iota\) be a type. Assume equality on \(\iota\) is decidable. Let \(s\) be a multiset of elements of \(\iota\). Then \(\sum_{a\in \operatorname{to\,Finset}(s)}(\operatorname{count}(a,\allowbreak{} s)) = |s|\).
+\item[\paperlineanchor{premise:4e61742e506172746974696f6e2e6d6b2e696e6a4571}\paperlink{premise:4e61742e506172746974696f6e2e6d6b2e696e6a4571}{P26.}] \refstepcounter{paperpremise}\label{premise:4e61742e506172746974696f6e2e6d6b2e696e6a4571}\textbf{Injectivity equals.} Let \(n\) be a natural number. Let \(\mathit{parts}\) be a multiset of elements of \(\mathbb{N}\). Let \(p\) be a proof of \(\forall i\, :\, \mathbb{N},\; i \in \mathit{parts} \implies 0 < i\). Let \(p_{1}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(\mathit{parts}\right) = n\). Let \(\mathit{parts}_{1}\) be a multiset of elements of \(\mathbb{N}\). Let \(p_{2}\) be a proof of \(\forall i\, :\, \mathbb{N},\; i \in \mathit{parts}_{1} \implies 0 < i\). Let \(p_{3}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(\mathit{parts}_{1}\right) = n\). Then \((\operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\mathit{parts}) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\mathit{parts}_{1})) = (\mathit{parts} = \mathit{parts}_{1})\).
+\item[\paperlineanchor{premise:4e61742e506172746974696f6e2e70617274735f706f73}\paperlink{premise:4e61742e506172746974696f6e2e70617274735f706f73}{P27.}] \refstepcounter{paperpremise}\label{premise:4e61742e506172746974696f6e2e70617274735f706f73}\textbf{Parts positivity.} Let \(n\) be a natural number. Let \(\mathit{self}\) be an element of \(\operatorname{Partition}\left(n\right)\). Let \(i\) be a natural number. Assume \(i \in \operatorname{parts}\left(\mathit{self}\right)\). Then \(0 < i\).
+\item[\paperlineanchor{premise:4e61742e506172746974696f6e2e70617274735f73756d}\paperlink{premise:4e61742e506172746974696f6e2e70617274735f73756d}{P28.}] \refstepcounter{paperpremise}\label{premise:4e61742e506172746974696f6e2e70617274735f73756d}\textbf{Parts sum.} Let \(n\) be a natural number. Let \(\mathit{self}\) be an element of \(\operatorname{Partition}\left(n\right)\). Then \(\operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(\mathit{self}\right)\right) = n\).
+\item[\paperlineanchor{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}\paperlink{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}{P29.}] \refstepcounter{paperpremise}\label{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}\textbf{Inst canonically ordered sum.} \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+\item[\paperlineanchor{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}\paperlink{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}{P30.}] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}\textbf{Inst is ordered sum monoid.} \(\text{translation preserves order on }\mathbb{N}\).
+\item[\paperlineanchor{premise:50692e696e737453756273696e676c65746f6e}\paperlink{premise:50692e696e737453756273696e676c65746f6e}{P31.}] \refstepcounter{paperpremise}\label{premise:50692e696e737453756273696e676c65746f6e}\textbf{Inst subsingleton.} Let \(\alpha\) be a sort. Let \(\beta\) be a function of type \(\alpha \to \mathsf{Sort}\). Let \(\mathit{inst}\) be a proof of \(\forall a\, :\, \alpha,\; \beta\left(a\right)\text{ has at most one element}\). Then \(\left(\Pi_{a\, :\, \alpha}\, \beta\left(a\right)\right)\text{ has at most one element}\).
+\item[\paperlineanchor{premise:51756f7469656e742e696e64756374696f6e4f6e}\paperlink{premise:51756f7469656e742e696e64756374696f6e4f6e}{P32.}] \refstepcounter{paperpremise}\label{premise:51756f7469656e742e696e64756374696f6e4f6e}\textbf{Induction on.} Let \(\alpha\) be a sort. Let \(s\) be an element of \(\operatorname{Setoid}\left(\alpha\right)\). Let \(\mathit{motive}\) be a function of type \(\operatorname{Quotient}\left(s\right) \to \mathsf{Prop}\). Let \(q\) be an element of \(\operatorname{Quotient}\left(s\right)\). Assume \(\forall a\, :\, \alpha,\; \mathit{motive}\left(\operatorname{Quotient\mathord{:}mk}\left(s, a\right)\right)\). Then \(\mathit{motive}\left(q\right)\).
+\item[\paperlineanchor{premise:53756273696e676c65746f6e2e656c696d}\paperlink{premise:53756273696e676c65746f6e2e656c696d}{P33.}] \refstepcounter{paperpremise}\label{premise:53756273696e676c65746f6e2e656c696d}\textbf{Elim.} Let \(\alpha\) be a sort. Assume \(\alpha\text{ has at most one element}\). Let \(a\) and \(b\) be elements of \(\alpha\). Then \(a = b\).
+\item[\paperlineanchor{premise:537562747970652e70726f7065727479}\paperlink{premise:537562747970652e70726f7065727479}{P34.}] \refstepcounter{paperpremise}\label{premise:537562747970652e70726f7065727479}\textbf{Property.} Let \(\alpha\) be a sort. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(\mathit{self}\) be an element of \(\{x\in \alpha \mid p(x)\}\). Then \(p\left(\mathit{self}\right)\).
+\item[\paperlineanchor{premise:53796d2e6d656d5f636f65}\paperlink{premise:53796d2e6d656d5f636f65}{P35.}] \refstepcounter{paperpremise}\label{premise:53796d2e6d656d5f636f65}\textbf{Membership coercion.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) be an element of \(\operatorname{Sym}\left(\alpha, n\right)\). Let \(a\) be an element of \(\alpha\). Then \(a \in \operatorname{to\,Multiset}\left(s\right) \iff a \in s\).
+\item[\paperlineanchor{premise:616e645f696d70}\paperlink{premise:616e645f696d70}{P36.}] \refstepcounter{paperpremise}\label{premise:616e645f696d70}\textbf{And imp.} Let \(a\), \(b\), and \(c\) be propositions. Then \(a \land b \implies c \iff a \implies b \implies c\).
+\item[\paperlineanchor{premise:65715f66616c7365}\paperlink{premise:65715f66616c7365}{P37.}] \refstepcounter{paperpremise}\label{premise:65715f66616c7365}\textbf{Equals false.} Let \(p\) be a proposition. Assume \(\neg p\). Then \(p = \mathrm{False}\).
+\item[\paperlineanchor{premise:666f72616c6c5f6170706c795f65715f696d705f696666e28282}\paperlink{premise:666f72616c6c5f6170706c795f65715f696d705f696666e28282}{P38.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f6170706c795f65715f696d705f696666e28282}\textbf{Forall apply equals imp iff2.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(f\) be a function of type \(\alpha \to \beta\). Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(q\) be a function of type \(\beta \to \mathsf{Prop}\). Then \((\forall b\, :\, \beta,\; \forall a\, :\, \alpha,\; p(a) \implies f(a) = b \implies q(b)) \iff (\forall a\, :\, \alpha,\; p(a) \implies q(f(a)))\).
+\item[\paperlineanchor{premise:666f72616c6c5f636f6e6772}\paperlink{premise:666f72616c6c5f636f6e6772}{P39.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e6772}\textbf{Forall congruence.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) = q\left(a\right)\). Then \((\forall a\, :\, \alpha,\; p(a)) = (\forall a\, :\, \alpha,\; q(a))\).
+\item[\paperlineanchor{premise:666f72616c6c5f6571}\paperlink{premise:666f72616c6c5f6571}{P40.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f6571}\textbf{Forall equals.} Let \(\alpha\) be a sort. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(a^{'}\) be an element of \(\alpha\). Then \(\left(\forall a\, :\, \alpha,\; a = a^{'} \implies p\left(a\right)\right) \iff p\left(a^{'}\right)\).
+\item[\paperlineanchor{premise:666f72616c6c5f6578697374735f696e646578}\paperlink{premise:666f72616c6c5f6578697374735f696e646578}{P41.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f6578697374735f696e646578}\textbf{Forall exists index.} Let \(\alpha\) be a sort. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Let \(q\) be a function of type \(\left(\exists x\, :\, \alpha,\; p\left(x\right)\right) \to \mathsf{Prop}\). Then \((\forall h\, :\, \exists x\, :\, \alpha,\; p(x),\; q(h)) \iff (\forall x\, :\, \alpha,\; \forall h\, :\, p(x),\; q(\operatorname{Exists\mathord{:}intro}(x,\allowbreak{} h)))\).
+\item[\paperlineanchor{premise:696d705f73656c66}\paperlink{premise:696d705f73656c66}{P42.}] \refstepcounter{paperpremise}\label{premise:696d705f73656c66}\textbf{Imp self.} Let \(a\) be a proposition. Then \(a \implies a \iff \mathrm{True}\).
+\item[\paperlineanchor{premise:696d706c6965735f636f6e6772}\paperlink{premise:696d706c6965735f636f6e6772}{P43.}] \refstepcounter{paperpremise}\label{premise:696d706c6965735f636f6e6772}\textbf{Implies congruence.} Let \(p_{1}\) and \(p_{2}\) be sorts. Let \(q_{1}\) and \(q_{2}\) be sorts. Assume \(p_{1} = p_{2}\). Assume \(q_{1} = q_{2}\). Then \(\left(p_{1} \to q_{1}\right) = \left(p_{2} \to q_{2}\right)\).
+\item[\paperlineanchor{premise:696d706c6965735f74727565}\paperlink{premise:696d706c6965735f74727565}{P44.}] \refstepcounter{paperpremise}\label{premise:696d706c6965735f74727565}\textbf{Implies true.} Let \(\alpha\) be a sort. Then \(\left(\forall a\, :\, \alpha,\; \mathrm{True}\right) = \mathrm{True}\).
+\item[\paperlineanchor{premise:696e737453756273696e676c65746f6e446563696461626c65}\paperlink{premise:696e737453756273696e676c65746f6e446563696461626c65}{P45.}] \refstepcounter{paperpremise}\label{premise:696e737453756273696e676c65746f6e446563696461626c65}\textbf{Inst subsingleton decidable.} Let \(p\) be a proposition. Then \(\operatorname{Decidable}\left(p\right)\text{ has at most one element}\).
+\item[\paperlineanchor{premise:6d756c5f6f6e65}\paperlink{premise:6d756c5f6f6e65}{P46.}] \refstepcounter{paperpremise}\label{premise:6d756c5f6f6e65}\textbf{Product one.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,One\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(a \cdot 1 = a\).
+\item[\paperlineanchor{premise:6e6f745f66616c73655f65715f74727565}\paperlink{premise:6e6f745f66616c73655f65715f74727565}{P47.}] \refstepcounter{paperpremise}\label{premise:6e6f745f66616c73655f65715f74727565}\textbf{Not false equals true.} \(\left(\neg \mathrm{False}\right) = \mathrm{True}\).
+\end{description}
+
+\section{Natural numbers}
+\begin{lemma}\label{theorem:1}
+Let \(n\) be a natural number. Let \(x\) be an element of \(\operatorname{Partition}\left(n\right)\). Let \(y\) be an element of \(\operatorname{Partition}\left(n\right)\). Assume \(\operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\). Then \(x = y\).
+\end{lemma}
+
+\begin{proof}
+Compare the two records field by field. Use the defining equality \(\operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(x\right)\right) = n\) to rewrite their common index. By hypothesis, \(\operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\). After substitution, the remaining fields prove the same propositions. Any two proofs of the same proposition are equal by proof irrelevance. The records therefore satisfy \(x = y\).
+\end{proof}
+
+\begin{theorem}\label{theorem:2}
+Let \(n\) be a natural number. Let \(x\) be an element of \(\operatorname{Partition}\left(n\right)\). Let \(y\) be an element of \(\operatorname{Partition}\left(n\right)\). Then \(x = y \iff \operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\).
+\end{theorem}
+
+\begin{proof}
+Consider the following case.
+\begin{proofstep}
+Assume \(x = y\).
+Use the hypothesis \(x = y\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(y = x\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(x = x\).
+Assume \(\text{the proof of }\left(x = x\right)\text{ agrees under transport with the proof of }\left(x = x\right)\).
+By definition, we obtain \(\operatorname{parts}\left(x\right) = \operatorname{parts}\left(x\right)\).
+\end{proofstep}
+Use the hypothesis \(y = x\).
+Reversing the equality, we obtain \(x = y\).
+Use the hypothesis \(x = y\).
+Substituting equals, we obtain \(\text{the proof of }(x = y)\text{ agrees under transport with the proof of }(x = x) \implies \operatorname{parts}(x) = \operatorname{parts}(y)\).
+\end{proofstep}
+By definition, we obtain \(y = y\).
+Use the hypothesis \(x = y\).
+By reflexivity, we obtain \(\text{the proof of }\left(x = y\right)\text{ agrees under transport with the proof of }\left(x = y\right)\).
+Substituting equals, we obtain \(\operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(\operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\).
+By \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, we obtain \(x = y\).
+\end{proofstep}
+Together the two implications give the equivalence. Hence \(x = y \iff \operatorname{parts}\left(x\right) = \operatorname{parts}\left(y\right)\).
+\end{proof}
+
+\section{Partition}
+\begin{theorem}\label{theorem:3}
+Let \(n\) be a natural number. Let \(c\) be an element of \(\operatorname{Composition}\left(n\right)\). Then
+\begin{center}
+\(\displaystyle \operatorname{parts}(\operatorname{of\,Composition}(n,\allowbreak{} c)) = \operatorname{of\,List}(\operatorname{blocks}(c)).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By definition, we obtain \(\operatorname{parts}(\operatorname{of\,Composition}(n,\allowbreak{} c)) = \operatorname{of\,List}(\operatorname{blocks}(c))\).
+\end{proof}
+
+\begin{theorem}\label{theorem:4}
+Let \(n\) be a natural number. Then \(\operatorname{of\,Composition}\left(n\right)\text{ is surjective}\).
+\end{theorem}
+
+\begin{proof}
+Fix \(b\) in \(\operatorname{Partition}\left(n\right)\).
+Consider the possible forms of \(b\).
+\emph{Mk case.}
+\begin{proofstep}
+Fix \(b_{1}\) in \(\operatorname{Multiset}(\mathbb{N})\).
+Assume \(\forall i\, :\, \mathbb{N},\; i \in b_{1} \implies 0 < i\).
+Assume \(\operatorname{Multiset\mathord{:}sum}\left(b_{1}\right) = n\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(b_{2}\) in \(\operatorname{List}(\mathbb{N})\).
+Assume \(\forall i\, :\, \mathbb{N},\; i \in \operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2}) \implies 0 < i\).
+Assume \(\operatorname{Multiset\mathord{:}sum}(\operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2})) = n\).
+Construct an element of \(\operatorname{Composition}\left(n\right)\) with blocks \(b_{2}\).
+\par\smallskip\noindent\emph{Blocks positivity.}\enspace
+Fix \(i\) in \(\mathbb{N}\).
+Applying the hypothesis \(\forall i\, :\, \mathbb{N},\; i \in \operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2}) \implies 0 < i\), we obtain \(i \in b_{2} \implies 0 < i\).
+\par\smallskip\noindent\emph{Blocks sum.}\enspace
+Use the hypothesis \(\operatorname{Multiset\mathord{:}sum}(\operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2})) = n\), which simplifies to \(\operatorname{List\mathord{:}sum}\left(b_{2}\right) = n\).
+By definition, we obtain \(\operatorname{parts}(\operatorname{of\,Composition}(n,\allowbreak{} \operatorname{Composition\mathord{:}mk}(b_{2}))) = \operatorname{parts}(\operatorname{of\,Composition}(n,\allowbreak{} \operatorname{Composition\mathord{:}mk}(b_{2})))\).
+By \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, we obtain \(\operatorname{of\,Composition}(n,\allowbreak{} \operatorname{Composition\mathord{:}mk}(b_{2})) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2}))\).
+This witness proves existence. Hence \(\exists a\, :\, \operatorname{Composition}(n),\; \operatorname{of\,Composition}(n,\allowbreak{} a) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Quotient\mathord{:}mk}(\operatorname{is\,Setoid}(\mathbb{N}),\allowbreak{} b_{2}))\).
+\end{proofstep}
+Use the hypothesis \(\forall i\, :\, \mathbb{N},\; i \in b_{1} \implies 0 < i\).
+Use the hypothesis \(\operatorname{Multiset\mathord{:}sum}\left(b_{1}\right) = n\).
+By \paperlink{premise:51756f7469656e742e696e64756374696f6e4f6e}{Prerequisite~P\ref{premise:51756f7469656e742e696e64756374696f6e4f6e}} with \(\alpha = \operatorname{List}(\mathbb{N})\) and \(q = b_{1}\), we obtain \(\exists a\, :\, \operatorname{Composition}(n),\; \operatorname{of\,Composition}(n,\allowbreak{} a) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(b_{1})\).
+\end{proofstep}
+This proves \(\exists a\, :\, \operatorname{Composition}(n),\; \operatorname{of\,Composition}(n,\allowbreak{} a) = b\).
+\end{proof}
+
+\begin{theorem}\label{theorem:5}
+Let \(n\) be a natural number. Let \(l\) be a multiset of elements of \(\mathbb{N}\). Let \(\mathit{hl}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(l\right) = n\). Then
+\begin{center}
+\(\displaystyle \operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l)) = \operatorname{filter}(x \mapsto x \ne 0,\allowbreak{} l).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By definition, we obtain \(\operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l)) = \operatorname{filter}(x \mapsto x \ne 0,\allowbreak{} l)\).
+\end{proof}
+
+\begin{theorem}\label{theorem:6}
+Let \(l\) be a multiset of elements of \(\mathbb{N}\). Then
+\begin{center}
+\(\displaystyle \operatorname{parts}(\operatorname{of\,Multiset}(l)) = \operatorname{filter}(x \mapsto \neg (x = 0),\allowbreak{} l).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By definition, we obtain \(\operatorname{parts}(\operatorname{of\,Multiset}(l)) = \operatorname{filter}(x \mapsto \neg (x = 0),\allowbreak{} l)\).
+\end{proof}
+
+\begin{theorem}\label{theorem:7}
+Let \(n\) be a natural number. Let \(\sigma\) and \(\tau\) be types. Assume equality on \(\sigma\) is decidable. Assume equality on \(\tau\) is decidable. Let \(e\) be a bijection from \(\sigma\) to \(\tau\). Let \(s\) be an element of \(\operatorname{Sym}\left(\sigma, n\right)\). Then
+\begin{center}
+\(\displaystyle \operatorname{of\,Sym}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)) = \operatorname{of\,Sym}(s).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+We first prove the following auxiliary lemma.
+\par\smallskip\noindent\paperlineanchor{aux:7:1}\textbf{Auxiliary lemma~7.1.} Let \(n\) be a natural number. Let \(\sigma\) be a type. Let \(s\) be an element of \(\operatorname{Sym}\left(\sigma, n\right)\). Assume equality on \(\sigma\) is decidable. Let \(a\) be a natural number. Assume \(a \in \operatorname{Multiset\mathord{:}map}(a_{2} \mapsto \operatorname{count}(a_{2},\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))\). Then \(0 < a\).
+\par\noindent\emph{Proof of the auxiliary lemma.} The substitution uses the following argument.
+\begin{proofstep}
+Fix \(i\) in \(\mathbb{N}\).
+By definition, we obtain \(\operatorname{dedup}(\operatorname{to\,Multiset}(s)) = \operatorname{dedup}(\operatorname{to\,Multiset}(s))\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+Assume \(x \in \operatorname{dedup}\left(\operatorname{to\,Multiset}\left(s\right)\right)\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s))\).
+\end{proofstep}
+By \paperlink{premise:4d756c74697365742e6d61705f636f6e6772}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f636f6e6772}} with \(\beta = \mathbb{N}\), we obtain \(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))\).
+Applying the same function to equal arguments, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))) = (i \in \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s))))\).
+By \paperlink{premise:4d756c74697365742e6d656d5f6d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f6d6170}} with \(\beta = \mathbb{N}\), we obtain \(i \in \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s))) \iff (\exists a\, :\, \sigma,\; a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land (x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)))(a) = i)\).
+By propositional extensionality, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))) = (\exists a\, :\, \sigma,\; a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+Chaining the equalities, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))) = (\exists a\, :\, \sigma,\; a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(a\) in \(\sigma\).
+By \paperlink{premise:4d756c74697365742e6d656d5f6465647570}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f6465647570}}, we obtain \(a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \iff a \in \operatorname{to\,Multiset}(s)\).
+By propositional extensionality, we obtain \((a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s))) = (a \in \operatorname{to\,Multiset}(s))\).
+By \paperlink{premise:53796d2e6d656d5f636f65}{Prerequisite~P\ref{premise:53796d2e6d656d5f636f65}}, we obtain \(a \in \operatorname{to\,Multiset}\left(s\right) \iff a \in s\).
+By propositional extensionality, we obtain \(\left(a \in \operatorname{to\,Multiset}\left(s\right)\right) = \left(a \in s\right)\).
+Chaining the equalities, we obtain \((a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s))) = (a \in s)\).
+Applying the same function to equal arguments, we obtain \((a \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i) = (a \in s \land \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+\end{proofstep}
+By function extensionality, we obtain \((x \mapsto x \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i) = (x \mapsto x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+Applying the same function to equal arguments, we obtain \((\exists x\, :\, \sigma,\; x \in \operatorname{dedup}(\operatorname{to\,Multiset}(s)) \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i) = (\exists x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+Chaining the equalities, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))) = (\exists x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i)\).
+By definition, we obtain \(\left(0 < i\right) = \left(0 < i\right)\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))\) and \(p_{2} = \exists x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i\) and \(q_{1} = 0 < i\) and \(q_{2} = 0 < i\), we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) \implies 0 < i) = ((\exists x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i) \implies 0 < i)\).
+By \paperlink{premise:666f72616c6c5f6578697374735f696e646578}{Prerequisite~P\ref{premise:666f72616c6c5f6578697374735f696e646578}}, we obtain \((\forall h\, :\, \exists x\, :\, \sigma,\; (x_{1} \mapsto x_{1} \in s \land \operatorname{count}(x_{1},\allowbreak{} \operatorname{to\,Multiset}(s)) = i)(x),\; (h_{1} \mapsto 0 < i)(h)) \iff (\forall x\, :\, \sigma,\; \forall h\, :\, (x_{1} \mapsto x_{1} \in s \land \operatorname{count}(x_{1},\allowbreak{} \operatorname{to\,Multiset}(s)) = i)(x),\; (h_{1} \mapsto 0 < i)(\operatorname{Exists\mathord{:}intro}(x,\allowbreak{} h)))\).
+By propositional extensionality, we obtain \(((\exists x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i) \implies 0 < i) = (\forall x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i)\).
+Chaining the equalities, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) \implies 0 < i) = (\forall x\, :\, \sigma,\; x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+By \paperlink{premise:616e645f696d70}{Prerequisite~P\ref{premise:616e645f696d70}}, we obtain \(x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i \iff x \in s \implies \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i\).
+By propositional extensionality, we obtain \((x \in s \land \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i) = (x \in s \implies \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i)\).
+\end{proofstep}
+By \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, we obtain \((\forall a\, :\, \sigma,\; a \in s \land \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i) = (\forall a\, :\, \sigma,\; a \in s \implies \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i)\).
+Chaining the equalities, we obtain \((i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) \implies 0 < i) = (\forall a\, :\, \sigma,\; a \in s \implies \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) = i \implies 0 < i)\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(a\) in \(\sigma\).
+By definition, we obtain \(\left(a \in s\right) = \left(a \in s\right)\).
+By \paperlink{premise:4d756c74697365742e636f756e745f706f73}{Prerequisite~P\ref{premise:4d756c74697365742e636f756e745f706f73}}, we obtain \(0 < \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s)) \iff a \in \operatorname{to\,Multiset}(s)\).
+By propositional extensionality, we obtain \((0 < \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s))) = (a \in \operatorname{to\,Multiset}(s))\).
+By \paperlink{premise:53796d2e6d656d5f636f65}{Prerequisite~P\ref{premise:53796d2e6d656d5f636f65}}, we obtain \(a \in \operatorname{to\,Multiset}\left(s\right) \iff a \in s\).
+By propositional extensionality, we obtain \(\left(a \in \operatorname{to\,Multiset}\left(s\right)\right) = \left(a \in s\right)\).
+Chaining the equalities, we obtain \((0 < \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s))) = (a \in s)\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = a \in s\) and \(p_{2} = a \in s\) and \(q_{1} = 0 < \operatorname{count}\left(a, \operatorname{to\,Multiset}\left(s\right)\right)\) and \(q_{2} = a \in s\), we obtain \((a \in s \implies 0 < \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s))) = (a \in s \implies a \in s)\).
+By \paperlink{premise:696d705f73656c66}{Prerequisite~P\ref{premise:696d705f73656c66}}, we obtain \(a \in s \implies a \in s \iff \mathrm{True}\).
+By propositional extensionality, we obtain \(\left(a \in s \implies a \in s\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \((a \in s \implies 0 < \operatorname{count}(a,\allowbreak{} \operatorname{to\,Multiset}(s))) = \mathrm{True}\).
+\end{proofstep}
+Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:666f72616c6c5f6170706c795f65715f696d705f696666e28282}{Prerequisite~P\ref{premise:666f72616c6c5f6170706c795f65715f696d705f696666e28282}}, \paperlink{premise:696d706c6965735f74727565}{Prerequisite~P\ref{premise:696d706c6965735f74727565}} and the two identities established above gives \(\forall a\, :\, \mathbb{N},\; a \in \operatorname{Multiset\mathord{:}map}(a_{1} \mapsto \operatorname{count}(a_{1},\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) \implies 0 < a\).
+
+\par\smallskip\noindent\emph{Proof of the main assertion.}\enspace
+The substitution uses the following argument.
+\begin{proofstep}
+Assume \(\forall i\, :\, \mathbb{N},\; i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))),\allowbreak{} \operatorname{dedup}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))) \implies 0 < i\).
+Assume \(\operatorname{Multiset\mathord{:}sum}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))),\allowbreak{} \operatorname{dedup}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))))) = n\).
+By definition, we obtain \(\operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))),\allowbreak{} \operatorname{dedup}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))))) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))),\allowbreak{} \operatorname{dedup}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\tau\).
+Assume \(x \in \operatorname{dedup}(\operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))) = \operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+By \paperlink{premise:537562747970652e70726f7065727479}{Prerequisite~P\ref{premise:537562747970652e70726f7065727479}} with \(\alpha = \operatorname{Multiset}(\tau)\) and \(\mathit{self} = \operatorname{Sym\mathord{:}map}\left(\operatorname{coe}\left(e\right), s\right)\), we obtain \(|\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))| = n\).
+Rewriting with \paperlink{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}{Prerequisite~P\ref{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}} in the preceding result gives \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))) = n\).
+Use the previously proved fact \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))) = n\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Assume \(\forall i\, :\, \mathbb{N},\; i \in \operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))) \implies 0 < i\).
+Assume \(\operatorname{Multiset\mathord{:}sum}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))) = n\).
+By definition, we obtain \(\operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s)))) = \operatorname{Nat\mathord{:}Partition\mathord{:}mk}(\operatorname{Multiset\mathord{:}map}(a \mapsto \operatorname{count}(a,\allowbreak{} \operatorname{val}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{val}(s))))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+Assume \(x \in \operatorname{dedup}\left(\operatorname{to\,Multiset}\left(s\right)\right)\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+By \paperlink{premise:537562747970652e70726f7065727479}{Prerequisite~P\ref{premise:537562747970652e70726f7065727479}} with \(\alpha = \operatorname{Multiset}(\sigma)\) and \(\mathit{self} = s\), we obtain \(\left|\operatorname{val}(s)\right| = n\).
+Rewriting with \paperlink{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}{Prerequisite~P\ref{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}} in the preceding result gives \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(s))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(s))) = n\).
+Use the previously proved fact \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(s))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(s))) = n\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\tau\).
+Assume \(x \in \operatorname{dedup}(\operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))) = \operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+By \paperlink{premise:537562747970652e70726f7065727479}{Prerequisite~P\ref{premise:537562747970652e70726f7065727479}} with \(\alpha = \operatorname{Multiset}(\tau)\) and \(\mathit{self} = \operatorname{Sym\mathord{:}map}\left(\operatorname{coe}\left(e\right), s\right)\), we obtain \(|\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s))| = n\).
+Rewriting with \paperlink{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}{Prerequisite~P\ref{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}} in the preceding result gives \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))) = n\).
+Use the previously proved fact \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)))) = n\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\tau\).
+Assume \(x \in \operatorname{dedup}(\operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))) = \operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+Assume \(x \in \operatorname{dedup}\left(\operatorname{to\,Multiset}\left(s\right)\right)\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+By \paperlink{premise:537562747970652e70726f7065727479}{Prerequisite~P\ref{premise:537562747970652e70726f7065727479}} with \(\alpha = \operatorname{Multiset}(\sigma)\) and \(\mathit{self} = s\), we obtain \(\left|\operatorname{val}(s)\right| = n\).
+Rewriting with \paperlink{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}{Prerequisite~P\ref{premise:4d756c74697365742e746f46696e7365745f73756d5f636f756e745f6571}} in the preceding result gives \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(s))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(s))) = n\).
+Use the previously proved fact \(\sum_{a\in \operatorname{to\,Finset}(\operatorname{val}(s))}(\operatorname{count}(a,\allowbreak{} \operatorname{val}(s))) = n\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+Assume \(x \in \operatorname{dedup}\left(\operatorname{to\,Multiset}\left(s\right)\right)\).
+By definition, we obtain \(\operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)) = \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\sigma\).
+Assume \(x \in \operatorname{dedup}\left(\operatorname{to\,Multiset}\left(s\right)\right)\).
+By definition, we obtain \(\operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))) = \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+\end{proofstep}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s_{1}\) in \(\operatorname{Multiset}(\sigma)\).
+Fix \(s_{2}\) in \(\operatorname{Multiset}(\sigma)\).
+Assume \(s_{1} = s_{2}\).
+By definition, we obtain \(\operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} s_{1}) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} s_{1})\).
+Use the hypothesis \(s_{1} = s_{2}\).
+Substituting equals, we obtain \(\operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} s_{1}) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} s_{2})\).
+\end{proofstep}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(i\) in \(\sigma\).
+Rewriting with \paperlink{premise:4d756c74697365742e636f756e745f6d61705f65715f636f756e7427}{Prerequisite~P\ref{premise:4d756c74697365742e636f756e745f6d61705f65715f636f756e7427}} and \paperlink{premise:45717569762e696e6a656374697665}{Prerequisite~P\ref{premise:45717569762e696e6a656374697665}} gives \(\operatorname{count}(e(i),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))) = \operatorname{count}(i,\allowbreak{} \operatorname{to\,Multiset}(s))\).
+\end{proofstep}
+By function extensionality, we obtain \((x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))) = (x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)))\).
+By definition, we obtain \(\operatorname{dedup}(\operatorname{to\,Multiset}(s)) = \operatorname{dedup}(\operatorname{to\,Multiset}(s))\).
+Substituting equals, we obtain \(\operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(e(x),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s))) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))\).
+Rewriting with \paperlink{premise:4d756c74697365742e6d61705f6d6170}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f6d6170}}, \paperlink{premise:4d756c74697365742e6d61705f636f6e6772}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f636f6e6772}} and the identity established above in the preceding result gives \(\operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))\).
+Rewriting with \paperlink{premise:4d756c74697365742e64656475705f6d61705f6f665f696e6a656374697665}{Prerequisite~P\ref{premise:4d756c74697365742e64656475705f6d61705f6f665f696e6a656374697665}} and \paperlink{premise:45717569762e696e6a656374697665}{Prerequisite~P\ref{premise:45717569762e696e6a656374697665}} in the preceding result gives \(\operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s))),\allowbreak{} \operatorname{dedup}(\operatorname{Multiset\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} \operatorname{to\,Multiset}(s)))) = \operatorname{Multiset\mathord{:}map}(x \mapsto \operatorname{count}(x,\allowbreak{} \operatorname{to\,Multiset}(s)),\allowbreak{} \operatorname{dedup}(\operatorname{to\,Multiset}(s)))\).
+Rewriting with \paperlink{premise:4d756c74697365742e6d61705f636f6e6772}{Prerequisite~P\ref{premise:4d756c74697365742e6d61705f636f6e6772}}, \paperlink{aux:7:1}{Auxiliary lemma~7.1} with \(\operatorname{Sym\mathord{:}map}\left(\operatorname{coe}\left(e\right), s\right)\) in place of its parameter \(s\), \paperlink{aux:7:1}{Auxiliary lemma~7.1}, \paperlink{premise:4e61742e506172746974696f6e2e6d6b2e696e6a4571}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e6d6b2e696e6a4571}}, the 10 identities established above and the two auxiliary results established above in the preceding result gives \(\operatorname{of\,Sym}(\operatorname{Sym\mathord{:}map}(\operatorname{coe}(e),\allowbreak{} s)) = \operatorname{of\,Sym}(s)\).
+\end{proof}
+
+\begin{theorem}\label{theorem:8}
+Let \(n\) be a natural number. Assume \(n \ne 0\). Then \(\operatorname{parts}\left(\operatorname{indiscrete}\left(n\right)\right) = \{n\}\).
+\end{theorem}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\mathbb{N}\).
+Assume \(x \in \{n\}\).
+By definition, we obtain \(\left(\neg \left(x = 0\right)\right) = \left(\neg \left(x = 0\right)\right)\).
+By \paperlink{premise:4966662e6f665f6571}{Prerequisite~P\ref{premise:4966662e6f665f6571}}, we obtain \(\neg \left(x = 0\right) \iff \neg \left(x = 0\right)\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(a\) in \(\mathbb{N}\).
+By \paperlink{premise:4d756c74697365742e6d656d5f73696e676c65746f6e}{Prerequisite~P\ref{premise:4d756c74697365742e6d656d5f73696e676c65746f6e}} with \(\alpha = \mathbb{N}\), we obtain \(a \in \{n\} \iff a = n\).
+By propositional extensionality, we obtain \(\left(a \in \{n\}\right) = \left(a = n\right)\).
+By definition, we obtain \(\left(\neg \left(a = 0\right)\right) = \left(\neg \left(a = 0\right)\right)\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = a \in \{n\}\) and \(p_{2} = a = n\) and \(q_{1} = \neg \left(a = 0\right)\) and \(q_{2} = \neg \left(a = 0\right)\), we obtain \((a \in \{n\} \implies \neg (a = 0)) = (a = n \implies \neg (a = 0))\).
+\end{proofstep}
+Rewriting with \paperlink{premise:4d756c74697365742e66696c7465725f636f6e6772}{Prerequisite~P\ref{premise:4d756c74697365742e66696c7465725f636f6e6772}}, \paperlink{premise:4d756c74697365742e66696c7465725f65715f73656c66}{Prerequisite~P\ref{premise:4d756c74697365742e66696c7465725f65715f73656c66}}, \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:666f72616c6c5f6571}{Prerequisite~P\ref{premise:666f72616c6c5f6571}}, \paperlink{premise:65715f66616c7365}{Prerequisite~P\ref{premise:65715f66616c7365}} (using \(n \ne 0\)), \paperlink{premise:6e6f745f66616c73655f65715f74727565}{Prerequisite~P\ref{premise:6e6f745f66616c73655f65715f74727565}}, the identity established above and the auxiliary result established above gives \(\operatorname{parts}\left(\operatorname{indiscrete}\left(n\right)\right) = \{n\}\).
+\end{proof}
+
+\begin{theorem}\label{theorem:9}
+Let \(p\) be an element of \(\operatorname{Partition}\left(0\right)\). Then \(\operatorname{parts}\left(p\right) = 0\).
+\end{theorem}
+
+\begin{proof}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\mathbb{N}\).
+Assume \(x \in \operatorname{parts}\left(p\right)\).
+Use the hypothesis \(x \in \operatorname{parts}\left(p\right)\).
+By \paperlink{premise:4e61742e506172746974696f6e2e70617274735f706f73}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e70617274735f706f73}} with \(\mathit{self} = p\), we obtain \(0 < x\).
+By \paperlink{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}{Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}}, we obtain \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+By \paperlink{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }\mathbb{N}\).
+By \paperlink{premise:4d756c74697365742e73756d5f65715f7a65726f5f696666}{Prerequisite~P\ref{premise:4d756c74697365742e73756d5f65715f7a65726f5f696666}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{Multiset\mathord{:}sum}(\operatorname{parts}(p)) = 0 \iff (\forall x_{1}\, :\, \mathbb{N},\; x_{1} \in \operatorname{parts}(p) \implies x_{1} = 0)\).
+By \paperlink{premise:4e61742e506172746974696f6e2e70617274735f73756d}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e70617274735f73756d}} with \(\mathit{self} = p\), we obtain \(\operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(p\right)\right) = 0\).
+Use the hypothesis \(x \in \operatorname{parts}\left(p\right)\).
+By the forward implication, we obtain \(x = 0\).
+By \paperlink{premise:4c542e6c742e6e6527}{Prerequisite~P\ref{premise:4c542e6c742e6e6527}} with \(\alpha = \mathbb{N}\), we obtain \(\mathrm{False}\).
+\end{proofstep}
+By \paperlink{premise:4d756c74697365742e65715f7a65726f5f6f665f666f72616c6c5f6e6f745f6d656d}{Prerequisite~P\ref{premise:4d756c74697365742e65715f7a65726f5f6f665f666f72616c6c5f6e6f745f6d656d}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{parts}\left(p\right) = 0\).
+\end{proof}
+
+\begin{lemma}\label{theorem:10}
+Let \(p\) be an element of \(\operatorname{Partition}\left(1\right)\). Then \(\operatorname{parts}\left(p\right) = \{1\}\).
+\end{lemma}
+
+\begin{proof}
+By \paperlink{premise:4d756c74697365742e65715f7265706c69636174655f63617264}{Prerequisite~P\ref{premise:4d756c74697365742e65715f7265706c69636174655f63617264}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{parts}(p) = \operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1) \iff (\forall b\, :\, \mathbb{N},\; b \in \operatorname{parts}(p) \implies b = 1)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\mathbb{N}\).
+Assume \(x \in \operatorname{parts}\left(p\right)\).
+By \paperlink{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}{Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}}, we obtain \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+Use the hypothesis \(x \in \operatorname{parts}\left(p\right)\).
+By \paperlink{premise:4d756c74697365742e6c655f73756d5f6f665f6d656d}{Prerequisite~P\ref{premise:4d756c74697365742e6c655f73756d5f6f665f6d656d}} with \(\alpha = \mathbb{N}\), we obtain \(x \le \operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(p\right)\right)\).
+By \paperlink{premise:4e61742e506172746974696f6e2e70617274735f73756d}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e70617274735f73756d}} with \(\mathit{self} = p\), we obtain \(\operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(p\right)\right) = 1\).
+By \paperlink{premise:4c452e6c652e7472616e735f6571}{\emph{Alias}} (\paperlink{premise:4c452e6c652e7472616e735f6571}{Prerequisite~P\ref{premise:4c452e6c652e7472616e735f6571}}) with \(\alpha = \mathbb{N}\), we obtain \(x \le 1\).
+Use the hypothesis \(x \in \operatorname{parts}\left(p\right)\).
+By \paperlink{premise:4e61742e506172746974696f6e2e70617274735f706f73}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e70617274735f706f73}} with \(\mathit{self} = p\), we obtain \(0 < x\).
+By \paperlink{premise:4c452e6c652e616e746973796d6d}{\emph{Alias}} (\paperlink{premise:4c452e6c652e616e746973796d6d}{Prerequisite~P\ref{premise:4c452e6c652e616e746973796d6d}}) with \(\alpha = \mathbb{N}\), we obtain \(x = 1\).
+\end{proofstep}
+By the reverse implication, we obtain \(\operatorname{parts}(p) = \operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1)\).
+Use the previously proved fact \(\operatorname{parts}(p) = \operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1)\).
+Reversing the equality, we obtain \(\operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1) = \operatorname{parts}(p)\).
+Applying the same function to equal arguments, we obtain \(\operatorname{Multiset\mathord{:}sum}(\operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1)) = \operatorname{Multiset\mathord{:}sum}(\operatorname{parts}(p))\).
+By \paperlink{premise:4e61742e506172746974696f6e2e70617274735f73756d}{Prerequisite~P\ref{premise:4e61742e506172746974696f6e2e70617274735f73756d}} with \(\mathit{self} = p\), we obtain \(\operatorname{Multiset\mathord{:}sum}\left(\operatorname{parts}\left(p\right)\right) = 1\).
+Chaining the equalities, we obtain \(\operatorname{Multiset\mathord{:}sum}(\operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1)) = 1\).
+Rewriting with \paperlink{premise:4d756c74697365742e73756d5f7265706c6963617465}{Prerequisite~P\ref{premise:4d756c74697365742e73756d5f7265706c6963617465}} and \paperlink{premise:6d756c5f6f6e65}{Prerequisite~P\ref{premise:6d756c5f6f6e65}} in the preceding result gives \(\left|\operatorname{parts}\left(p\right)\right| = 1\).
+Rewriting with \paperlink{premise:4d756c74697365742e7265706c69636174655f6f6e65}{Prerequisite~P\ref{premise:4d756c74697365742e7265706c69636174655f6f6e65}}, \(\left|\operatorname{parts}\left(p\right)\right| = 1\) and \(\operatorname{parts}(p) = \operatorname{replicate}(|\operatorname{parts}(p)|,\allowbreak{} 1)\) gives \(\operatorname{parts}\left(p\right) = \{1\}\).
+\end{proof}
+
+\begin{theorem}\label{theorem:11}
+Let \(\sigma\) be a type. Assume equality on \(\sigma\) is decidable. Let \(s\) be an element of \(\operatorname{Sym}\left(\sigma, 1\right)\). Then \(\operatorname{of\,Sym}\left(s\right) = \operatorname{indiscrete}\left(1\right)\).
+\end{theorem}
+
+\begin{proof}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(a\) in \(\mathbb{N}\).
+Rewriting with \paperlink{premise:53756273696e676c65746f6e2e656c696d}{Prerequisite~P\ref{premise:53756273696e676c65746f6e2e656c696d}}, \paperlink{premise:50692e696e737453756273696e676c65746f6e}{Prerequisite~P\ref{premise:50692e696e737453756273696e676c65746f6e}}, \paperlink{premise:696e737453756273696e676c65746f6e446563696461626c65}{Prerequisite~P\ref{premise:696e737453756273696e676c65746f6e446563696461626c65}}, \paperlink{theorem:10}{Lemma~\ref{theorem:10}} and substitution of equals gives \(\operatorname{count}(a,\allowbreak{} \operatorname{parts}(\operatorname{of\,Sym}(s))) = \operatorname{count}(a,\allowbreak{} \operatorname{parts}(\operatorname{indiscrete}(1)))\).
+\end{proofstep}
+By \paperlink{premise:4d756c74697365742e65787427}{Prerequisite~P\ref{premise:4d756c74697365742e65787427}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{parts}(\operatorname{of\,Sym}(s)) = \operatorname{parts}(\operatorname{indiscrete}(1))\).
+Apply \paperlink{theorem:1}{Lemma~\ref{theorem:1}}.
+\end{proof}
+
+\begin{theorem}\label{theorem:12}
+Let \(n\) be a natural number. Let \(l\) be a multiset of elements of \(\mathbb{N}\). Let \(\mathit{hl}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(l\right) = n\). Let \(i\) be a natural number. Assume \(i \ne 0\). Then
+\begin{center}
+\(\displaystyle \operatorname{count}(i,\allowbreak{} \operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l))) = \operatorname{count}(i,\allowbreak{} l).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+Use the hypothesis \(i \ne 0\).
+By \paperlink{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f706f73}{Prerequisite~P\ref{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f706f73}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{count}(i,\allowbreak{} \operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l))) = \operatorname{count}(i,\allowbreak{} l)\).
+\end{proof}
+
+\begin{theorem}\label{theorem:13}
+Let \(n\) be a natural number. Let \(l\) be a multiset of elements of \(\mathbb{N}\). Let \(\mathit{hl}\) be a proof of \(\operatorname{Multiset\mathord{:}sum}\left(l\right) = n\). Then
+\begin{center}
+\(\displaystyle \operatorname{count}(0,\allowbreak{} \operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l))) = 0.\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(0 \ne 0\).
+By definition, we obtain \(0 = 0\).
+Applying the hypothesis \(0 \ne 0\), we obtain \(\mathrm{False}\).
+\end{proofstep}
+By \paperlink{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f6e6567}{Prerequisite~P\ref{premise:4d756c74697365742e636f756e745f66696c7465725f6f665f6e6567}} with \(\alpha = \mathbb{N}\), we obtain \(\operatorname{count}(0,\allowbreak{} \operatorname{parts}(\operatorname{of\,Sums}(n,\allowbreak{} l))) = 0\).
+\end{proof}
+
+\end{document}
