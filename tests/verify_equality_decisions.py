@@ -26,6 +26,7 @@ def verify_equality_decisions(project, workspace, env, lake, compiler):
               f"The single-field comparison must be checked against the implementation of {name}")
 
     gap = "Some defining equations could not be rendered."
+
     def render(input_file):
         output = input_file.with_suffix(".tex")
         result = subprocess.run([compiler, input_file, output, "--paper", "Testing record equality"],
