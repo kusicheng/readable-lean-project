@@ -19,6 +19,8 @@ This history has no Git tags yet.
 
 ### Commits
 
+- 2026-11-24 — update readme and add example docs (`4aa7681`)
+- 2026-11-24 — update readme and add example docs (`6e7093f`)
 - 2026-11-24 — add more readability rules and fix bugs in exmp (`2696aef`)
 - 2026-11-23 — add complete pilor chapter support (`e376d33`)
 - 2026-11-22 — initial prototyping (`79567c2`)
