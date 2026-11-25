@@ -25,7 +25,19 @@ bool asciiLetter(char c) {
 }
 bool digit(char c) { return c >= '0' && c <= '9'; }
 
-const std::map<std::string, std::string> greekLetters = {
+// These mathematical letters are valid Lean binder names. Preserve script
+// families; use K for the conventional scalar carrier with the standard fonts.
+const std::map<std::string, std::string> mathematicalLetters = {
+    {u8"𝕜","K"},
+    {u8"𝒜","\\mathcal{A}"}, {u8"ℬ","\\mathcal{B}"}, {u8"𝒞","\\mathcal{C}"},
+    {u8"𝒟","\\mathcal{D}"}, {u8"ℰ","\\mathcal{E}"}, {u8"ℱ","\\mathcal{F}"},
+    {u8"𝒢","\\mathcal{G}"}, {u8"ℋ","\\mathcal{H}"}, {u8"ℐ","\\mathcal{I}"},
+    {u8"𝒥","\\mathcal{J}"}, {u8"𝒦","\\mathcal{K}"}, {u8"ℒ","\\mathcal{L}"},
+    {u8"ℳ","\\mathcal{M}"}, {u8"𝒩","\\mathcal{N}"}, {u8"𝒪","\\mathcal{O}"},
+    {u8"𝒫","\\mathcal{P}"}, {u8"𝒬","\\mathcal{Q}"}, {u8"ℛ","\\mathcal{R}"},
+    {u8"𝒮","\\mathcal{S}"}, {u8"𝒯","\\mathcal{T}"}, {u8"𝒰","\\mathcal{U}"},
+    {u8"𝒱","\\mathcal{V}"}, {u8"𝒲","\\mathcal{W}"}, {u8"𝒳","\\mathcal{X}"},
+    {u8"𝒴","\\mathcal{Y}"}, {u8"𝒵","\\mathcal{Z}"},
     {u8"α","\\alpha"}, {u8"β","\\beta"}, {u8"γ","\\gamma"}, {u8"δ","\\delta"},
     {u8"ε","\\varepsilon"}, {u8"η","\\eta"}, {u8"θ","\\theta"}, {u8"ι","\\iota"},
     {u8"κ","\\kappa"}, {u8"λ","\\lambda"}, {u8"μ","\\mu"}, {u8"ν","\\nu"},
@@ -45,7 +57,7 @@ std::string indexedLetter(const std::string& name) {
         base = name.substr(0,1);
         pos = 1;
     } else {
-        for (const auto& entry : greekLetters) {
+        for (const auto& entry : mathematicalLetters) {
             if (name.compare(0,entry.first.size(),entry.first) == 0) {
                 base = entry.second;
                 pos = entry.first.size();
@@ -225,7 +237,7 @@ const std::map<std::string, Operator> binary = {
     {"HAdd.hAdd",{"+",60}}, {"Add.add",{"+",60}}, {"Nat.add",{"+",60}}, {"Int.add",{"+",60}},
     {"HSub.hSub",{"-",60}}, {"Sub.sub",{"-",60}}, {"Nat.sub",{"-",60}}, {"Int.sub",{"-",60}},
     {"HMul.hMul",{"\\cdot",70}}, {"Mul.mul",{"\\cdot",70}}, {"Nat.mul",{"\\cdot",70}},
-    {"HSMul.hSMul",{"\\mathbin{\\bullet}",70}},
+    {"HSMul.hSMul",{"\\mathbin{\\bullet}",70}}, {"SMul.smul",{"\\mathbin{\\bullet}",70}},
     {"Int.mul",{"\\cdot",70}}, {"HDiv.hDiv",{"/",70}}, {"Div.div",{"/",70}},
     {"HMod.hMod",{"\\bmod",70}}, {"Mod.mod",{"\\bmod",70}}, {"Nat.mod",{"\\bmod",70}},
     {"Bool.and",{"\\land",30}}, {"Bool.or",{"\\lor",25}}, {"Prod",{"\\times",70}},
@@ -275,11 +287,35 @@ bool displayedSubtype(const Node& domain) {
 // A binder presented as an element of a subset already denotes its underlying
 // element in the mathematical notation. Retain a projection for other terms.
 void bindCarrier(Names& names, const Node& binder, const std::string& symbol) {
-    if (displayedSubtype(binder.at(3))) names["#carrier:" + binder.at(1).atom] = symbol;
+    const auto& domain = binder.at(3);
+    if (displayedSubtype(domain)) names["#carrier:" + binder.at(1).atom] = symbol;
+    bindCheckedAddition(names,binder,symbol);
 }
 
 Display elementsOf(const Node& set, const Names& names) {
     return render(applicationOf(set,"Finset.toSet",2) ? argument(set,0) : set,names);
+}
+
+// Only call the relation inclusion when it compares the bound sets with
+// their standard subset instance. A custom relation has its own meaning.
+bool inclusionRelation(const Node& relation) {
+    const Node* body = &term(relation);
+    const bool lambda = body->is("l");
+    if (lambda) {
+        const auto& other = term(body->at(4));
+        if (!other.is("l")) return false;
+        const auto& app = term(other.at(4));
+        if (!app.is("a") || app.children.size() < 4) return false;
+        const auto& lhs = argument(app,1);
+        const auto& rhs = argument(app,0);
+        if (!lhs.is("v") || lhs.at(1).atom != body->at(1).atom ||
+            !rhs.is("v") || rhs.at(1).atom != other.at(1).atom) return false;
+        body = &app;
+    }
+    if (applicationOf(*body,"Set.Subset",lambda ? 3 : 1)) return true;
+    return applicationOf(*body,"HasSubset.Subset",lambda ? 4 : 2) &&
+           (applicationOf(body->at(3),"Finset.instHasSubset",1) ||
+            applicationOf(body->at(3),"Set.instHasSubset",1));
 }
 
 Display subtypeDomain(const Node& carrier, const Node& test, const Names& names) {
@@ -395,6 +431,43 @@ Display indexedSet(const Node& expression, const Names& names) {
 bool applicationOf(const Node& expression, const char* name, std::size_t arguments) {
     const auto& raw = term(expression);
     return raw.is("a") && raw.children.size() == arguments + 2 && head(raw) == name;
+}
+
+// The carrier alone cannot identify a scalar action. Mathlib's standard
+// AddMonoid on Nat defines nsmul n b as n * b. An arbitrary AddMonoid
+// supplies repeated addition, and a bare SMul supplies no addition law.
+bool naturalScalarAction(const Node& raw, std::size_t supplied) {
+    const auto name = head(raw);
+    return ((name == "HSMul.hSMul" && raw.children.size() == supplied + 6) ||
+            (name == "SMul.smul" && raw.children.size() == supplied + 5)) &&
+           raw.at(2).is("c") && head(raw.at(2)) == "Nat";
+}
+
+Display naturalAction(const Node& raw, const Display& count, const Display& value,
+                      const Names& names, bool showRepeatedAddition = false) {
+    const auto& carrier = term(raw.at(3));
+    const bool heterogeneous = head(raw) == "HSMul.hSMul";
+    const Node* action = &term(raw.at(heterogeneous ? 5 : 4));
+    if (heterogeneous && applicationOf(*action,"instHSMul",3)) action = &term(action->at(4));
+    if (applicationOf(*action,"AddMonoid.toNatSMul",2)) {
+        const auto& monoid = term(action->at(3));
+        const bool commutative = applicationOf(monoid,"AddCommMonoid.toAddMonoid",2);
+        const auto& source = commutative ? term(monoid.at(3)) : monoid;
+        const bool ordinaryNat = carrier.is("c") && head(carrier) == "Nat" && source.is("c") &&
+            head(source) == (commutative ? "Nat.instAddCommMonoid" : "Nat.instAddMonoid");
+        if (ordinaryNat && !showRepeatedAddition)
+            return infix(count,{"\\cdot",70},value);
+        const bool chosenAddition = source.is("v") && names.count("#explicit-addition:" + source.at(1).atom);
+        if (ordinaryNat || (carrier.is("v") && source.is("v") && !chosenAddition)) {
+            Names inner = names;
+            const auto index = checkedBinderName(inner,"#repeat-index","k");
+            return {"\\sum_{" + index + "=1}^{" + count.text + "}\\left(" + value.text + "\\right)",75};
+        }
+        if (head(carrier) != "Nat" && !chosenAddition) return infix(count,{"\\mathbin{\\bullet}",70},value);
+        action = &source;
+    }
+    const auto sign = "\\mathbin{\\bullet}_{" + render(*action,names).text + "}";
+    return infix(count,{sign.c_str(),70},value);
 }
 
 bool hasProofArgument(const Node& application, const char* position) {
@@ -738,6 +811,9 @@ Display render(const Node& input, const Names& names) {
     }
     if (raw.is("l") || raw.is("q")) return binder(raw, names);
     if (raw.is("t")) {
+        // A dependent constructor can leave an unused field proof in the
+        // type of its next field. It contributes no term to this formula.
+        if (!mentions(raw.at(5),raw.at(1).atom)) return render(raw.at(5),names);
         Names inner = names;
         const auto label = checkedBinderName(inner, raw.at(1).atom, raw.at(2).atom);
         return {"\\left. " + render(raw.at(5), inner).text + "\\right|_{" + label + "=" +
@@ -807,6 +883,13 @@ Display render(const Node& input, const Names& names) {
     if (key == "DFunLike.coe" && count == 6 && arity(2) &&
         applicationOf(raw.at(2),"Equiv",2) && applicationOf(raw.at(5),"Equiv.instFunLike",2))
         return applyBijection(*args[0],arg(1),names);
+    if (key == "SimpleGraph.Hom.ofLE" && count == 4 && arity(0) && hasProofArgument(raw,"3"))
+        return {"\\operatorname{incl}_{" + render(raw.at(3),names).text + "," + render(raw.at(4),names).text + "}"};
+    if (key == "DFunLike.coe" && count == 6 && arity(2) && applicationOf(raw.at(2),"SimpleGraph.Hom",4)) {
+        if (applicationOf(raw.at(5),"RelHom.instFunLike",4))
+            return {arg(0).within(95) + "(" + arg(1).text + ")"};
+        return {"\\operatorname{apply}_{" + render(raw.at(5),names).text + "}(" + arg(0).text + ", " + arg(1).text + ")"};
+    }
     if (key == "Equiv.trans" && count == 5 && arity(2)) {
         if (universalSubtypeInverse(*args[0])) {
             Names inner = names;
@@ -940,6 +1023,12 @@ Display render(const Node& input, const Names& names) {
             " is infinite" : " has at most one element";
         return {arg(0).within(41) + "\\text{" + adjective + "}", 40};
     }
+    if (key == "IsAntichain" && count == 3 && arity(2)) {
+        const auto family = elementsOf(argument(raw,0),names).within(41);
+        const auto& relation = argument(raw,1);
+        if (inclusionRelation(relation)) return {family + "\\text{ is an antichain under inclusion}",40};
+        return {family + "\\text{ is an antichain for the relation }" + arg(0).within(41),40};
+    }
     if (key == "OrderDual" && count == 1) return {withSuperscript(arg(0).within(81),"\\mathrm{op}"),80};
     if (key == "Nat.ModEq" && count == 3 && arity(3))
         return {arg(1).within(41) + " \\equiv " + arg(2).within(41) + " \\pmod{" + arg(0).text + "}",40};
@@ -988,16 +1077,62 @@ Display render(const Node& input, const Names& names) {
             return infix(arg(0),{sign.c_str(),40},arg(1));
         }
     }
+    if (key == "Membership.mem" && count == 5 && applicationOf(raw.at(4),"List.instMembership",1) &&
+        applicationOf(raw.at(5),"SimpleGraph.Walk.support",5))
+        return {render(argument(raw.at(5),0),names).within(41) + "\\text{ visits }" + last().within(41),40};
+    if (key == "Eq" && count == 3 && raw.at(2).is("s") && raw.at(2).at(1).atom == "0" &&
+        (applicationOf(raw.at(3),"SimpleGraph.IsHamiltonian",4) ||
+         applicationOf(raw.at(3),"SimpleGraph.Walk.IsHamiltonian",6)))
+        return {last(1).within(11) + " \\iff " + last().within(21),10};
+    if (key == "Eq" && count == 3 && head(raw.at(2)) == "Nat" &&
+        applicationOf(raw.at(3),"List.count",4) && applicationOf(raw.at(4),"OfNat.ofNat",3)) {
+        const auto& visits = raw.at(3);
+        const auto& numeral = raw.at(4);
+        const auto& vertices = argument(visits,0);
+        if (applicationOf(vertices,"SimpleGraph.Walk.support",5) &&
+            applicationOf(visits.at(3),"instBEqOfDecidableEq",2) &&
+            numeral.at(3).is("n") && applicationOf(numeral.at(4),"instOfNatNat",1)) {
+            const auto& n = numeral.at(3).at(1).atom;
+            if (n == "1" || n == "2")
+                return {render(argument(vertices,0),names).within(41) + "\\text{ visits }" +
+                        render(visits.at(4),names).within(41) +
+                        (n == "1" ? "\\text{ exactly once}" : "\\text{ exactly twice}"),40};
+        }
+    }
     if (operation != binary.end() || key == "Membership.mem") {
         const bool membership = key == "Membership.mem";
-        const auto op = membership ? Operator{"\\in",40} : operation->second;
-        if (arity(2)) return membership ? infix(arg(1),op,arg(0)) : infix(arg(0),op,arg(1));
+        auto op = membership ? Operator{"\\in",40} : operation->second;
+        std::string qualified;
+        if (key=="HasSubset.Subset" && count>=2 &&
+            (applicationOf(raw.at(2),"Finset",1) || applicationOf(raw.at(2),"Set",1)) &&
+            !applicationOf(raw.at(3),"Finset.instHasSubset",1) && !applicationOf(raw.at(3),"Set.instHasSubset",1)) {
+            qualified = "\\subseteq_{" + render(raw.at(3),names).text + "}";
+            op.sign = qualified.c_str();
+        }
+        if (key == "Eq" && arity(2) && head(raw.at(2)) == "Nat") {
+            // An equation identifying the two operations should still express
+            // its mathematical content after ordinary Nat scalar notation is simplified.
+            const auto operand = [&](std::size_t i) {
+                const auto& side = term(*args[i]);
+                const auto other = head(*args[1-i]);
+                if (naturalScalarAction(side,2) && (other == "Nat.mul" || other == "Mul.mul" || other == "HMul.hMul"))
+                    return naturalAction(side,render(argument(side,1),names),render(argument(side,0),names),names,true);
+                return arg(i);
+            };
+            return infix(operand(0),op,operand(1));
+        }
+        const auto apply = [&](const Display& left, const Display& right) {
+            if (naturalScalarAction(raw,args.size()))
+                return naturalAction(raw,left,right,names);
+            return membership ? infix(right,op,left) : infix(left,op,right);
+        };
+        if (arity(2)) return apply(arg(0),arg(1));
         if (arity(1) || arity(0)) {
             Names inner = names;
             const auto x = checkedBinderName(inner,"#binary-left","x");
             const auto y = checkedBinderName(inner,"#binary-right","y");
             const auto left = arity(1) ? arg(0) : Display{x};
-            auto result = membership ? infix({y},op,left) : infix(left,op,{y});
+            auto result = apply(left,{y});
             return {(arity(1) ? "" : x + " \\mapsto ") + y + " \\mapsto " + result.text,5};
         }
     }
@@ -1194,6 +1329,39 @@ Display render(const Node& input, const Names& names) {
     }
     if (key == "SimpleGraph.Adj" && !args.empty() && args.size() <= 3 && count == args.size()+1)
         return adjacency(*args[0],args.size() >= 2 ? args[1] : nullptr,arity(3) ? args[2] : nullptr,names);
+    if (key == "SimpleGraph.Walk" && count == 4 && arity(3))
+        return {"\\operatorname{Walk}_{" + arg(0).text + "}(" + arg(1).text + ", " + arg(2).text + ")"};
+    if (key == "SimpleGraph.Walk.IsHamiltonian" && count == 6 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a Hamiltonian path}",40};
+    if (key == "SimpleGraph.Walk.IsHamiltonianCycle" && count == 5 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a Hamiltonian cycle}",40};
+    if (key == "SimpleGraph.IsHamiltonian" && count == 4 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a Hamiltonian graph}",40};
+    if (key == "SimpleGraph.Walk.IsPath" && count == 5 && arity(1))
+        return {arg(0).within(41) + "\\text{ has no repeated vertices}",40};
+    if (key == "SimpleGraph.Walk.IsCycle" && count == 4 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a cycle}",40};
+    if (key == "SimpleGraph.Connected" && count == 2 && arity(1))
+        return {arg(0).within(41) + "\\text{ is connected}",40};
+    if (key == "SimpleGraph.Reachable" && count == 4 && arity(3))
+        return {arg(1).within(41) + "\\text{ can reach }" + arg(2).within(41) +
+                "\\text{ in }" + arg(0).within(41),40};
+    if (key == "SimpleGraph.Walk.map" && count == 8 && arity(2))
+        return {"\\operatorname{image}_{" + arg(0).text + "}(" + arg(1).text + ")"};
+    if (key == "SimpleGraph.Walk.length" && count == 5 && arity(1))
+        return {"\\operatorname{length}(" + arg(0).text + ")"};
+    if (key == "SimpleGraph.Walk.support" && count == 5 && arity(1))
+        return {"\\operatorname{vertex\\,sequence}(" + arg(0).text + ")"};
+    if (key == "SimpleGraph.Walk.takeUntil" && count == 8 && arity(2) && hasProofArgument(raw,"7"))
+        return {"\\operatorname{prefix}_{" + arg(0).text + "}(" + arg(1).text + ")"};
+    if (key == "SimpleGraph.Walk.append" && count == 7 && arity(2))
+        return infix(arg(0),{"\\mathbin{\\Vert}",60},arg(1));
+    if (key == "List.count" && count == 4 && arity(2) &&
+        applicationOf(*args[1],"SimpleGraph.Walk.support",5)) {
+        if (applicationOf(raw.at(3),"instBEqOfDecidableEq",2))
+            return {"\\operatorname{visits}(" + render(argument(*args[1],0),names).text + ", " + arg(0).text + ")"};
+        return {"\\operatorname{count}_{" + render(raw.at(3),names).text + "}(" + arg(0).text + ", " + arg(1).text + ")"};
+    }
     if (key == "SimpleGraph.replaceVertex" && count==5 && arity(3))
         return {"\\operatorname{clone}(" + arg(0).text + ", " + arg(1).text + ", " + arg(2).text + ")"};
     if (key == "SimpleGraph.mk" && count == 4 && arity(1) && hasProofArgument(raw,"2") && hasProofArgument(raw,"3")) {
@@ -1342,12 +1510,25 @@ std::string objectDescription(const Node& type, const Names& names, bool plural)
     if (applicationOf(raw,"Equiv",2))
         return noun("a bijection from ","bijections from ") + "\\(" + bijectionEndpoint(raw.at(2),names).text +
                "\\) to \\(" + bijectionEndpoint(raw.at(3),names).text + "\\)";
-    if (applicationOf(raw,"SimpleGraph.Iso",4) || applicationOf(raw,"SimpleGraph.Embedding",4)) {
-        const auto kind = key == "SimpleGraph.Iso" ? noun("a graph isomorphism","graph isomorphisms") :
+    if (applicationOf(raw,"SimpleGraph.Walk",4)) {
+        const auto graph = render(argument(raw,2),names).text;
+        const auto start = render(argument(raw,1),names).text;
+        if (identicalEncoding(argument(raw,1),argument(raw,0)))
+            return noun("a closed walk in ","closed walks in ") + "\\(" + graph + "\\) based at \\(" + start + "\\)";
+        return noun("a walk in ","walks in ") + "\\(" + graph + "\\) from \\(" + start + "\\) to \\(" +
+               render(argument(raw,0),names).text + "\\)";
+    }
+    if (applicationOf(raw,"SimpleGraph.Hom",4) || applicationOf(raw,"SimpleGraph.Iso",4) ||
+        applicationOf(raw,"SimpleGraph.Embedding",4)) {
+        const auto kind = key == "SimpleGraph.Hom" ? noun("a graph homomorphism","graph homomorphisms") :
+                          key == "SimpleGraph.Iso" ? noun("a graph isomorphism","graph isomorphisms") :
                                                      noun("an induced graph embedding","induced graph embeddings");
         return kind + " from \\(" + render(argument(raw,1),names).text + "\\) to \\(" +
                render(argument(raw,0),names).text + "\\)";
     }
+    if (applicationOf(raw,"Finset",1) && applicationOf(argument(raw,0),"Finset",1))
+        return noun("a finite family of finite subsets of ","finite families of finite subsets of ") +
+               "\\(" + render(argument(argument(raw,0),0),names).text + "\\)";
     if (key == "Sym2" && raw.is("a") && raw.children.size() == 3)
         return noun("an unordered pair from ","unordered pairs from ") + "\\(" + render(argument(raw, 0), names).text +
                "\\), with repetition allowed";
@@ -1426,7 +1607,8 @@ std::string instanceAssumption(const Node& domain, const Names& names) {
     static const std::map<std::string, std::string> structures = {
         {"AddCommMonoid","a commutative additive monoid structure"}, {"AddCommGroup","an abelian group structure"},
         {"CommSemiring","a commutative semiring structure"},
-        {"Semiring","a semiring structure"}, {"Preorder","a preorder"}, {"LinearOrder","a linear order"},
+        {"Semiring","a semiring structure"}, {"Semifield","a semifield structure"},
+        {"Preorder","a preorder"}, {"LinearOrder","a linear order"},
         {"PartialOrder","a partial order"}, {"HasSubset","a subset relation"}
     };
     if (auto it = structures.find(key); it != structures.end())
@@ -1465,8 +1647,10 @@ std::string introductions(const Node*& current, Names& names) {
         const auto variable = checkedBinderName(names, id, parameter.at(2).atom);
         bindCarrier(names,parameter,variable);
         if (role(parameter,5) == "instance") {
-            if (introduceAlgebraAndOrder(parameter,names,current,text)) continue;
-            const auto sentence = visiblyMentions(parameter.at(4),id) ? std::string{} : instanceAssumption(domain,names);
+            const bool nameStructure = names.count("#explicit-addition:" + id);
+            if (!nameStructure && introduceAlgebraAndOrder(parameter,names,current,text)) continue;
+            const auto sentence = nameStructure || visiblyMentions(parameter.at(4),id)
+                ? std::string{} : instanceAssumption(domain,names);
             if (!sentence.empty()) text += sentence + ". ";
             else if (boundRole == "proof")
                 text += "Let \\(" + variable + "\\) be a proof of \\(" + render(domain,names).text + "\\). ";
@@ -1530,6 +1714,17 @@ bool isStandardRationalOrder(const Node& expression, const std::string& carrier)
     if (relation == "LT.lt" || relation == "GT.gt") return rationalStructure(raw.at(3),carrier,"LT").standard;
     if (relation == "LE.le" || relation == "GE.ge") return rationalStructure(raw.at(3),carrier,"LE").standard;
     return false;
+}
+
+void bindCheckedAddition(Names& names, const Node& binder, const std::string& symbol) {
+    const auto& domain = binder.at(3);
+    if ((applicationOf(domain,"AddMonoid",1) || applicationOf(domain,"AddCommMonoid",1)) &&
+        domain.at(2).is("v")) {
+        const auto& id = binder.at(1).atom;
+        if (role(binder,5) != "instance" ||
+            names.emplace("#default-addition:" + domain.at(2).at(1).atom,symbol).first->second != symbol)
+            names["#explicit-addition:" + id] = symbol;
+    }
 }
 
 std::string checkedBinderName(Names& names, const std::string& id, const std::string& hint) {

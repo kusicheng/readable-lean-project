@@ -654,6 +654,93 @@ private:
 
     enum class Matched { none, witnesses, subtype };
 
+    // A single-constructor proposition can be unpacked into its fields in a
+    // pattern match. Check the actual constructor telescope: the branch count
+    // and its binder names alone do not establish what the fields mean.
+    std::optional<bool> unpackProperty(const Node& raw, const Node& expected, const Context& ctx) {
+        const auto matcher = matchers_.find(head(raw));
+        if (matcher == matchers_.end() || !raw.is("a") || raw.children.size() < 5) return {};
+        const auto& info = *matcher->second;
+        if (info.children.size() != 6 || info.at(1).atom != std::to_string(raw.children.size()-5) || info.at(2).atom != "1" ||
+            info.at(3).children.size() != 1 || info.at(4).atom != "0") return {};
+        const auto& subject = argument(raw,1);
+        const auto* type = evidenceType(subject,ctx);
+        const auto& motive = term(argument(raw,2));
+        if (!type || !motive.is("l") || attribute(motive,6) != "proof" ||
+            !sameKernelTerm(*type,motive.at(3)) || !sameKernelTerm(expected,motive.at(4))) return {};
+        const auto family = head(*type);
+        const auto ctor = propertyConstructors_.find(info.at(5).atom);
+        if (ctor != propertyConstructors_.end()) {
+            const auto* spec = ctor->second;
+            const Node* result = &spec->at(1);
+            while (result->is("q")) result = &result->at(4);
+            const auto& fields = spec->at(2).children;
+            if (head(*result) != family || fields.empty() ||
+                info.at(3).at(0).atom != std::to_string(fields.size())) return {};
+
+            // Apply the structure parameters, then each branch variable, to
+            // obtain the exact type of the next field, including dependencies.
+            Node args;
+            args.array = true;
+            args.children = {raw.at(0), raw.at(1)};
+            const auto& target = term(*type);
+            if (target.is("a"))
+                args.children.insert(args.children.end(),target.children.begin()+2,target.children.end());
+            auto inner = ctx;
+            const Node* branch = &term(argument(raw,0));
+            std::vector<std::string> facts;
+            for (std::size_t i=0; i<fields.size(); ++i) {
+                if (!branch->is("l") || attribute(*branch,6) != "proof") return {};
+                Node var;
+                var.array = true;
+                var.children = {raw.at(0),branch->at(1),branch->at(6)};
+                var.children[0].atom = "v";
+                args.children.push_back(std::move(var));
+                const auto domain = instantiate(spec->at(1),args,true,args.children.size()-1);
+                if (!domain || !sameKernelTerm(*domain,branch->at(3)) || !introduce(*branch,nullptr,inner,false))
+                    return {};
+                const auto& id = branch->at(1).atom;
+                facts.push_back(inner.assumptions.at(id));
+                inner.provedFacts.insert(id);
+                branch = &branch->at(4);
+            }
+            const auto constructed = instantiate(spec->at(1),args,true);
+            const auto* conclusion = evidenceType(*branch,inner);
+            if (!constructed || !sameKernelTerm(*constructed,*type) ||
+                !conclusion || !sameKernelTerm(*conclusion,expected)) return {};
+            const auto& source = term(subject);
+            const auto claim = formula(*type,ctx);
+            if (!claim) return {};
+            if (source.is("v") && ctx.assumptions.count(source.at(1).atom)) {
+                prose_ << "By the definition of " << *claim << ", ";
+            } else {
+                if (!derive(subject,type,ctx,true)) return false;
+                prose_ << "By the definition of this property, ";
+            }
+            for (std::size_t i=0; i<facts.size(); ++i)
+                prose_ << (i==0 ? "" : i+1==facts.size() ? " and " : ", ") << facts[i];
+            prose_ << (facts.size()==1 ? " holds.\n" : " hold.\n");
+
+            // Two fields used verbatim as the two conjuncts need no second
+            // display. Check their identifiers, positions and the And premises.
+            const auto& body = term(*branch);
+            if (facts.size()==2 && head(body)=="And.intro" && body.children.size()==6) {
+                const auto& first = term(argument(raw,0));
+                const auto& second = term(first.at(4));
+                std::vector<const Node*> premises;
+                if (proofArguments(body,premises) && premises==std::vector<const Node*>{&body.at(4),&body.at(5)} &&
+                    body.at(4).is("v") && body.at(4).at(1).atom==first.at(1).atom &&
+                    body.at(5).is("v") && body.at(5).at(1).atom==second.at(1).atom &&
+                    sameKernelTerm(body.at(2),first.at(3)) && sameKernelTerm(body.at(3),second.at(3))) {
+                    prose_ << "This proves the conjunction.\n";
+                    return true;
+                }
+            }
+            return derive(*branch,&expected,std::move(inner),true);
+        }
+        return {};
+    }
+
     Matched witnessMatch(const std::string& name, const Node& raw, const Context& ctx) const {
         const auto it = matchers_.find(name);
         if (it == matchers_.end() || !raw.is("a")) return Matched::none;
@@ -1045,7 +1132,7 @@ private:
                 reasons.push_back(*arithmetic);
             return true;
         }
-        if (raw.is("l") || raw.is("t") || name == "Exists.intro" || name == "And.intro" ||
+        if (raw.is("l") || raw.is("t") || name == "Exists.intro" || name == "Nonempty.intro" || name == "And.intro" ||
             name == "Or.inl" || name == "Or.inr" || name == "Iff.intro") {
             prose_ << "The substitution uses the following argument.\n\\begin{proofstep}\n";
             if (!derive(expr,nullptr,ctx,true)) return false;
@@ -1272,7 +1359,11 @@ private:
         const auto kind = attribute(binder,5);
         // The type and value trees open binders independently.
         const auto variable = checkedBinderName(ctx.names, id, hint);
-        if (type && type->is("q")) ctx.names[type->at(1).atom] = variable;
+        bindCheckedAddition(ctx.names,binder,variable);
+        if (type && type->is("q")) {
+            ctx.names[type->at(1).atom] = variable;
+            bindCheckedAddition(ctx.names,*type,variable);
+        }
         if (role == "proof") {
             const auto hypothesis = formula(binder.at(3), ctx);
             if (!hypothesis) return false;
@@ -1376,6 +1467,8 @@ private:
         if (!raw.is("a") && !raw.is("c")) return false;
         const auto& fn = raw.is("a") ? raw.at(1) : raw;
         const auto name = head(raw);
+        if (name == "Nonempty.intro" && (!raw.is("a") || raw.children.size() != 4))
+            return fail("missing nonemptiness witness");
         if (name == "Lean.opaqueId" && raw.is("a") && raw.children.size() == 4 &&
             attribute(fn,2) == "proof")
             return derive(raw.at(3),&raw.at(2),std::move(ctx),narrateBinders);
@@ -1474,6 +1567,12 @@ private:
         }
         const auto matched = witnessMatch(name,raw,ctx);
         if (matched == Matched::subtype) return unpackSubtype(raw,*goal,ctx);
+        if (matched == Matched::none && expected) {
+            // The declaration and its proof open their binders independently.
+            // The checked annotation shares its local identifiers with the branch.
+            const auto& claim = expr.is("p") ? expr.at(1) : *expected;
+            if (auto unpacked = unpackProperty(raw,claim,ctx)) return *unpacked;
+        }
         const bool unpack = matched == Matched::witnesses;
         const auto rule = rules.find(name);
         const auto earlier = earlier_.find(name);

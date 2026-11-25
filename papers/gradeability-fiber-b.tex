@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{A weighted pigeonhole problem}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}\textbf{Exists less than of sum less than.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(\sum_{i\in s}\left(f\left(i\right)\right) < \sum_{i\in s}\left(g\left(i\right)\right)\). Then \(\exists i\, :\, \iota,\; i \in s \land f\left(i\right) < g\left(i\right)\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \left|s\right| \mathbin{\bullet} b\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}\textbf{Summing over the fibers of a map.} Let \(\iota\), \(\kappa\), and \(M\) be types. Equip \(M\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\iota\). Let \(t\) be a finite subset of \(\kappa\). Assume equality on \(\kappa\) is decidable. Let \(g\) be a function of type \(\iota \to \kappa\). Assume \(\forall i\, :\, \iota,\; i \in s \implies g\left(i\right) \in t\). Let \(f\) be a function of type \(\iota \to M\). Then \(\sum_{j\in t}(\sum_{i\in \{i\in s \mid g(i) = j\}}(f(i))) = \sum_{i\in s}(f(i))\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{Inst is ordered cancel sum monoid.} \(\text{translation preserves and reflects order on }\mathbb{N}\).
+\end{description}
+
+\section{Results}
+\begin{theorem}[{A fiber with weight above the bound for maps into the target}]\label{theorem:1}
+Let \(s\) and \(t\) be finite subsets of \(\mathbb{N}\). Let \(f\) and \(w\) be functions of type \(\mathbb{N} \to \mathbb{N}\). Let \(b\) be a natural number. Assume \(\forall x\, :\, \mathbb{N},\; x \in s \implies f\left(x\right) \in t\). Assume \(\left|t\right| \cdot b < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+\begin{center}
+\(\displaystyle \exists y\, :\, \mathbb{N},\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }\mathbb{N}\).
+By Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} with \(\iota = \mathbb{N}\) and \(M = \mathbb{N}\), we obtain \(\sum_{x\in t}\left(b\right) = \left|t\right| \mathbin{\bullet} b\).
+Use the hypothesis \(\left|t\right| \cdot b < \sum_{x\in s}\left(w\left(x\right)\right)\).
+By transitivity of the displayed relations, we obtain \(\sum_{x\in t}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\).
+Use the hypothesis \(\forall x\, :\, \mathbb{N},\; x \in s \implies f\left(x\right) \in t\).
+By Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f} with \(\iota = \mathbb{N}\) and \(\kappa = \mathbb{N}\) and \(M = \mathbb{N}\) and \(w\) in place of its parameter \(f\), we obtain \(\sum_{j\in t}(\sum_{i\in \{i\in s \mid f(i) = j\}}(w(i))) = \sum_{i\in s}(w(i))\).
+Reversing the equality, we obtain \(\sum_{i\in s}(w(i)) = \sum_{j\in t}(\sum_{i\in \{i\in s \mid f(i) = j\}}(w(i)))\).
+By transitivity of the displayed relations, we obtain \(\sum_{x\in t}(b) < \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
+By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74} with \(\iota = \mathbb{N}\) and \(M = \mathbb{N}\), we obtain \(\exists y\, :\, \mathbb{N},\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
+
+\end{proof}
+
+\end{document}

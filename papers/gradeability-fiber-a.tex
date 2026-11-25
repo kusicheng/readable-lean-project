@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{A weighted pigeonhole problem}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c745f73756d5f66696265725f6f665f6d6170735f746f5f6f665f6e736d756c5f6c745f73756d}\textbf{Exists less than sum fiber of maps to of repeated addition less than sum.} Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(w\left(x\right)\right)\). Then \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{Inst is ordered cancel sum monoid.} \(\text{translation preserves and reflects order on }\mathbb{N}\).
+\end{description}
+
+\section{Results}
+\begin{theorem}[{A fiber with weight above the bound for maps into the target}]\label{theorem:1}
+Let \(s\) and \(t\) be finite subsets of \(\mathbb{N}\). Let \(f\) and \(w\) be functions of type \(\mathbb{N} \to \mathbb{N}\). Let \(b\) be a natural number. Assume \(\forall x\, :\, \mathbb{N},\; x \in s \implies f\left(x\right) \in t\). Assume \(\left|t\right| \cdot b < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+\begin{center}
+\(\displaystyle \exists y\, :\, \mathbb{N},\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }\mathbb{N}\).
+Use the hypothesis \(\forall x\, :\, \mathbb{N},\; x \in s \implies f\left(x\right) \in t\).
+Use the hypothesis \(\left|t\right| \cdot b < \sum_{x\in s}\left(w\left(x\right)\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f73756d5f66696265725f6f665f6d6170735f746f5f6f665f6e736d756c5f6c745f73756d} with \(\alpha = \mathbb{N}\) and \(\beta = \mathbb{N}\) and \(M = \mathbb{N}\), we obtain \(\exists y\, :\, \mathbb{N},\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
+
+\end{proof}
+
+\end{document}

@@ -8,8 +8,27 @@
 #include <stdexcept>
 #include <string>
 
+namespace {
+constexpr char usage[] =
+    "Usage: lean-to-latex INPUT.json OUTPUT.tex [--chapter FILE | --paper TITLE]\n"
+    "       lean-to-latex --list-chapter FILE\n"
+    "       lean-to-latex --help\n"
+    "\n"
+    "  --paper TITLE        Create an article from the checked declarations.\n"
+    "  --chapter FILE       Use the sections and selections in a JSON layout.\n"
+    "  --list-chapter FILE  Print the declarations selected by a layout.\n"
+    "  --threshold N        Set the display threshold for a formula (default 5).\n"
+    "  --proof-budget N     Set the detail budget in paper mode (default 24).\n"
+    "  --proof-weights KEY=N,...  Override weights for hypothesis, application,\n"
+    "                             rewrite, binding, branch, or certificate.\n";
+}
+
 int main(int argc, char* argv[]) {
     try {
+        if (argc == 2 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
+            std::cout << usage;
+            return 0;
+        }
         if (argc == 3 && std::string(argv[1]) == "--list-chapter") {
             const auto chapter = proof::readChapter(argv[2]);
             for (const auto& section : chapter.sections)
@@ -17,9 +36,7 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         if (argc < 3 || argc % 2 == 0) {
-            std::cerr << "Usage: lean-to-latex INPUT.json OUTPUT.tex [--threshold N] [--chapter FILE | --paper TITLE] [--proof-budget N]\n"
-                         "       [--proof-weights hypothesis=1,application=1,rewrite=2,binding=1,branch=4,certificate=3]\n"
-                         "       lean-to-latex --list-chapter FILE\n";
+            std::cerr << usage;
             return 2;
         }
         std::size_t threshold = 5;

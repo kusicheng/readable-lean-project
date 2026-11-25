@@ -347,6 +347,27 @@ private def propertyConstructor? (name : Name) : MetaM (Option Json) := do
     return some <| Json.arr #[text name.toString, ← serialize ctor.type false,
       Json.arr (fields.map fun field => text field.toString), text (if property then "property" else "object")]
 
+/-- Verify that the sole branch takes the actual fields, in constructor order.
+    Proof irrelevance would make definitional equality too permissive here. -/
+private def matchedPropertyConstructor? (name : Name) (info : Match.MatcherInfo) :
+    MetaM (Option Name) := do
+  unless info.numDiscrs == 1 && info.altNumParams.size == 1 &&
+      Match.getNumEqsFromDiscrInfos info.discrInfos == 0 do return none
+  let env ← getEnv
+  forallBoundedTelescope (← getConstInfo name).type (some info.arity) fun xs _ => do
+    if xs.size != info.numParams + 3 then return none
+    let motive := xs[info.numParams]!
+    let target ← whnf (← inferType xs[info.numParams + 1]!)
+    let some family := target.getAppFn.constName? | return none
+    unless isStructure env family && (← isProp target) do return none
+    let ctor := getStructureCtor env family
+    if ctor.numFields == 0 || info.altNumParams != #[ctor.numFields] then return none
+    forallBoundedTelescope (← inferType xs[info.numParams + 2]!) (some ctor.numFields) fun fields result => do
+      unless fields.size == ctor.numFields && result.isApp && result.appFn! == motive do return none
+      let pattern := result.appArg!
+      unless pattern.isAppOf ctor.name && pattern.getAppArgs == target.getAppArgs ++ fields do return none
+      return some ctor.name
+
 /-- Internal declarations cannot be cited as public prerequisites. Follow their
     actual theorem bodies, including private user lemmas, lifted proofs and
     numeric bootstrap helpers. Public mathematical theorems retain their citation
@@ -419,6 +440,7 @@ private def exportDocument (modules : Array Name) (requests : List String) : Met
   let mut matchers := #[]
   let mut recursors := #[]
   let mut propertyConstructors := #[]
+  let mut matchedConstructors : NameSet := {}
   let mut helperBodies := #[]
   let mut candidates : NameSet := {}
   for selection in theorems do
@@ -442,10 +464,18 @@ private def exportDocument (modules : Array Name) (requests : List String) : Met
         prerequisites := prerequisites.push (Json.arr #[text name.toString,
           ← withCurrHeartbeats (serialize type false), text "public"])
     if let some info := getMatcherInfoCore? env name then
-      matchers := matchers.push <| Json.arr #[
+      let mut record := #[
         text name.toString, text (toString info.numParams), text (toString info.numDiscrs),
         Json.arr (info.altNumParams.map (fun size => text (toString size))),
         text (toString (Match.getNumEqsFromDiscrInfos info.discrInfos))]
+      if let some ctor ← withCurrHeartbeats (matchedPropertyConstructor? name info) then
+        matchedConstructors := matchedConstructors.insert ctor
+        record := record.push (text ctor.toString)
+      matchers := matchers.push (Json.arr record)
+  for name in matchedConstructors.toList.toArray.qsort (fun a b => a.toString < b.toString) do
+    if !dependencies.contains name then
+      if let some ctor ← withCurrHeartbeats (propertyConstructor? name) then
+        propertyConstructors := propertyConstructors.push ctor
   let (definitions, allCandidates) ← localDefinitions modules candidates
   let mut symbols := #[]
   for name in allCandidates.toList.toArray.qsort (fun a b => a.toString < b.toString) do

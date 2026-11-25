@@ -85,6 +85,8 @@ std::optional<std::string> describeCheckedStatement(const Node& type);
 std::optional<std::string> describeCheckedDefinition(const std::string& fullName,
                                                       const Node& type, const Node& value);
 std::string checkedBinderName(Names& names, const std::string& id, const std::string& hint);
+// Remember which additive structure governs an unqualified repeated sum on this carrier.
+void bindCheckedAddition(Names& names, const Node& binder, const std::string& symbol);
 void prepareCheckedNames(Node& document);
 
 } // namespace proof

@@ -105,6 +105,7 @@ static std::string documentedTitle(const std::string& doc) {
     const std::string version = "This is the version of **";
     if (line.compare(0,version.size(),version)==0)
         line.erase(0,version.size()-2);
+    if (line.compare(0,6,"The **")==0) line.erase(0,4);
     const bool bold = line.compare(0,2,"**")==0;
     std::string direction;
     if (bold) {
@@ -152,6 +153,27 @@ static bool titleApplication(const Node& n, const char* name, std::size_t arity)
 
 static bool titleVariable(const Node& n, const std::string& id) {
     return n.is("v") && n.at(1).atom==id;
+}
+
+// Different formulations may share the same documented theorem name.
+// Identify the indexing in the checked sum rather than its declaration name.
+static std::string sumForm(const Node& statement) {
+    const Node* conclusion = &statement;
+    while (conclusion->is("q")) conclusion = &conclusion->at(4);
+    if (!titleApplication(*conclusion,"LE.le",4)) return {};
+    const auto& sum = argument(*conclusion,1);
+    if (!titleApplication(sum,"Finset.sum",5)) return {};
+    if (titleApplication(sum.at(2),"Finset",1)) return " (sum over sets)";
+    const auto& summand = argument(sum,0);
+    if (head(sum.at(2))!="Nat" || !summand.is("l")) return {};
+    const auto bySize = [&](auto&& self,const Node& n) -> bool {
+        if (n.is("a") && head(n)=="Finset.slice" &&
+            titleVariable(argument(n,0),summand.at(1).atom)) return true;
+        return std::any_of(n.children.begin(),n.children.end(),[&](const Node& child) {
+            return child.array && self(self,child);
+        });
+    };
+    return bySize(bySize,summand.at(4)) ? " (sum by set size)" : "";
 }
 
 // The checked application f(x) identifies both the map and its bound argument.
@@ -239,6 +261,111 @@ static std::string fiberSetting(const Node& statement, const Node& witness, cons
     return {};
 }
 
+// A title may use a Hamiltonian hypothesis only for the walk that it describes.
+// The theorem name, the printed variable name and the order of hypotheses can all change.
+static std::string hamiltonianSubject(const Node& statement, const Node& subject) {
+    if (!subject.is("v")) return {};
+    for (const Node* q=&statement; q->is("q"); q=&q->at(4)) {
+        const auto& h = q->at(3);
+        if (!h.is("a") || !titleVariable(argument(h,0),subject.at(1).atom)) continue;
+        if (titleApplication(h,"SimpleGraph.Walk.IsHamiltonian",6)) return "Hamiltonian path";
+        if (titleApplication(h,"SimpleGraph.Walk.IsHamiltonianCycle",5)) return "Hamiltonian cycle";
+        if (titleApplication(h,"SimpleGraph.IsHamiltonian",4)) return "Hamiltonian graph";
+        if (titleApplication(h,"SimpleGraph.Walk.IsPath",5)) return "path";
+    }
+    return {};
+}
+
+static std::string hamiltonianTitle(const Node& statement, const Node& claim) {
+    if (!claim.is("a")) return {};
+    const auto& last = argument(claim,0);
+    const bool path = titleApplication(claim,"SimpleGraph.Walk.IsHamiltonian",6);
+    const bool cycle = titleApplication(claim,"SimpleGraph.Walk.IsHamiltonianCycle",5);
+    if (path || cycle) {
+        if (titleApplication(last,"SimpleGraph.Walk.map",8))
+            return path ? "When the image walk is a Hamiltonian path" :
+                          "When the image walk is a Hamiltonian cycle";
+        if (path && hamiltonianSubject(statement,last) == "path")
+            return "A sufficient condition for a path to be Hamiltonian";
+    }
+    if (titleApplication(claim,"SimpleGraph.Walk.IsPath",5) &&
+        hamiltonianSubject(statement,last) == "Hamiltonian path")
+        return "Absence of repeated vertices in a Hamiltonian path";
+    if (titleApplication(claim,"SimpleGraph.Walk.IsCycle",4) &&
+        hamiltonianSubject(statement,last) == "Hamiltonian cycle")
+        return "The cycle property of a Hamiltonian cycle";
+    if (titleApplication(claim,"SimpleGraph.Connected",2) &&
+        hamiltonianSubject(statement,last) == "Hamiltonian graph")
+        return "Connectivity of a Hamiltonian graph";
+    if (titleApplication(claim,"SimpleGraph.IsHamiltonian",4) && last.is("v")) {
+        for (const Node* q=&statement; q->is("q"); q=&q->at(4)) {
+            const auto& h = q->at(3);
+            if (titleApplication(h,"LE.le",4) && titleApplication(h.at(2),"SimpleGraph",1) &&
+                titleApplication(h.at(3),"SimpleGraph.instLE",1) &&
+                titleVariable(argument(h,0),last.at(1).atom) &&
+                hamiltonianSubject(statement,argument(h,1)) == "Hamiltonian graph")
+                return "Hamiltonicity under edge inclusion";
+        }
+    }
+    if (titleApplication(claim,"Iff",2)) {
+        const auto& lhs = argument(claim,1);
+        if (!lhs.is("a") || !argument(lhs,0).is("v")) return {};
+        const auto& walk = argument(lhs,0).at(1).atom;
+        if (titleApplication(lhs,"SimpleGraph.Walk.IsHamiltonian",6) && last.is("q")) {
+            const auto& mem = last.at(4);
+            if (titleApplication(mem,"Membership.mem",5) && titleApplication(mem.at(4),"List.instMembership",1) &&
+                titleApplication(mem.at(5),"SimpleGraph.Walk.support",5) &&
+                titleVariable(argument(mem.at(5),0),walk) && titleVariable(argument(mem,0),last.at(1).atom))
+                return "A vertex-coverage criterion for a Hamiltonian path";
+        }
+        if (titleApplication(lhs,"SimpleGraph.Walk.IsHamiltonianCycle",5) && titleApplication(last,"And",2) &&
+            titleApplication(argument(last,1),"SimpleGraph.Walk.IsCycle",4) &&
+            titleVariable(argument(argument(last,1),0),walk)) {
+            const auto& property = argument(last,0);
+            if (titleApplication(property,"SimpleGraph.Walk.IsHamiltonian",6) &&
+                titleApplication(argument(property,0),"SimpleGraph.Walk.tail",5) &&
+                titleVariable(argument(argument(property,0),0),walk))
+                return "Characterizing Hamiltonian cycles by their tails";
+            if (property.is("q") && titleApplication(property.at(4),"Eq",3)) {
+                const auto& count = argument(property.at(4),1);
+                if (titleApplication(count,"List.count",4) &&
+                    titleApplication(count.at(3),"instBEqOfDecidableEq",2) &&
+                    titleApplication(argument(count,0),"List.tail",2)) {
+                    const auto& vertices = argument(argument(count,0),0);
+                    if (titleApplication(vertices,"SimpleGraph.Walk.support",5) && titleVariable(argument(vertices,0),walk))
+                        return "Characterizing Hamiltonian cycles by vertex counts";
+                }
+            }
+        }
+    }
+    if (titleApplication(claim,"Membership.mem",5) && titleApplication(claim.at(4),"List.instMembership",1) &&
+        titleApplication(claim.at(5),"SimpleGraph.Walk.support",5)) {
+        const auto subject = hamiltonianSubject(statement,argument(claim.at(5),0));
+        if (!subject.empty()) return "Vertices visited by a " + subject;
+    }
+    if (!titleApplication(claim,"Eq",3)) return {};
+    const auto& lhs = argument(claim,1);
+    if (titleApplication(lhs,"SimpleGraph.Walk.length",5)) {
+        const auto subject = hamiltonianSubject(statement,argument(lhs,0));
+        if (!subject.empty()) return "Length of a " + subject;
+    }
+    if (titleApplication(lhs,"List.toFinset",3) && titleApplication(argument(lhs,0),"SimpleGraph.Walk.support",5)) {
+        const auto subject = hamiltonianSubject(statement,argument(argument(lhs,0),0));
+        if (!subject.empty()) return "The vertex set of a " + subject;
+    }
+    if (titleApplication(lhs,"List.count",4) && titleApplication(lhs.at(3),"instBEqOfDecidableEq",2) &&
+        titleApplication(argument(lhs,0),"SimpleGraph.Walk.support",5)) {
+        const auto& vertices = argument(lhs,0);
+        const auto subject = hamiltonianSubject(statement,argument(vertices,0));
+        if (!subject.empty()) {
+            const auto& start = vertices.at(4);
+            return (start.is("v") && titleVariable(lhs.at(4),start.at(1).atom) ?
+                    "Visits to the starting vertex of a " : "Visits to a specified vertex of a ") + subject;
+        }
+    }
+    return {};
+}
+
 static std::string resultTitle(const Node& record) {
     const auto& name = record.at(0).atom;
     const auto leaf = name.substr(name.find_last_of('.')+1);
@@ -254,6 +381,7 @@ static std::string resultTitle(const Node& record) {
     }
     const Node* conclusion = &record.at(1);
     while (conclusion->is("q")) conclusion = &conclusion->at(4);
+    if (const auto title = hamiltonianTitle(record.at(1),*conclusion); !title.empty()) return title;
     const auto comparison = head(*conclusion);
     const bool weak = comparison == "LE.le", strict = comparison == "LT.lt", equal = comparison == "Eq";
     if ((weak || strict || equal) && conclusion->is("a") && conclusion->children.size() >= 4) {
@@ -423,6 +551,8 @@ void applyChapterSymbols(Node& checked, const Chapter& chapter) {
 
 std::string declarationTitle(const std::string& name) {
     if (name == "Finset.powersetCard") return "Subsets of prescribed cardinality";
+    if (name == "SimpleGraph.Walk.IsHamiltonian") return "Hamiltonian paths";
+    if (name == "SimpleGraph.IsHamiltonian") return "Hamiltonian graphs";
     const auto leaf = name.substr(name.find_last_of('.') + 1);
     std::vector<std::string> words;
     std::string word;
@@ -485,13 +615,21 @@ std::string prerequisiteLabel(const std::string& name) {
 std::string wrapPaperMath(std::string text) {
     // The checked formula printer uses this atom only for the standard
     // rational reciprocal. Look in prerequisites as well as proof bodies.
-    if (text.find("\\mathord{\\frac{1}{") != std::string::npos) {
+    std::string conventions;
+    if (text.find("\\mathord{\\frac{1}{") != std::string::npos)
+        conventions += "\nFor rational reciprocals we use the convention \\(1/0 = 0\\).\n\n";
+    if (text.find("\\operatorname{prefix}_{") != std::string::npos)
+        conventions += "\nThe prefix \\(\\operatorname{prefix}_{p}(v)\\) follows the walk \\(p\\) through "
+                       "its first visit to \\(v\\). In \\(q \\mathbin{\\Vert} r\\), we follow \\(q\\) and then \\(r\\).\n\n";
+    if (text.find("\\operatorname{incl}_{") != std::string::npos)
+        conventions += "\nThe inclusion \\(\\operatorname{incl}_{G,H}\\) of graphs on the same vertex set "
+                       "fixes each vertex and carries each edge of \\(G\\) to the same edge in \\(H\\).\n\n";
+    if (!conventions.empty()) {
         const auto abstractEnd = text.find("\\end{abstract}\n");
         const std::string heading = abstractEnd == std::string::npos ? "\\maketitle\n" : "\\end{abstract}\n";
         const auto end = text.find(heading);
         if (end != std::string::npos)
-            text.insert(end + heading.size(), "\nFor rational reciprocals we use the convention "
-                        "\\(1/0 = 0\\).\n\n");
+            text.insert(end + heading.size(),conventions);
     }
     std::size_t start = 0;
     while ((start = text.find("\\(",start)) != std::string::npos) {
@@ -517,6 +655,21 @@ std::string wrapPaperMath(std::string text) {
         start += segment.size()+4;
     }
     return text;
+}
+
+static bool hamiltonianSingletonConvention(const Node& equation) {
+    const Node* eq = &equation;
+    while (eq->is("q")) eq = &eq->at(4);
+    if (!titleApplication(*eq,"Eq",3)) return false;
+    const auto& graph = argument(*eq,1);
+    const auto& implication = argument(*eq,0);
+    if (!titleApplication(graph,"SimpleGraph.IsHamiltonian",4) || !graph.at(2).is("v") ||
+        !implication.is("q") || !titleApplication(implication.at(3),"Ne",3)) return false;
+    const auto& size = argument(implication.at(3),1);
+    const auto& one = argument(implication.at(3),0);
+    return titleApplication(size,"Fintype.card",2) && titleVariable(size.at(2),graph.at(2).at(1).atom) &&
+           titleApplication(one,"OfNat.ofNat",3) && one.at(3).is("n") && one.at(3).at(1).atom == "1" &&
+           titleApplication(one.at(4),"instOfNatNat",1);
 }
 
 std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, const Chapter& chapter,
@@ -573,6 +726,8 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
                            << ordinal << "}\\textup{(D" << ordinal << ")} ";
                 }
                 output << *line << '\n';
+                if (name == "SimpleGraph.IsHamiltonian" && hamiltonianSingletonConvention(equation))
+                    output << "In particular, every graph on a single vertex is Hamiltonian by this convention.\n";
             }
             if (numbered && !(*names)[i].atom.empty())
                 rules.emplace((*names)[i].atom,DefiningEquation{&equation,
@@ -705,18 +860,25 @@ Chapter automaticPaper(const Node& checked, const std::string& title) {
     }
     std::map<std::string,std::vector<std::string>> sections;
     std::map<std::string,std::string> titles;
+    std::map<std::string,std::size_t> titleCounts;
     if (checked.children.size() > 8) {
         static const std::map<std::string,std::string> headings{
             {"Powerset","Power sets"}, {"SSubsets","Proper subsets"}, {"powersetCard","Subsets of prescribed size"},
             {"Bipartite","Bipartite relations"}, {"OrderedSemiring","Bounds in ordered semirings"},
             {"StrictOrderedSemiring","Strict bounds in ordered semirings"}, {"Finset","Finite sets"},
-            {"Set","Sets"}, {"Fintype","Finite types"}, {"Nat","Natural numbers"}, {"SimpleGraph","Simple graphs"}
+            {"Set","Sets"}, {"Fintype","Finite types"}, {"Nat","Natural numbers"}, {"SimpleGraph","Simple graphs"},
+            {"Walk","Walks"}
         };
         for (const auto& entry : checked.at(8).children) {
             const auto& scope = entry.at(1).children;
             auto& names = sections[entry.at(0).atom];
-            if (entry.children.size() > 3 && entry.at(3).isString())
-                titles.emplace(entry.at(0).atom,documentedTitle(entry.at(3).atom));
+            if (entry.children.size() > 3 && entry.at(3).isString()) {
+                const auto title = documentedTitle(entry.at(3).atom);
+                if (!title.empty()) {
+                    titles.emplace(entry.at(0).atom,title);
+                    ++titleCounts[title];
+                }
+            }
             const auto add = [&](const std::string& name) {
                 if (name.empty() || name == "[anonymous]") return;
                 const auto leaf = name.substr(name.find_last_of('.') + 1);
@@ -734,7 +896,9 @@ Chapter automaticPaper(const Node& checked, const std::string& title) {
         const auto& path = sections[name];
         if (chapter.sections.empty() || chapter.sections.back().sourceHeadings != path)
             chapter.sections.push_back({path.empty() ? "Results" : path.back(),{},{},{},path});
-        chapter.sections.back().theorems.push_back({name, {}, {}, titles[name]});
+        auto theoremTitle = titles[name];
+        if (!theoremTitle.empty() && titleCounts.at(theoremTitle)>1) theoremTitle += sumForm(record->at(1));
+        chapter.sections.back().theorems.push_back({name, {}, {}, theoremTitle});
     }
     if (chapter.sections.size() == 1) {
         chapter.sections.front().title = "Results";
