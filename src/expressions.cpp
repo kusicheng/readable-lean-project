@@ -1,12 +1,34 @@
 #include "expressions.hpp"
 
 #include <algorithm>
+#include <charconv>
 #include <istream>
 #include <iterator>
 #include <stdexcept>
 #include <utility>
 
 namespace proof {
+bool proofArguments(const Node& raw, std::vector<const Node*>& proofs) {
+    if (raw.is("c") || raw.is("v")) return true;
+    if (!raw.is("a")) return false;
+    const auto& fn = raw.at(1);
+    if (fn.children.size() < 5 || !fn.at(4).array) return false;
+    for (const auto& slot : fn.at(4).children) {
+        std::size_t i = 0;
+        const auto end = slot.atom.data() + slot.atom.size();
+        const auto parsed = std::from_chars(slot.atom.data(), end, i);
+        if (parsed.ec != std::errc{} || parsed.ptr != end || i >= raw.children.size()-2)
+            return false;
+        proofs.push_back(&raw.at(i+2));
+    }
+    return true;
+}
+
+std::string withSuperscript(std::string base, const std::string& exponent) {
+    // TeX needs a new atom for an additional superscript on a primed symbol.
+    if (base.find('^') != std::string::npos) base = "{" + base + "}";
+    return base + "^{" + exponent + "}";
+}
 namespace {
 
 class Parser {
@@ -196,9 +218,28 @@ std::string format(const Math& expression, const Names& names, int enclosing) {
     case Kind::nat: return "\\mathbb{N}";
     case Kind::var: return names.at(expression.value);
     case Kind::numeral: return expression.value;
+    case Kind::function: {
+        rendered = expression.hint.size() == 1 ? expression.hint :
+                   "\\operatorname{" + expression.hint + "}";
+        if (parts.empty()) return rendered;
+        rendered += "(";
+        for (std::size_t i = 0; i < parts.size(); ++i) {
+            if (i) rendered += ", ";
+            rendered += format(parts[i], names, 0);
+        }
+        return rendered + ")";
+    }
+    case Kind::power: {
+        rendered = withSuperscript(format(parts[0], names, 5),format(parts[1], names, 0));
+        return enclosing > 4 ? "(" + rendered + ")" : rendered;
+    }
     case Kind::mul: precedence = 3; break;
     case Kind::add: precedence = 2; break;
-    case Kind::equal: case Kind::divides: precedence = 1; break;
+    case Kind::equal: case Kind::le: case Kind::lt: case Kind::divides: precedence = 1; break;
+    case Kind::conjunction:
+        rendered = format(parts[0], names, parts[0].kind == Kind::iff || parts[0].kind == Kind::exists) +
+                   " \\land " + format(parts[1], names, parts[1].kind == Kind::iff);
+        return enclosing > 0 ? "(" + rendered + ")" : rendered;
     case Kind::iff:
         rendered = format(parts[0], names, parts[0].kind == Kind::iff || parts[0].kind == Kind::exists) +
                    " \\iff " + format(parts[1], names, parts[1].kind == Kind::iff);
@@ -216,6 +257,8 @@ std::string format(const Math& expression, const Names& names, int enclosing) {
     const char* op = " + ";
     if (expression.kind == Kind::mul) op = " \\cdot ";
     if (expression.kind == Kind::equal) op = " = ";
+    if (expression.kind == Kind::le) op = " \\le ";
+    if (expression.kind == Kind::lt) op = " < ";
     if (expression.kind == Kind::divides) op = " \\mid ";
     // Preserve right nesting for arithmetic, and parenthesize relations used as operands.
     const int left = precedence == 1 ? 2 : precedence;
@@ -265,7 +308,9 @@ bool Math::supported() const {
 }
 
 bool Math::proposition() const {
-    return kind == Kind::equal || kind == Kind::divides || kind == Kind::exists || kind == Kind::iff;
+    return kind == Kind::equal || kind == Kind::le || kind == Kind::lt ||
+           kind == Kind::divides || kind == Kind::exists || kind == Kind::iff ||
+           kind == Kind::conjunction;
 }
 
 std::size_t Math::complexity() const {
@@ -288,6 +333,12 @@ Math math(const Node& expression, const Substitution& substitutions) {
         return math(raw.at(5), inner);
     }
     const auto name = head(raw);
+    if (!raw.mathSymbol.empty()) {
+        std::vector<Math> args;
+        for (std::size_t i = 2; raw.is("a") && i < raw.children.size(); ++i)
+            args.push_back(math(raw.at(i), substitutions));
+        return Math(Kind::function, name, raw.mathSymbol, std::move(args));
+    }
     if (name == "Nat") return Math(Kind::nat);
     if (name == "Nat.zero") return Math(Kind::numeral, "0");
     if (!raw.is("a")) return Math();
@@ -306,11 +357,12 @@ Math math(const Node& expression, const Substitution& substitutions) {
             return Math(Kind::exists, predicate.at(1).atom, predicate.at(2).atom,
                         {math(predicate.at(4), substitutions)});
     }
-    if (name == "Iff" && raw.children.size() == 4) {
+    if ((name == "Iff" || name == "And") && raw.children.size() == 4) {
         auto left = math(argument(raw, 1), substitutions);
         auto right = math(argument(raw, 0), substitutions);
         if (left.proposition() && right.proposition())
-            return Math(Kind::iff, {}, {}, {std::move(left), std::move(right)});
+            return Math(name == "And" ? Kind::conjunction : Kind::iff, {}, {},
+                        {std::move(left), std::move(right)});
         return Math();
     }
     const auto nativeInstance = [&](const char* instance) {
@@ -337,6 +389,17 @@ Math math(const Node& expression, const Substitution& substitutions) {
         operation = Kind::equal;
     if (name == "Dvd.dvd" && nativeInstance("Nat.instDvd"))
         operation = Kind::divides;
+    if ((name == "Nat.le" && raw.children.size() == 4) ||
+        (name == "LE.le" && nativeInstance("instLENat"))) operation = Kind::le;
+    if ((name == "Nat.lt" && raw.children.size() == 4) ||
+        (name == "LT.lt" && nativeInstance("instLTNat"))) operation = Kind::lt;
+    if (name == "Nat.pow" && raw.children.size() == 4) operation = Kind::power;
+    if (name == "HPow.hPow" && raw.children.size() == 8 &&
+        head(raw.at(2)) == "Nat" && head(raw.at(3)) == "Nat" && head(raw.at(4)) == "Nat") {
+        const auto& instance = raw.at(5);
+        if (head(instance) == "instHPow" && head(argument(instance, 0)) == "instPowNat" &&
+            head(argument(argument(instance, 0), 0)) == "instNatPowNat") operation = Kind::power;
+    }
     if (operation == Kind::unsupported) return Math();
     auto left = math(argument(raw, 1), substitutions);
     auto right = math(argument(raw, 0), substitutions);

@@ -10,6 +10,7 @@ namespace proof {
 struct Result {
     std::size_t theorems = 0;
     std::size_t incomplete = 0;
+    std::size_t incompleteDefinitions = 0;
     std::size_t alternates = 0;
 };
 

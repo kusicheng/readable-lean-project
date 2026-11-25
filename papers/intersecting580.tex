@@ -1,0 +1,151 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{The sharp bound for an intersecting family}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+Fix a ground set of n plus one points, with one distinguished point. How many subsets can we select if every two selected subsets share a point? Pairing each subset with its complement gives the upper bound. Selecting every subset that contains the distinguished point attains it. On a ground set of four points this permits eight of the sixteen subsets.
+\end{abstract}
+
+\section*{Definitions}
+\paragraph{Search.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Then \(\operatorname{search}\left(p, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Let \(k\) be a natural number. Then \(\operatorname{search}(p,\allowbreak{} k + 1) = \begin{cases}k + 1 &\text{if } p(k + 1)\\ \operatorname{search}(p,\allowbreak{} k) &\text{otherwise}\end{cases}\).
+
+\paragraph{Word.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\textup{(D3)} \(\operatorname{Word} = \operatorname{List}(\mathbb{B})\).
+
+\paragraph{Family.} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\textup{(D4)} \(\operatorname{Family} = \left(\operatorname{Word} \to \mathbb{B}\right)\).
+
+\paragraph{Share.} \par\noindent\refstepcounter{definingequation}\label{defeq:5}\textup{(D5)} Let \(x\) be a Boolean value. Let \(\mathit{xs}\) be a list of elements of \(\mathbb{B}\). Let \(y\) be a Boolean value. Let \(\mathit{ys}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{share}(\langle x\rangle \mathbin{\Vert} \mathit{xs},\allowbreak{} \langle y\rangle \mathbin{\Vert} \mathit{ys}) = (x \land y \lor \operatorname{share}(\mathit{xs},\allowbreak{} \mathit{ys}))\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:6}\textup{(D6)} Let \(x\) and \(x_{1}\) be elements of \(\operatorname{Word}\). Assume \(\forall x_{3}\, :\, \mathbb{B},\; \forall \mathit{xs}\, :\, \operatorname{List}(\mathbb{B}),\; \forall y\, :\, \mathbb{B},\; \forall \mathit{ys}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle x_{3}\rangle \mathbin{\Vert} \mathit{xs} \implies x_{1} = \langle y\rangle \mathbin{\Vert} \mathit{ys} \implies \mathrm{False}\). Then \(\operatorname{share}\left(x, x_{1}\right) = \mathrm{false}\).
+
+\paragraph{Intersects.} \par\noindent\refstepcounter{definingequation}\label{defeq:7}\textup{(D7)} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{Intersects}(n,\allowbreak{} f) = (\forall u\, :\, \operatorname{Word},\; \forall v\, :\, \operatorname{Word},\; \operatorname{length}(u) = n + 1 \implies \operatorname{length}(v) = n + 1 \implies f(u) = \mathrm{true} \implies f(v) = \mathrm{true} \implies \operatorname{share}(u,\allowbreak{} v) = \mathrm{true})\).
+
+\paragraph{Left.} \par\noindent\refstepcounter{definingequation}\label{defeq:8}\textup{(D8)} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{left}\left(t\right) = \langle \mathrm{true}\rangle \mathbin{\Vert} t\).
+
+\paragraph{Sample.} \par\noindent\refstepcounter{definingequation}\label{defeq:9}\textup{(D9)} \(\operatorname{sample}\left(0\right) = \langle \langle\,\rangle\rangle\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:10}\textup{(D10)} Let \(n\) be a natural number. Then \(\operatorname{sample}(n + 1) = \langle \langle \mathrm{false}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle \mathbin{\Vert} \langle \langle \mathrm{true}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle\).
+
+\paragraph{Complement.} \par\noindent\refstepcounter{definingequation}\label{defeq:11}\textup{(D11)} Let \(w\) be an element of \(\operatorname{Word}\). Then \(\operatorname{complement}\left(w\right) = \langle \operatorname{not}(x) \mid x\in w\rangle\).
+
+\paragraph{Right.} \par\noindent\refstepcounter{definingequation}\label{defeq:12}\textup{(D12)} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{right}(t) = \langle \mathrm{false}\rangle \mathbin{\Vert} \operatorname{complement}(t)\).
+
+\paragraph{Cardinality.} \par\noindent\refstepcounter{definingequation}\label{defeq:13}\textup{(D13)} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{card}(n,\allowbreak{} f) = \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{left}(t))\rangle) + \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{right}(t))\rangle)\).
+
+\paragraph{Attains.} \par\noindent\refstepcounter{definingequation}\label{defeq:14}\textup{(D14)} Let \(n\) and \(k\) be natural numbers. Then \(\operatorname{Attains}(n,\allowbreak{} k) = (\exists f\, :\, \operatorname{Family},\; \operatorname{Intersects}(n,\allowbreak{} f) \land \operatorname{card}(n,\allowbreak{} f) = k)\).
+
+\paragraph{Maximum size (\(M\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:15}\textup{(D15)} Let \(n\) be a natural number. Then \(M(n) = \operatorname{search}(\operatorname{Attains}(n),\allowbreak{} 2 \cdot \operatorname{length}(\operatorname{sample}(n)))\).
+
+\paragraph{Star.} \par\noindent\refstepcounter{definingequation}\label{defeq:16}\textup{(D16)} Let \(\mathit{tail}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{star}\left(\langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail}\right) = \mathrm{true}\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:17}\textup{(D17)} Let \(x\) be an element of \(\operatorname{Word}\). Assume \(\forall \mathit{tail}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail} \implies \mathrm{False}\). Then \(\operatorname{star}\left(x\right) = \mathrm{false}\).
+
+\paragraph{Star size (\(S\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:18}\textup{(D18)} Let \(n\) be a natural number. Then \(S\left(n\right) = \operatorname{card}\left(n, \operatorname{star}\right)\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:19}\textup{(D19)} \(S\left(0\right) = 1\).
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries Intersection}] Subsets are represented by binary membership words. Every two members of the family, including two choices of the same member, must share a point.
+\item[{\normalfont\bfseries M}] Maximum cardinality of an intersecting family on the distinguished point and n other points.
+\item[{\normalfont\bfseries E and D}] Numbers of complementary pairs with zero and two selected members, respectively, in a family of maximum cardinality.
+\item[{\normalfont\bfseries S}] Cardinality of the star consisting of all subsets containing the distinguished point.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6164645f7269676874}\textbf{Adding a natural number can only increase a sum.} Let \(n\) and \(k\) be natural numbers. Then \(n \le n + k\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f7a65726f}\textbf{Adding zero on the right.} Let \(n\) be a natural number. Then \(n + 0 = n\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e63656e737573}\textbf{Counting occupied places in complementary pairs.} Let \(n\) be a natural number. Then \(M(n) + E(n) = 2^{n} + D(n)\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}\textbf{An intersecting family excludes simultaneous complements.} Let \(n\) be a natural number. Then \(D(n) = 0\).
+\item[P5.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f696e697469616c}\textbf{The star on one point.} \(S(0) = 1\).
+\item[P6.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f646f75626c6573}\textbf{Adding a point doubles the star.} Let \(n\) be a natural number. Then \(S(n + 1) = S(n) \cdot 2\).
+\item[P7.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}\textbf{The star is an admissible family.} Let \(n\) be a natural number. Then \(S(n) \le M(n)\).
+\item[P8.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f616e746973796d6d}\textbf{Opposite inequalities imply equality.} Let \(n\) and \(m\) be natural numbers. If \(n \le m\) and \(m \le n\), then \(n = m\).
+\end{description}
+
+\section{One place per complementary pair}
+Index a pair by choosing which of the n other points occur alongside the distinguished point. The second member is the complement of the first. Every subset belongs to exactly one such pair, so there are two to the power n pairs. An empty pair contributes no members, a singly occupied pair contributes one, and a doubly occupied pair contributes two. Consequently the family size plus the number of empty pairs equals the number of pairs plus the number of doubly occupied pairs. Complements share no point, so an intersecting family has no doubly occupied pair. The first theorem gives this last counting inference for arbitrary family size s, empty count e, pair count p, and double count d.
+
+\begin{lemma}[{Occupancy bound}]\label{theorem:1}
+Let \(s\), \(e\), \(p\) and \(d\) be natural numbers. If \(s + e = p + d\) and \(d = 0\), then \(s \le p\).
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+s &\le s + e && \text{by Prerequisite~P\ref{premise:4e61742e6c655f6164645f7269676874}} \\
+ &= p + d && \text{by hypothesis} \\
+ &= p + 0 && \text{by hypothesis} \\
+ &= p. && \text{by Prerequisite~P\ref{premise:4e61742e6164645f7a65726f}}
+\end{align*}
+\end{proof}
+
+\begin{lemma}[{Maximum upper}]\label{theorem:2}
+Let \(n\) be a natural number. Then \(M(n) \le 2^{n}\).
+\end{lemma}
+
+\begin{proof}
+Applying \emph{Counting occupied places in complementary pairs} gives
+\[
+M(n) + E(n) = 2^{n} + D(n).
+\]
+Applying \emph{An intersecting family excludes simultaneous complements} gives \(D(n) = 0\).
+Apply Lemma~\ref{theorem:1} with \(s = M(n)\), \(e = E(n)\), \(p = 2^{n}\) and \(d = D(n)\) using \(M(n) + E(n) = 2^{n} + D(n)\) and \(D(n) = 0\).
+\end{proof}
+
+\section{A star attains the bound}
+The star selects the member containing the distinguished point from every pair. All selected subsets therefore intersect at that point. There is one choice when there are no other points, and adjoining another point doubles the number of star members by allowing that point to be included or omitted. Combining the size of the star with the upper bound determines the maximum.
+
+\begin{lemma}[{Star size}]\label{theorem:3}
+Let \(n\) be a natural number. Then \(S(n) = 2^{n}\).
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on \(n\).
+\begin{description}
+\item[Base case.] Applying \emph{The star on one point} gives \(S(0) = 1\).
+By the defining equations, this gives
+\[
+S(0) = 2^{0}.
+\]
+\item[Inductive step.] Let \(i\) be a natural number.
+As the induction hypothesis, assume
+\[
+S(i) = 2^{i}.
+\]
+\begin{align*}
+S(i + 1) &= S(i) \cdot 2 && \text{by Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f646f75626c6573}} \\
+ &= 2^{i + 1}. && \text{by the induction hypothesis}
+\end{align*}
+\end{description}
+This completes the induction.
+\end{proof}
+
+\begin{theorem}[{Exact maximum}]\label{theorem:4}
+Let \(n\) be a natural number. Then \(M(n) = 2^{n}\).
+\end{theorem}
+
+\begin{proof}
+Applying Lemma~\ref{theorem:2} gives
+\[
+M(n) \le 2^{n}.
+\]
+\begin{align*}
+2^{n} &= S(n) && \text{by Lemma~\ref{theorem:3}} \\
+ &\le M(n). && \text{by Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}}
+\end{align*}
+Applying \emph{Opposite inequalities imply equality} to \(M(n) \le 2^{n}\) and \(2^{n} \le M(n)\) gives
+\[
+M(n) = 2^{n}.
+\]
+\end{proof}
+
+\end{document}

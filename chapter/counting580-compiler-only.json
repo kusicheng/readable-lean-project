@@ -1,0 +1,22 @@
+{
+  "format": "paper",
+  "title": "Counting 580",
+  "symbols": {
+    "Counting580.openCount": "A",
+    "Counting580.forcedCount": "B"
+  },
+  "sections": [
+    {
+      "title": "Theorems",
+      "theorems": [
+        "Counting580.split_at_first_bit",
+        "Counting580.forced_zero",
+        "Counting580.two_step_recurrence",
+        "Counting580.forced_le_open",
+        "Counting580.two_bit_bound",
+        "Counting580.exponential_bound"
+      ],
+      "main": "Counting580.exponential_bound"
+    }
+  ]
+}

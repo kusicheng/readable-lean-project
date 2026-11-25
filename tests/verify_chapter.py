@@ -19,11 +19,13 @@ AUTOMATED = "Examples.two_dvd_double_automated"
 
 
 def checked_constants(expression):
+    if not expression:
+        return
     if expression[0] == "p":
         yield from checked_constants(expression[2])
     elif expression[0] == "c":
         yield expression[1]
-    else:
+    elif expression[0] not in ("v", "n", "s", "u"):
         for child in expression[1:]:
             if isinstance(child, list):
                 yield from checked_constants(child)

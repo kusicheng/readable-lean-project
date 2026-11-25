@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{How many edges fit across a bipartition?}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+Split a fixed set of vertices into two parts and join every vertex in one part to every vertex in the other. Which split gives the most edges? Moving vertices from the larger part to the smaller gives both a maximizing split and an exact count of the edges gained. The formal results use the part sizes as their variables.
+\end{abstract}
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries Complete bipartite graph}] A simple graph with two disjoint vertex parts, every possible edge between the parts, and no edges inside either part. With part sizes a and b, each edge has a unique endpoint in each part, so there are a times b edges.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f72696768745f636f6d6d}\textbf{Interchanging the last two summands.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n + m + k = n + k + m\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6173736f63}\textbf{Addition associativity.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n + m + k = n + (m + k)\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6d756c}\textbf{A sum times a common factor.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \((n + m) \cdot k = n \cdot k + m \cdot k\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f616464}\textbf{Multiplication distributes over addition.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n \cdot (m + k) = n \cdot m + n \cdot k\).
+\item[P5.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f636f6d6d}\textbf{Multiplication commutativity.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot m = m \cdot n\).
+\item[P6.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6164645f7269676874}\textbf{Adding a natural number can only increase a sum.} Let \(n\) and \(k\) be natural numbers. Then \(n \le n + k\).
+\end{description}
+
+\section{The effect of a transfer}
+Start with parts of sizes a and b plus d. Transfer d vertices from the second part to the first and join all pairs across the new parts. The new sizes are a plus d and b. In the second theorem, b is the sum of a and c, so c may be zero. Each moved vertex gains b edges to the vertices left behind and loses a edges to the old first part. Pairs of moved vertices stay in the same part throughout. The gain is therefore d times c.
+
+\begin{theorem}[{Transfer size}]\label{theorem:1}
+Let \(a\), \(b\) and \(d\) be natural numbers. Then \(a + d + b = a + (b + d)\).
+\end{theorem}
+
+\begin{proof}
+\begin{align*}
+a + d + b &= a + b + d && \text{by Prerequisite~P\ref{premise:4e61742e6164645f72696768745f636f6d6d}} \\
+ &= a + (b + d). && \text{by Prerequisite~P\ref{premise:4e61742e6164645f6173736f63}}
+\end{align*}
+\end{proof}
+
+\begin{lemma}[{Transfer gain}]\label{theorem:2}
+Let \(a\), \(b\), \(c\) and \(d\) be natural numbers. If \(b = a + c\), then \((a + d) \cdot b = a \cdot (b + d) + d \cdot c\).
+\end{lemma}
+
+\begin{proof}
+Apply \emph{A sum times a common factor}, use hypothesis and apply \emph{Multiplication distributes over addition}, \emph{Multiplication commutativity}, \emph{Addition associativity} and \emph{Multiplication distributes over addition} in order.
+\[
+\begin{aligned}
+(a + d) \cdot b &= a \cdot b + d \cdot b \\
+ &= a \cdot b + d \cdot (a + c) \\
+ &= a \cdot b + (d \cdot a + d \cdot c) \\
+ &= a \cdot b + (a \cdot d + d \cdot c) \\
+ &= a \cdot b + a \cdot d + d \cdot c \\
+ &= a \cdot (b + d) + d \cdot c.
+\end{aligned}
+\]
+\end{proof}
+
+\begin{lemma}[{Transfer bound}]\label{theorem:3}
+Let \(a\), \(b\), \(c\) and \(d\) be natural numbers. If \(b = a + c\), then \(a \cdot (b + d) \le (a + d) \cdot b\).
+\end{lemma}
+
+\begin{proof}
+Applying Lemma~\ref{theorem:2} to \(b = a + c\) gives
+\[
+(a + d) \cdot b = a \cdot (b + d) + d \cdot c.
+\]
+Applying \emph{Adding a natural number can only increase a sum} gives
+\[
+a \cdot (b + d) \le a \cdot (b + d) + d \cdot c.
+\]
+Rewriting \(a \cdot (b + d) \le a \cdot (b + d) + d \cdot c\) using \((a + d) \cdot b = a \cdot (b + d) + d \cdot c\) gives
+\[
+a \cdot (b + d) \le (a + d) \cdot b.
+\]
+\end{proof}
+
+\section{The balanced split attains the bound}
+Write a for the smaller original part. If the gap between parts is twice d, transfer d vertices to get two equal parts. If the gap is twice d plus one, the same move leaves a gap of one. These two cases exhaust the possible gaps. For a fixed number of vertices the resulting part sizes are the lower and upper integer halves of the total. Their product is attained by the complete bipartite graph on that split. For example, on eleven vertices moving from parts of sizes three and eight to sizes five and six raises the edge count from twenty-four to thirty.
+
+\begin{corollary}[{Even split}]\label{theorem:4}
+Let \(a\) and \(d\) be natural numbers. Then \(a \cdot (a + d + d) \le (a + d) \cdot (a + d)\).
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{theorem:3} with \(b = a + d\) and \(c = d\).
+\end{proof}
+
+\begin{theorem}[{Odd split}]\label{theorem:5}
+Let \(a\) and \(d\) be natural numbers. Then \(a \cdot (a + d + 1 + d) \le (a + d) \cdot (a + d + 1)\).
+\end{theorem}
+
+\begin{proof}
+Applying Lemma~\ref{theorem:3} with \(b = a + (d + 1)\) and \(c = d + 1\) gives \(a \cdot (a + (d + 1) + d) \le (a + d) \cdot (a + (d + 1))\).
+By the defining equations, this gives
+\[
+a \cdot (a + d + 1 + d) \le (a + d) \cdot (a + d + 1).
+\]
+\end{proof}
+
+\end{document}

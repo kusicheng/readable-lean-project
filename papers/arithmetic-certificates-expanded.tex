@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{Two arithmetic bounds}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\section{Results}
+\begin{theorem}[{Weighted bound}]\label{theorem:1}
+Let \(x\) and \(y\) be rational numbers. Assume \(2 \cdot x + y \le 9\). Assume \(1 \le y\). Then \(x \le 4\).
+\end{theorem}
+
+\begin{proof}
+Suppose for contradiction that \(x > 4\).
+Subtracting the right side of \(2 \cdot x + y \le 9\) gives \(2 \cdot x + y - 9 \le 0\).
+Subtracting the right side of \(1 \le y\) gives \(1 - y \le 0\).
+Subtracting the right side of \(x > 4\) gives \(4 - x < 0\).
+Multiplying \(4 - x < 0\) by 2 gives \(2 \cdot \left(4 - x\right) < 0\).
+Adding \(2 \cdot x + y - 9 \le 0\), \(1 - y \le 0\) and \(2 \cdot \left(4 - x\right) < 0\) gives \(2 \cdot x + y - 9 + \left(1 - y\right) + 2 \cdot \left(4 - x\right) < 0\).
+The terms on the left cancel, so the inequality would give \(0 < 0\), a contradiction.
+
+
+\end{proof}
+
+\begin{theorem}[{Rounded bound}]\label{theorem:2}
+Let \(x\) and \(y\) be integers. Assume \(2 \cdot x \le y\). Assume \(y \le 9\). Then \(x \le 4\).
+\end{theorem}
+
+\begin{proof}
+Suppose for contradiction that \(\neg \left(x \le 4\right)\).
+Writing \(2 \cdot x \le y\) as an integer constraint gives \(y - 2\,x \ge 0\).
+Taking the linear combination of \(y - 2\,x \ge 0\) and \(y \le 9\) with respective coefficients 1 and -1 gives \(-2\,x \ge -9\).
+Divide \(-2\,x \ge -9\) by \(-2\), reversing the order. Since \(x\) is integral, \(x \le \left\lfloor\frac{9}{2}\right\rfloor = 4\).
+From \(\neg \left(x \le 4\right)\) we get \(4 < x\), hence \(x \ge 5\) over the integers.
+Combining the bounds gives \(5 \le x \le 4\).
+This is impossible because \(5 > 4\).
+
+
+\end{proof}
+
+\end{document}

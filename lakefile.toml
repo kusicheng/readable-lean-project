@@ -20,3 +20,8 @@ roots = ["proofs.PilotParity"]
 [[lean_lib]]
 name = "ProgressionProofs"
 roots = ["proofs.PilotProgressions"]
+
+[[lean_lib]]
+name = "CombinatoricsPapers"
+roots = ["proofs.Counting580", "proofs.Incidence580", "proofs.Optimization580",
+         "proofs.FirstMoment580", "proofs.Intersecting580"]

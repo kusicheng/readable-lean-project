@@ -1,1 +1,3 @@
 examples/*.tex text eol=lf
+papers/*.tex text eol=lf
+papers/*.pdf binary

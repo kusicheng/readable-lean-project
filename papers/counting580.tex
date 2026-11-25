@@ -1,0 +1,147 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{Avoiding consecutive heads in fair coin tosses}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+How likely is it that a long run of fair coin tosses contains no consecutive heads? Counting admissible words gives both an exact recurrence and an exponential upper bound. Throughout the paper, one denotes heads and zero denotes tails. All binary words of a fixed length are equally likely under independent fair tosses.
+\end{abstract}
+
+\section*{Definitions}
+\paragraph{Counts.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} \(\operatorname{counts}\left(0\right) = \left(1, 1\right)\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(n\) be a natural number. Then \(\operatorname{counts}(n + 1) = (\pi_1(\operatorname{counts}(n)) + \pi_2(\operatorname{counts}(n)),\allowbreak{} \pi_1(\operatorname{counts}(n)))\).
+
+\paragraph{Open count (\(A\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\textup{(D3)} Let \(n\) be a natural number. Then \(A\left(n\right) = \pi_1(\operatorname{counts}\left(n\right))\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:4}\textup{(D4)} \(A\left(0\right) = 1\).
+
+\paragraph{Forced count (\(B\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:5}\textup{(D5)} Let \(n\) be a natural number. Then \(B\left(n\right) = \pi_2(\operatorname{counts}\left(n\right))\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:6}\textup{(D6)} \(B\left(0\right) = 1\).
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries A}] The number of admissible completions of the given length when the preceding bit is zero. This is also the count when there is no preceding bit.
+\item[{\normalfont\bfseries B}] The number of admissible completions when the preceding bit is one. A nonempty completion must start with zero.
+\item[{\normalfont\bfseries Empty word}] Each starting state admits one completion of length zero.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f7265666c}\textbf{Reflexivity of order.} Let \(n\) be a natural number. Then \(n \le n\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6164645f7269676874}\textbf{Adding a natural number can only increase a sum.} Let \(n\) and \(k\) be natural numbers. Then \(n \le n + k\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6c655f6164645f7269676874}\textbf{Adding a common right summand preserves order.} Let \(n\), \(m\) and \(k\) be natural numbers. If \(n \le m\), then \(n + k \le m + k\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6c655f6164645f6c656674}\textbf{Adding a common left summand preserves order.} Let \(n\), \(m\) and \(k\) be natural numbers. If \(n \le m\), then \(k + n \le k + m\).
+\item[P5.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f74776f}\textbf{Doubling by multiplication.} Let \(n\) be a natural number. Then \(n \cdot 2 = n + n\).
+\item[P6.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f6c655f6d756c5f7269676874}\textbf{Multiplying by a common natural number preserves order.} Let \(n\), \(m\) and \(k\) be natural numbers. If \(n \le m\), then \(n \cdot k \le m \cdot k\).
+\end{description}
+
+\section{Splitting by the first bit}
+From the open state, a first zero leaves the remaining suffix open, while a first one forces the next bit to be zero. These alternatives have different first bits and exhaust the admissible words. From the forced state, the only possible first bit is zero. The two rules yield a Fibonacci recurrence with initial counts one and two.
+
+\begin{lemma}[{Split at first bit}]\label{theorem:1}
+Let \(n\) be a natural number. Then \(A(n + 1) = A(n) + B(n)\).
+\end{lemma}
+
+\begin{proof}
+Evaluating the two sides gives
+\[
+A(n + 1) = A(n) + B(n).
+\]
+\end{proof}
+
+\begin{lemma}[{Forced zero}]\label{theorem:2}
+Let \(n\) be a natural number. Then \(B(n + 1) = A(n)\).
+\end{lemma}
+
+\begin{proof}
+Evaluating the two sides gives
+\[
+B(n + 1) = A(n).
+\]
+\end{proof}
+
+\begin{corollary}[{Two step recurrence}]\label{theorem:3}
+Let \(n\) be a natural number. Then \(A(n + 2) = A(n + 1) + A(n)\).
+\end{corollary}
+
+\begin{proof}
+\begin{align*}
+A(n + 2) &= A(n + 1) + B(n + 1) && \text{by Lemma~\ref{theorem:1}} \\
+ &= A(n + 1) + A(n). && \text{by Lemma~\ref{theorem:2}}
+\end{align*}
+\end{proof}
+
+\section{A bound from disjoint pairs}
+Group the tosses into consecutive pairs. Only three of the four patterns within any pair can occur, and a head on one side of a pair boundary can impose a further restriction. For twice k tosses the total number of outcomes is four to the power k. Dividing the final count bound by that total bounds the probability by three quarters to the power k. For four tosses the recurrence gives eight admissible words out of sixteen, while the bound permits nine.
+
+\begin{lemma}[{Forced at most open}]\label{theorem:4}
+Let \(n\) be a natural number. Then \(B(n) \le A(n)\).
+\end{lemma}
+
+\begin{proof}
+We distinguish the zero and successor cases for \(n\).
+\begin{description}
+\item[Zero case.] Applying \emph{Reflexivity of order} gives \(1 \le 1\).
+By the defining equations, this gives \(B(0) \le A(0)\).
+\item[Successor case.] Let \(i\) be a natural number.
+\begin{align*}
+B(i + 1) &= A(i) && \text{by Lemma~\ref{theorem:2}} \\
+ &\le A(i) + B(i) && \text{by Prerequisite~P\ref{premise:4e61742e6c655f6164645f7269676874}} \\
+ &= A(i + 1). && \text{by Lemma~\ref{theorem:1}}
+\end{align*}
+\end{description}
+\end{proof}
+
+\begin{lemma}[{Two bit bound}]\label{theorem:5}
+Let \(n\) be a natural number. Then \(A(n + 2) \le A(n) \cdot 3\).
+\end{lemma}
+
+\begin{proof}
+Lemma~\ref{theorem:4} gives \(B(n) \le A(n)\).
+Apply Corollary~\ref{theorem:3} and Lemma~\ref{theorem:1} in order, use monotonicity of addition and collect equal summands.
+\[
+\begin{aligned}
+A(n + 2) &= A(n + 1) + A(n) \\
+ &= A(n) + B(n) + A(n) \\
+ &\le A(n) + A(n) + A(n) \\
+ &= A(n) \cdot 3.
+\end{aligned}
+\]
+\end{proof}
+
+\begin{theorem}[{Exponential bound}]\label{theorem:6}
+Let \(k\) be a natural number. Then \(A(2 \cdot k) \le 3^{k}\).
+\end{theorem}
+
+\begin{proof}
+We proceed by induction on \(k\).
+\begin{description}
+\item[Base case.] Applying \emph{Reflexivity of order} gives \(1 \le 1\).
+By the defining equations, this gives
+\[
+A(2 \cdot 0) \le 3^{0}.
+\]
+\item[Inductive step.] Let \(i\) be a natural number.
+As the induction hypothesis, assume
+\[
+A(2 \cdot i) \le 3^{i}.
+\]
+\begin{align*}
+A(2 \cdot (i + 1)) &\le A(2 \cdot i) \cdot 3 && \text{by Lemma~\ref{theorem:5}} \\
+ &\le 3^{i + 1}. && \text{by Prerequisite~P\ref{premise:4e61742e6d756c5f6c655f6d756c5f7269676874} applied to the induction hypothesis}
+\end{align*}
+\end{description}
+This completes the induction.
+\end{proof}
+
+\end{document}

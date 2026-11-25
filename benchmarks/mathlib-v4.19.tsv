@@ -1,0 +1,5 @@
+module	source_lines	source_bytes	proofs_narrated	proofs_selected	lean_alone_s	lean_alone_peak_MiB	lean_with_export_s	lean_with_export_peak_MiB	cpp_s	cpp_peak_MiB	pdf_s	pdf_peak_MiB	pipeline_s	pipeline_peak_MiB	export_MiB	tex_bytes	source_sha256
+Mathlib.Combinatorics.SimpleGraph.DegreeSum	171	6756	4	12	12.13	950.3	31.142	2073.2	1.965	673.4	0.96	186.3	34.067	2073.2	9.9	25173	b1e527e406006ad9ba39fcd172e0a0bb1c4b48fb44cdf1ea8dcc9e647c7d9158
+Mathlib.Combinatorics.Pigeonhole	430	23363	29	29	11.092	861.6	23.049	1902.9	0.241	59.6	1.039	187.4	24.329	1902.9	1.125	59194	0ace9b3ae6ac439c7b8a447f18eae71cf57dfc00716bb1480f20b6f3f297c72f
+Mathlib.Data.Finset.Card	823	34642	69	131	10.957	817.0	37.381	1959.5	3.366	948.9	1.154	188.6	41.901	1959.5	15.975	204639	e13f4dcf416605dd1c9d0b2acf98e71a29b2a1c0cae44a4e58d332fc88d3cead
+Mathlib.Data.Finset.Powerset	318	13945	5	35	10.978	817.0	32.046	1881.0	0.787	241.8	0.954	186.6	33.787	1881.0	4.337	30109	c17cf38ae43d7b2c1c468f3f8034fadb7490b6a91e8b3229304674e4768d114a

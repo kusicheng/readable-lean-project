@@ -1,0 +1,160 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{Avoiding bad events by the finite first-moment method}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+Choose uniformly from a finite, nonempty set of outcomes. An outcome may trigger several bad events. If the expected number it triggers is less than one, some outcome avoids them all. We prove the counting inequality behind this assertion for arbitrary, possibly overlapping events.
+\end{abstract}
+
+\section*{Definitions}
+\paragraph{Zero indicator (\(Z\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} \(Z\left(0\right) = 1\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(n\) be a natural number. Then \(Z\left(n + 1\right) = 0\).
+
+\paragraph{Entry.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\textup{(D3)} Let \(m\), \(i\), and \(j\) be natural numbers. Then \(\operatorname{entry}(m,\allowbreak{} i,\allowbreak{} j) = m / 2^{\lfloor\frac{(i + j) \cdot (i + j + 1)}{2}\rfloor + j} \bmod 2\).
+
+\paragraph{Column (\(V\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\textup{(D4)} Let \(m\) and \(j\) be natural numbers. Then \(V\left(m, j, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:5}\textup{(D5)} Let \(m\), \(j\), and \(j_{1}\) be natural numbers. Then \(V\left(m, j, j_{1} + 1\right) = V\left(m, j, j_{1}\right) + \operatorname{entry}\left(m, j_{1}, j\right)\).
+
+\paragraph{Columns (\(C\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:6}\textup{(D6)} Let \(m\) and \(r\) be natural numbers. Then \(C\left(m, r, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:7}\textup{(D7)} Let \(m\), \(r\), and \(j\) be natural numbers. Then \(C\left(m, r, j + 1\right) = C\left(m, r, j\right) + V\left(m, j, r\right)\).
+
+\paragraph{Clean count (\(G\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:8}\textup{(D8)} Let \(m\) and \(r\) be natural numbers. Then \(G\left(m, r, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:9}\textup{(D9)} Let \(m\), \(r\), and \(n\) be natural numbers. Then \(G\left(m, r, n + 1\right) = G\left(m, r, n\right) + Z\left(V\left(m, n, r\right)\right)\).
+
+\paragraph{Row.} \par\noindent\refstepcounter{definingequation}\label{defeq:10}\textup{(D10)} Let \(m\) and \(i\) be natural numbers. Then \(\operatorname{row}\left(m, i, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:11}\textup{(D11)} Let \(m\), \(i\), and \(j\) be natural numbers. Then \(\operatorname{row}(m,\allowbreak{} i,\allowbreak{} j + 1) = \operatorname{row}(m,\allowbreak{} i,\allowbreak{} j) + \operatorname{entry}(m,\allowbreak{} i,\allowbreak{} j)\).
+
+\paragraph{Rows (\(R\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:12}\textup{(D12)} Let \(m\) and \(x\) be natural numbers. Then \(R\left(m, 0, x\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:13}\textup{(D13)} Let \(m\), \(x\), and \(i\) be natural numbers. Then \(R\left(m, i + 1, x\right) = R\left(m, i, x\right) + \operatorname{row}\left(m, i, x\right)\).
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries Finite event table}] The r rows represent bad events and the c columns represent outcomes, numbered from zero. An entry is one exactly when the event occurs. The natural number m encodes the binary table by storing its cells as bits along successive diagonals.
+\item[{\normalfont\bfseries Incidence counts}] V(m,j,r) counts events occurring at outcome j. C(m,r,c) adds these counts over all outcomes. R(m,r,c) instead adds the sizes of the events. These two sums count the same event-outcome pairs.
+\item[{\normalfont\bfseries Clean outcomes}] Z(k) equals one when k is zero and equals zero otherwise. G(m,r,c) adds Z of each column count over the first c outcomes, so it counts exactly those outcomes triggering no event.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f7265666c}\textbf{Reflexivity of order.} Let \(n\) be a natural number. Then \(n \le n\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e7a65726f5f6c65}\textbf{Natural numbers are nonnegative.} Let \(n\) be a natural number. Then \(0 \le n\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:4e61742e737563635f6c655f73756363}\textbf{Successors preserve order.} Let \(n\) and \(m\) be natural numbers. If \(n \le m\), then \(n + 1 \le m + 1\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6c655f616464}\textbf{Adding two inequalities.} Let \(a\), \(b\), \(c\) and \(d\) be natural numbers. If \(a \le b\) and \(c \le d\), then \(a + c \le b + d\).
+\item[P5.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6164645f6164645f636f6d6d}\textbf{Regrouping four summands.} Let \(a\), \(b\), \(c\) and \(d\) be natural numbers. Then \(a + b + (c + d) = a + c + (b + d)\).
+\item[P6.] \refstepcounter{paperpremise}\label{premise:496e636964656e63653538302e696e636964656e63655f636f756e74}\textbf{Counting incidences by rows and by columns.} Let \(m\), \(r\) and \(c\) be natural numbers. Then \(R(m, r, c) = C(m, r, c)\).
+\item[P7.] \refstepcounter{paperpremise}\label{premise:4e61742e706f735f6f665f6c745f6164645f7269676874}\textbf{A strict increase requires a positive summand.} Let \(n\) and \(k\) be natural numbers. If \(n < n + k\), then \(0 < k\).
+\item[P8.] \refstepcounter{paperpremise}\label{premise:46697273744d6f6d656e743538302e636c65616e5f7769746e657373}\textbf{A positive clean count supplies an outcome.} Let \(m\), \(r\) and \(c\) be natural numbers. If \(0 < G(m, r, c)\), then \(\exists j \in \mathbb{N}\; (j < c \land V(m, j, r) = 0)\).
+\end{description}
+
+\section{An inequality for the outcome counts}
+Give each outcome one unit if it is clean. Otherwise it already accounts for at least one event incidence. Adding these contributions bounds the number of outcomes from above. For example, if the table has 120 outcomes and at most 112 incidences, at least eight outcomes are clean.
+
+\begin{lemma}[{Charge outcome}]\label{theorem:1}
+Let \(k\) be a natural number. Then \(1 \le k + Z(k)\).
+\end{lemma}
+
+\begin{proof}
+We distinguish the zero and successor cases for \(k\).
+\begin{description}
+\item[Zero case.] Applying \emph{Reflexivity of order} gives \(1 \le 1\).
+By the defining equations, this gives
+\[
+1 \le 0 + Z(0).
+\]
+\item[Successor case.] Let \(j\) be a natural number.
+Applying \emph{Natural numbers are nonnegative} gives \(0 \le j\).
+Applying \emph{Successors preserve order} to \(0 \le j\) gives \(0 + 1 \le j + 1\).
+By the defining equations, this gives
+\[
+1 \le j + 1 + Z(j + 1).
+\]
+\end{description}
+\end{proof}
+
+\begin{lemma}[{Count columns}]\label{theorem:2}
+Let \(m\), \(r\) and \(c\) be natural numbers. Then \(c \le C(m, r, c) + G(m, r, c)\).
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on \(c\).
+\begin{description}
+\item[Base case.] Applying \emph{Reflexivity of order} gives \(0 \le 0\).
+By the defining equations, this gives
+\[
+0 \le C(m, r, 0) + G(m, r, 0).
+\]
+\item[Inductive step.] Let \(j\) be a natural number.
+As the induction hypothesis, assume
+\[
+j \le C(m, r, j) + G(m, r, j).
+\]
+Lemma~\ref{theorem:1} gives \(1 \le V(m, j, r) + Z(V(m, j, r))\).
+Apply \emph{Adding two inequalities} using the induction hypothesis, apply \emph{Regrouping four summands} and use the defining equations.
+\[
+\begin{aligned}
+j + 1 &\le C(m, r, j) + G(m, r, j) + (V(m, j, r) + Z(V(m, j, r))) \\
+ &= C(m, r, j) + V(m, j, r) + (G(m, r, j) + Z(V(m, j, r))) \\
+ &= C(m, r, j + 1) + G(m, r, j + 1).
+\end{aligned}
+\]
+\end{description}
+This completes the induction.
+\end{proof}
+
+\section{The first-moment criterion}
+Write X for the number of bad events at the chosen outcome. Under uniform sampling, the mean of X is the incidence total divided by the number of outcomes. Counting by events expresses that same mean as the sum of the individual event probabilities. When the total is smaller than the number of outcomes, the clean count is positive. The final theorem extracts an outcome index from that count.
+
+\begin{lemma}[{Count by events}]\label{theorem:3}
+Let \(m\), \(r\) and \(c\) be natural numbers. Then \(c \le R(m, r, c) + G(m, r, c)\).
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+c &\le C(m, r, c) + G(m, r, c) && \text{by Lemma~\ref{theorem:2}} \\
+ &= R(m, r, c) + G(m, r, c). && \text{by Prerequisite~P\ref{premise:496e636964656e63653538302e696e636964656e63655f636f756e74}}
+\end{align*}
+\end{proof}
+
+\begin{lemma}[{First moment}]\label{theorem:4}
+Let \(m\), \(r\) and \(c\) be natural numbers. If \(R(m, r, c) < c\), then \(0 < G(m, r, c)\).
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+R(m, r, c) &< c && \text{by hypothesis} \\
+ &\le R(m, r, c) + G(m, r, c). && \text{by Lemma~\ref{theorem:3}}
+\end{align*}
+Applying \emph{A strict increase requires a positive summand} to \(R(m, r, c) < R(m, r, c) + G(m, r, c)\) gives
+\[
+0 < G(m, r, c).
+\]
+\end{proof}
+
+\begin{theorem}[{Avoid all events}]\label{theorem:5}
+Let \(m\), \(r\) and \(c\) be natural numbers. If \(R(m, r, c) < c\), then \(\exists j \in \mathbb{N}\; (j < c \land V(m, j, r) = 0)\).
+\end{theorem}
+
+\begin{proof}
+Applying Lemma~\ref{theorem:4} to \(R(m, r, c) < c\) gives
+\[
+0 < G(m, r, c).
+\]
+Applying \emph{A positive clean count supplies an outcome} to \(0 < G(m, r, c)\) gives
+\[
+\exists j \in \mathbb{N}\; (j < c \land V(m, j, r) = 0).
+\]
+\end{proof}
+
+\end{document}

@@ -1,0 +1,50 @@
+{
+  "format": "paper",
+  "title": "Avoiding bad events by the finite first-moment method",
+  "introduction": "Choose uniformly from a finite, nonempty set of outcomes. An outcome may trigger several bad events. If the expected number it triggers is less than one, some outcome avoids them all. We prove the counting inequality behind this assertion for arbitrary, possibly overlapping events.",
+  "symbols": {
+    "Incidence580.column": "V",
+    "Incidence580.rows": "R",
+    "Incidence580.columns": "C",
+    "FirstMoment580.zeroIndicator": "Z",
+    "FirstMoment580.cleanCount": "G"
+  },
+  "prerequisites": {
+    "Incidence580.incidence_count": "Counting incidences by rows and by columns",
+    "FirstMoment580.clean_witness": "A positive clean count supplies an outcome"
+  },
+  "glossary": [
+    {
+      "term": "Finite event table",
+      "definition": "The r rows represent bad events and the c columns represent outcomes, numbered from zero. An entry is one exactly when the event occurs. The natural number m encodes the binary table by storing its cells as bits along successive diagonals."
+    },
+    {
+      "term": "Incidence counts",
+      "definition": "V(m,j,r) counts events occurring at outcome j. C(m,r,c) adds these counts over all outcomes. R(m,r,c) instead adds the sizes of the events. These two sums count the same event-outcome pairs."
+    },
+    {
+      "term": "Clean outcomes",
+      "definition": "Z(k) equals one when k is zero and equals zero otherwise. G(m,r,c) adds Z of each column count over the first c outcomes, so it counts exactly those outcomes triggering no event."
+    }
+  ],
+  "sections": [
+    {
+      "title": "An inequality for the outcome counts",
+      "introduction": "Give each outcome one unit if it is clean. Otherwise it already accounts for at least one event incidence. Adding these contributions bounds the number of outcomes from above. For example, if the table has 120 outcomes and at most 112 incidences, at least eight outcomes are clean.",
+      "theorems": [
+        "FirstMoment580.charge_outcome",
+        "FirstMoment580.count_columns"
+      ]
+    },
+    {
+      "title": "The first-moment criterion",
+      "introduction": "Write X for the number of bad events at the chosen outcome. Under uniform sampling, the mean of X is the incidence total divided by the number of outcomes. Counting by events expresses that same mean as the sum of the individual event probabilities. When the total is smaller than the number of outcomes, the clean count is positive. The final theorem extracts an outcome index from that count.",
+      "theorems": [
+        "FirstMoment580.count_by_events",
+        "FirstMoment580.first_moment",
+        "FirstMoment580.avoid_all_events"
+      ],
+      "main": "FirstMoment580.avoid_all_events"
+    }
+  ]
+}

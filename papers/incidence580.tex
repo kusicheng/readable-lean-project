@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{Counting incidences by rows and columns}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+A bipartite graph has two natural edge counts. Sum the degrees on one side or sum them on the other. We prove the equality for every finite binary incidence matrix and then use it to rule out impossible block sizes for a regular incidence structure.
+\end{abstract}
+
+\section*{Definitions}
+\paragraph{Entry (\(E\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} Let \(m\), \(i\), and \(j\) be natural numbers. Then \(E(m,\allowbreak{} i,\allowbreak{} j) = m / 2^{\lfloor\frac{(i + j) \cdot (i + j + 1)}{2}\rfloor + j} \bmod 2\).
+
+\paragraph{Column (\(V\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(m\) and \(j\) be natural numbers. Then \(V\left(m, j, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:3}\textup{(D3)} Let \(m\), \(j\), and \(j_{1}\) be natural numbers. Then \(V\left(m, j, j_{1} + 1\right) = V\left(m, j, j_{1}\right) + E\left(m, j_{1}, j\right)\).
+
+\paragraph{Columns (\(C\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\textup{(D4)} Let \(m\) and \(r\) be natural numbers. Then \(C\left(m, r, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:5}\textup{(D5)} Let \(m\), \(r\), and \(j\) be natural numbers. Then \(C\left(m, r, j + 1\right) = C\left(m, r, j\right) + V\left(m, j, r\right)\).
+
+\paragraph{Row (\(H\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:6}\textup{(D6)} Let \(m\) and \(i\) be natural numbers. Then \(H\left(m, i, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:7}\textup{(D7)} Let \(m\), \(i\), and \(j\) be natural numbers. Then \(H\left(m, i, j + 1\right) = H\left(m, i, j\right) + E\left(m, i, j\right)\).
+
+\paragraph{Rows (\(R\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:8}\textup{(D8)} Let \(m\) and \(x\) be natural numbers. Then \(R\left(m, 0, x\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:9}\textup{(D9)} Let \(m\), \(x\), and \(i\) be natural numbers. Then \(R\left(m, i + 1, x\right) = R\left(m, i, x\right) + H\left(m, i, x\right)\).
+
+\subsection*{Glossary}
+\begin{description}
+\item[{\normalfont\bfseries Incidence matrix}] Rows represent points, columns represent blocks, and a one marks membership. In the graph interpretation the row and column indices are the two vertex classes, and a one marks an edge.
+\item[{\normalfont\bfseries Encoding}] Number the cells from zero along successive diagonals of constant row index plus column index, in increasing column order within each diagonal. E(m,i,j) is the bit of the natural number m in the position assigned to row i and column j. Any finite binary rectangle can be encoded by setting exactly its occupied bits.
+\item[{\normalfont\bfseries Degrees and totals}] H(m,i,c) counts ones in row i across the first c columns. V(m,j,r) counts ones in column j down the first r rows. In the rectangle of the first r rows and c columns, R(m,r,c) sums the row degrees and C(m,r,c) sums the column degrees.
+\end{description}
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f6164645f6164645f636f6d6d}\textbf{Regrouping four summands.} Let \(a\), \(b\), \(c\) and \(d\) be natural numbers. Then \(a + b + (c + d) = a + c + (b + d)\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f636f6d6d}\textbf{Multiplication commutativity.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot m = m \cdot n\).
+\end{description}
+
+\section{Two ways to count the edges}
+Append a row to a rectangle and read the result column by column. Every old column keeps its previous ones and gains at most the new cell. Summing these new cells gives the degree of the appended row. Inducting on the number of rows now identifies the two edge counts.
+
+\begin{lemma}[{Empty rows}]\label{theorem:1}
+Let \(m\) and \(c\) be natural numbers. Then \(C(m, 0, c) = 0\).
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on \(c\).
+\begin{description}
+\item[Base case.] Evaluating the two sides gives
+\[
+C(m, 0, 0) = 0.
+\]
+\item[Inductive step.] Let \(j\) be a natural number.
+As the induction hypothesis, assume
+\[
+C(m, 0, j) = 0.
+\]
+Evaluating the two sides gives
+\[
+C(m, 0, j + 1) = C(m, 0, j).
+\]
+Combining \(C(m, 0, j + 1) = C(m, 0, j)\) and the induction hypothesis gives
+\[
+C(m, 0, j + 1) = 0.
+\]
+\end{description}
+This completes the induction.
+\end{proof}
+
+\begin{lemma}[{Sum one row}]\label{theorem:2}
+Let \(m\), \(r\) and \(c\) be natural numbers. Then \(C(m, r + 1, c) = C(m, r, c) + H(m, r, c)\).
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on \(c\).
+\begin{description}
+\item[Base case.] Evaluating the two sides gives
+\[
+C(m, r + 1, 0) = C(m, r, 0) + H(m, r, 0).
+\]
+\item[Inductive step.] Let \(j\) be a natural number.
+As the induction hypothesis, assume
+\[
+C(m, r + 1, j) = C(m, r, j) + H(m, r, j).
+\]
+\begin{align*}
+C(m, r + 1, j + 1) &= C(m, r + 1, j) + (V(m, j, r) + E(m, r, j)) && \text{by the defining equations} \\
+ &= C(m, r, j) + H(m, r, j) + (V(m, j, r) + E(m, r, j)) && \text{by the induction hypothesis} \\
+ &= C(m, r, j) + V(m, j, r) + (H(m, r, j) + E(m, r, j)) && \text{by Prerequisite~P\ref{premise:4e61742e6164645f6164645f6164645f636f6d6d}} \\
+ &= C(m, r, j + 1) + H(m, r, j + 1). && \text{by the defining equations}
+\end{align*}
+\end{description}
+This completes the induction.
+\end{proof}
+
+\begin{lemma}[{Incidence count}]\label{theorem:3}
+Let \(m\), \(r\) and \(c\) be natural numbers. Then \(R(m, r, c) = C(m, r, c)\).
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on \(r\).
+\begin{description}
+\item[Base case.] Applying Lemma~\ref{theorem:1} gives
+\[
+C(m, 0, c) = 0.
+\]
+Reversing the equality in \(C(m, 0, c) = 0\) gives
+\[
+R(m, 0, c) = C(m, 0, c).
+\]
+\item[Inductive step.] Let \(i\) be a natural number.
+As the induction hypothesis, assume
+\[
+R(m, i, c) = C(m, i, c).
+\]
+\begin{align*}
+R(m, i + 1, c) &= R(m, i, c) + H(m, i, c) && \text{by the defining equations} \\
+ &= C(m, i, c) + H(m, i, c) && \text{by the induction hypothesis} \\
+ &= C(m, i + 1, c). && \text{by Lemma~\ref{theorem:2}}
+\end{align*}
+\end{description}
+This completes the induction.
+\end{proof}
+
+\section{An obstruction for block designs}
+Suppose v points each lie in r blocks and each of b blocks contains k points. Adding the v equal row degrees gives v times r, and adding the b equal column degrees gives b times k. The next two theorems take those totals as hypotheses. For example, a structure with ten points of degree three cannot have every block of size four, since four does not divide thirty.
+
+\begin{corollary}[{Parameter balance}]\label{theorem:4}
+Let \(m\), \(v\), \(b\), \(r\) and \(k\) be natural numbers. If \(R(m, v, b) = v \cdot r\) and \(C(m, v, b) = b \cdot k\), then \(v \cdot r = b \cdot k\).
+\end{corollary}
+
+\begin{proof}
+\begin{align*}
+v \cdot r &= R(m, v, b) && \text{by hypothesis} \\
+ &= C(m, v, b) && \text{by Lemma~\ref{theorem:3}} \\
+ &= b \cdot k. && \text{by hypothesis}
+\end{align*}
+\end{proof}
+
+\begin{theorem}[{Block size divides}]\label{theorem:5}
+Let \(m\), \(v\), \(b\), \(r\) and \(k\) be natural numbers. If \(R(m, v, b) = v \cdot r\) and \(C(m, v, b) = b \cdot k\), then \(k \mid v \cdot r\).
+\end{theorem}
+
+\begin{proof}
+Using Corollary~\ref{theorem:4} applied to \(R(m, v, b) = v \cdot r\) and \(C(m, v, b) = b \cdot k\), we obtain
+\[
+\begin{aligned}
+v \cdot r &= b \cdot k.
+\end{aligned}
+\]
+Continuing with Prerequisite~P\ref{premise:4e61742e6d756c5f636f6d6d}, we obtain
+\[
+\begin{aligned}
+b \cdot k &= k \cdot b.
+\end{aligned}
+\]
+With witness \(b\), \(v \cdot r = k \cdot b\) shows that \(k \mid v \cdot r\).
+\end{proof}
+
+\end{document}

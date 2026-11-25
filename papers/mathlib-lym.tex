@@ -1,0 +1,1087 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcounter{paperpremise}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\emergencystretch}{\linewidth}
+\title{The LYM inequality and Sperner's theorem}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+For rational reciprocals we use the convention \(1/0 = 0\).
+
+\section*{Definitions}
+\paragraph{Falling.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Then \(\operatorname{falling}(k,\allowbreak{} x) = \operatorname{sup}(x,\allowbreak{} \operatorname{powerset\,Card}(k))\).
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[P1.] \refstepcounter{paperpremise}\label{premise:416e642e696d705f6c656674}\textbf{Imp left.} Let \(a\), \(b\), and \(c\) be propositions. Assume \(a \implies b\). Assume \(a \land c\). Then \(b \land c\).
+\item[P2.] \refstepcounter{paperpremise}\label{premise:416e642e6c656674}\textbf{Left.} Let \(a\) and \(b\) be propositions. Assume \(a \land b\). Then \(a\).
+\item[P3.] \refstepcounter{paperpremise}\label{premise:43616e6f6e6963616c6c794f7264657265644164642e746f4578697374734164644f664c45}\textbf{To exists sum of at most.} Let \(\alpha\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Add}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{LE}\left(\alpha\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Then \(\operatorname{Exists\,Add\,Of\,LE}\left(\alpha\right)\).
+\item[P4.] \refstepcounter{paperpremise}\label{premise:46696e7365742e5375627365742e7265666c}\textbf{Refl.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(s \subseteq s\).
+\item[P5.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f636f6d706c}\textbf{Cardinality compl.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(\left|s^{\mathrm c}\right| = \left|\alpha\right| - \left|s\right|\).
+\item[P6.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f65715f7a65726f}\textbf{Cardinality equals zero.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\left|s\right| = 0 \iff s = \varnothing\).
+\item[P7.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f65726173655f6f665f6d656d}\textbf{Cardinality erase of membership.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume equality on \(\alpha\) is decidable. Assume \(a \in s\). Then \(\left|s \setminus \{a\}\right| = \left|s\right| - 1\).
+\item[P8.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f696d6167655f6f665f696e6a4f6e}\textbf{Cardinality image of injectivity on.} Let \(\alpha\) and \(\beta\) be types. Let \(s\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume equality on \(\beta\) is decidable. Assume \(f\text{ is injective on }\operatorname{underlying\,set}(s)\). Then \(\left|f\left[s\right]\right| = \left|s\right|\).
+\item[P9.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d}\textbf{Cardinality insert of not membership.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume equality on \(\alpha\) is decidable. Assume \(a \notin s\). Then \(\left|\{a\} \cup s\right| = \left|s\right| + 1\).
+\item[P10.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6c655f63617264}\textbf{Cardinality at most cardinality.} Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Assume \(s \subseteq t\). Then \(\left|s\right| \le \left|t\right|\).
+\item[P11.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6c655f756e6976}\textbf{Cardinality at most whole space.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(\left|s\right| \le \left|\alpha\right|\).
+\item[P12.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6d756c5f6c655f636172645f6d756c27}\textbf{Cardinality product at most cardinality mul'.} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be natural numbers. Assume the relation \(r\) is decidable. Assume \(\forall b\, :\, \beta,\; b \in t \implies n \le \left|N^{-}_{r, s}(b)\right|\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \left|N^{+}_{r, t}(a)\right| \le m\). Then \(\left|t\right| \cdot n \le \left|s\right| \cdot m\).
+\item[P13.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f756e696f6e5f6f665f6469736a6f696e74}\textbf{Cardinality union of disjoint.} Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Assume equality on \(\alpha\) is decidable. Assume \(\operatorname{Disjoint}\left(s, t\right)\). Then \(\left|s \cup t\right| = \left|s\right| + \left|t\right|\).
+\item[P14.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636f655f65715f73696e676c65746f6e}\textbf{Coercion equals singleton.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(\operatorname{underlying\,set}(s) = \{a\} \iff s = \{a\}\).
+\item[P15.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6469736a6f696e745f7269676874}\textbf{Disjoint right.} Let \(\alpha\) be a type. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(\operatorname{Disjoint}(s,\allowbreak{} t) \iff (\forall a\, :\, \alpha,\; a \in t \implies a \notin s)\).
+\item[P16.] \refstepcounter{paperpremise}\label{premise:46696e7365742e65726173655f696e6a4f6e}\textbf{Erase injectivity on.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{erase}\left(s\right)\text{ is injective on }\operatorname{underlying\,set}(s)\).
+\item[P17.] \refstepcounter{paperpremise}\label{premise:46696e7365742e65726173655f696e73657274}\textbf{Erase insert.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Assume \(a \notin s\). Then \(\left(\{a\} \cup s\right) \setminus \{a\} = s\).
+\item[P18.] \refstepcounter{paperpremise}\label{premise:46696e7365742e65726173655f6d656d5f736861646f77}\textbf{Erase membership shadow.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Assume \(s \in x\). Assume \(a \in s\). Then \(s \setminus \{a\} \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\).
+\item[P19.] \refstepcounter{paperpremise}\label{premise:46696e7365742e65726173655f737562736574}\textbf{Erase subset.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(s \setminus \{a\} \subseteq s\).
+\item[P20.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f65715f696e736572745f696666}\textbf{Exists equals insert if and only if.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \((\exists a\, :\, \alpha,\; a \notin s \land \{a\} \cup s = t) \iff s \subseteq t \land |s| + 1 = |t|\).
+\item[P21.] \refstepcounter{paperpremise}\label{premise:46696e7365742e657874}\textbf{Ext.} Let \(\alpha\) be a type. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\alpha\). Assume \(\forall a\, :\, \alpha,\; a \in s_{1} \iff a \in s_{2}\). Then \(s_{1} = s_{2}\).
+\item[P22.] \refstepcounter{paperpremise}\label{premise:46696e7365742e696d6167655f7375627365745f696666}\textbf{Image subset if and only if.} Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable. Let \(f\) be a function of type \(\alpha \to \beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Then \(f\left[s\right] \subseteq t \iff \left(\forall x\, :\, \alpha,\; x \in s \implies f\left(x\right) \in t\right)\).
+\item[P23.] \refstepcounter{paperpremise}\label{premise:46696e7365742e696e736572745f696e6a5f6f6e27}\textbf{Insert injectivity on'.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Assume equality on \(\alpha\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then \(\left(a \mapsto \{a\} \cup s\right)\text{ is injective on }\operatorname{underlying\,set}(s^{\mathrm c})\).
+\item[P24.] \refstepcounter{paperpremise}\label{premise:46696e7365742e696e73744973416e746973796d6d537562736574}\textbf{Inst is antisymm subset.} Let \(\alpha\) be a type. Then \(\operatorname{Is\,Antisymm}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
+\item[P25.] \refstepcounter{paperpremise}\label{premise:46696e7365742e696e737449734e6f6e7374726963745374726963744f7264657253756273657453537562736574}\textbf{Inst is nonstrict strict order subset ssubset.} Let \(\alpha\) be a type. Then \(\operatorname{Is\,Nonstrict\,Strict\,Order}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subsetneq \mathit{x2})\).
+\item[P26.] \refstepcounter{paperpremise}\label{premise:46696e7365742e696e737449735472616e73537562736574}\textbf{Inst is trans subset.} Let \(\alpha\) be a type. Then \(\operatorname{Is\,Trans}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
+\item[P27.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f62697061727469746541626f7665}\textbf{Membership bipartite above.} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(t\) be a finite subset of \(\beta\). Let \(a\) be an element of \(\alpha\). Assume the predicate \(r\left(a\right)\) is decidable. Let \(b\) be an element of \(\beta\). Then \(b \in N^{+}_{r, t}(a) \iff b \in t \land r\left(a, b\right)\).
+\item[P28.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f62697061727469746542656c6f77}\textbf{Membership bipartite below.} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(b\) be an element of \(\beta\). Fix a structure \(\mathit{inst}\) of type \(\Pi_{a\, :\, \alpha}\, \operatorname{Decidable}\left(r\left(a, b\right)\right)\). Let \(a\) be an element of \(\alpha\). Then \(a \in N^{-}_{r, s}(b) \iff a \in s \land r\left(a, b\right)\).
+\item[P29.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f636f65}\textbf{Membership coercion.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(a \in \operatorname{underlying\,set}(s) \iff a \in s\).
+\item[P30.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f636f6d706c}\textbf{Membership compl.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Fix a finite enumeration of \(\alpha\). Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Then \(a \in s^{\mathrm c} \iff a \notin s\).
+\item[P31.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f696d6167655f6f665f6d656d}\textbf{Membership image of membership.} Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(a\) be an element of \(\alpha\). Assume \(a \in s\). Then \(f\left(a\right) \in f\left[s\right]\).
+\item[P32.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f696e736572745f73656c66}\textbf{Membership insert self.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(a \in \{a\} \cup s\).
+\item[P33.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f706f77657273657443617264}\textbf{Membership power set cardinality.} Let \(\alpha\) be a type. Let \(n\) be a natural number. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(s \in \mathcal P_{n}(t) \iff s \subseteq t \land \left|s\right| = n\).
+\item[P34.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f72616e6765}\textbf{Membership range.} Let \(n\) and \(m\) be natural numbers. Then \(m \in \{i\in\mathbb{N}\mid i<n\} \iff m < n\).
+\item[P35.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f736861646f775f696666}\textbf{Membership shadow if and only if.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(t\) be a finite subset of \(\alpha\). Then \(t \in \operatorname{Finset\mathord{:}shadow}(x) \iff (\exists s\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; s \in x \land (\exists a\, :\, \alpha,\; a \in s \land s \setminus \{a\} = t))\).
+\item[P36.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f736c696365}\textbf{Membership slice.} Let \(\alpha\) be a type. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(A\) be a finite subset of \(\alpha\). Let \(r\) be a natural number. Then \(A \in \operatorname{slice}\left(x, r\right) \iff A \in x \land \left|A\right| = r\).
+\item[P37.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f737570}\textbf{Membership sup.} Let \(\alpha\) and \(\iota\) be types. Assume equality on \(\alpha\) is decidable. Let \(s\) be a finite subset of \(\iota\). Let \(f\) be a family of finite subsets of \(\alpha\) indexed by \(\iota\). Let \(a\) be an element of \(\alpha\). Then \(a \in \operatorname{sup}(s,\allowbreak{} f) \iff (\exists i\, :\, \iota,\; i \in s \land a \in f(i))\).
+\item[P38.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f756e696f6e}\textbf{Membership union.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(a \in s \cup t \iff a \in s \lor a \in t\).
+\item[P39.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6e6f745f6d656d5f656d707479}\textbf{Not membership empty.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Then \(a \notin \varnothing\).
+\item[P40.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6e6f745f6d656d5f6572617365}\textbf{Not membership erase.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(a\) be an element of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(a \notin s \setminus \{a\}\).
+\item[P41.] \refstepcounter{paperpremise}\label{premise:46696e7365742e736861646f775f73696e676c65746f6e5f656d707479}\textbf{Shadow singleton empty.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Then \(\operatorname{Finset\mathord{:}shadow}\left(\{\varnothing\}\right) = \varnothing\).
+\item[P42.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73697a65645f736861646f775f696666}\textbf{Sized shadow if and only if.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\varnothing \notin x\). Then \(\operatorname{Sized}(r,\allowbreak{} \operatorname{underlying\,set}(\operatorname{Finset\mathord{:}shadow}(x))) \iff \operatorname{Sized}(r + 1,\allowbreak{} \operatorname{underlying\,set}(x))\).
+\item[P43.] \refstepcounter{paperpremise}\label{premise:46696e7365742e736c6963655f737562736574}\textbf{Slice subset.} Let \(\alpha\) be a type. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Then \(\operatorname{slice}\left(x, r\right) \subseteq x\).
+\item[P44.] \refstepcounter{paperpremise}\label{premise:46696e7365742e737375627365745f696666}\textbf{Ssubset if and only if.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(s\) and \(t\) be finite subsets of \(\alpha\). Then \(s \subsetneq t \iff \left(\exists a\, :\, \alpha,\; a \notin s \land \{a\} \cup s \subseteq t\right)\).
+\item[P45.] \refstepcounter{paperpremise}\label{premise:46696e7365742e7375627365745f73696e676c65746f6e5f69666627}\textbf{Subset singleton iff'.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(s \subseteq \{a\} \iff \left(\forall b\, :\, \alpha,\; b \in s \implies b = a\right)\).
+\item[P46.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e6772}\textbf{Equality of sums with equal summands.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\sum_{i\in s_{1}}\left(f(i)\right) = \sum_{i\in s_{2}}\left(g(i)\right)\).
+\item[P47.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \left|s\right| \mathbin{\bullet} b\).
+\item[P48.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f27}\textbf{Sum fiberwise of maps to'.} Let \(\iota\), \(\kappa\), and \(M\) be types. Equip \(M\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\iota\). Let \(t\) be a finite subset of \(\kappa\). Assume equality on \(\kappa\) is decidable. Let \(g\) be a function of type \(\iota \to \kappa\). Assume \(\forall i\, :\, \iota,\; i \in s \implies g\left(i\right) \in t\). Let \(f\) be a function of type \(\kappa \to M\). Then \(\sum_{j\in t}(\sum_{i\in \{i\in s \mid g(i) = j\}}(f(j))) = \sum_{i\in s}(f(g(i)))\).
+\item[P49.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f666c6970}\textbf{Sum flip.} Let \(M\) be a type. Equip \(M\) with a commutative additive monoid structure. Let \(n\) be a natural number. Let \(f\) be a function of type \(\mathbb{N} \to M\). Then \(\sum_{r\in \{i\in\mathbb{N}\mid i<n + 1\}}(f(n - r)) = \sum_{k\in \{i\in\mathbb{N}\mid i<n + 1\}}(f(k))\).
+\item[P50.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c655f73756d}\textbf{Sum at most sum.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(f\) and \(g\) be functions of type \(\iota \to N\). Let \(s\) be a finite subset of \(\iota\). Assume \(\forall i\, :\, \iota,\; i \in s \implies f\left(i\right) \le g\left(i\right)\). Then \(\sum_{i\in s}\left(f\left(i\right)\right) \le \sum_{i\in s}\left(g\left(i\right)\right)\).
+\item[P51.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f72616e67655f73756363}\textbf{Sum range successor.} Let \(M\) be a type. Equip \(M\) with a commutative additive monoid structure. Let \(f\) be a function of type \(\mathbb{N} \to M\). Let \(n\) be a natural number. Then \(\sum_{x\in \{i\in\mathbb{N}\mid i<n + 1\}}(f(x)) = \sum_{x\in \{i\in\mathbb{N}\mid i<n\}}(f(x)) + f(n)\).
+\item[P52.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f73696e676c65746f6e}\textbf{Sum singleton.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure. Let \(f\) be a function of type \(\iota \to M\). Let \(a\) be an element of \(\iota\). Then \(\sum_{x\in \{a\}}\left(f\left(x\right)\right) = f\left(a\right)\).
+\item[P53.] \refstepcounter{paperpremise}\label{premise:47436f6e67722e6e6174436173745f6c655f6e617443617374}\textbf{Nat cast at most nat cast.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Let \(a\) and \(b\) be natural numbers. Assume \(a \le b\). Then \(\operatorname{cast}_{\alpha}\left(a\right) \le \operatorname{cast}_{\alpha}\left(b\right)\).
+\item[P54.] \refstepcounter{paperpremise}\label{premise:4861735375627365742e5375627365742e7472616e73}\textbf{Trans.} Let \(\alpha\) be a type. Equip \(\alpha\) with a subset relation. Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Is\,Trans}(\alpha,\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \subseteq b\). Assume \(b \subseteq c\). Then \(a \subseteq c\).
+\item[P55.] \refstepcounter{paperpremise}\label{premise:4966662e6d70}\textbf{Mp.} Let \(a\) and \(b\) be propositions. Assume \(a \iff b\). Assume \(a\). Then \(b\).
+\item[P56.] \refstepcounter{paperpremise}\label{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}\textbf{To is left cancel sum.} Let \(G\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Add}\left(G\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Cancel\,Add}\left(G\right)\). Then \(\operatorname{Is\,Left\,Cancel\,Add}\left(G\right)\).
+\item[P57.] \refstepcounter{paperpremise}\label{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}\textbf{Sum left reflect at most of sum left reflect less than.} Let \(N\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add}\left(N\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Is\,Left\,Cancel\,Add}\left(N\right)\). Equip \(N\) with a partial order. Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LT}\left(N\right)\). Then \(\operatorname{Add\,Left\,Reflect\,LE}\left(N\right)\).
+\item[P58.] \refstepcounter{paperpremise}\label{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}\textbf{To sum left mono.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }\alpha\). Then \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\).
+\item[P59.] \refstepcounter{paperpremise}\label{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}\textbf{To is cancel sum.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves and reflects order on }\alpha\). Then \(\operatorname{Is\,Cancel\,Add}\left(\alpha\right)\).
+\item[P60.] \refstepcounter{paperpremise}\label{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Then \(\text{translation preserves order on }R\).
+\item[P61.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}\textbf{To char zero.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Char\,Zero}\left(R\right)\).
+\item[P62.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\textbf{To is ordered ring.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
+\item[P63.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f4d756c506f735374726963744d6f6e6f}\textbf{To product positivity strict mono.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Mul\,Pos\,Strict\,Mono}\left(R\right)\).
+\item[P64.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f506f734d756c5374726963744d6f6e6f}\textbf{To positivity product strict mono.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Pos\,Mul\,Strict\,Mono}\left(R\right)\).
+\item[P65.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}\textbf{To zero leone class.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Zero\,LEOne\,Class}\left(R\right)\).
+\item[P66.] \refstepcounter{paperpremise}\label{premise:4c452e6c652e7472616e73}\textbf{Trans.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le c\). Then \(a \le c\).
+\item[P67.] \refstepcounter{paperpremise}\label{premise:4c542e6c742e6e6527}\textbf{Ne'.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a < b\). Then \(b \ne a\).
+\item[P68.] \refstepcounter{paperpremise}\label{premise:4d656d626572736869702e6d656d2e6e655f6f665f6e6f745f6d656d}\textbf{Differs from of not membership.} Let \(\alpha\) and \(\beta\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Membership}\left(\alpha, \beta\right)\). Let \(s\) be an element of \(\beta\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \in s\). Assume \(b \notin s\). Then \(a \ne b\).
+\item[P69.] \refstepcounter{paperpremise}\label{premise:4d756c506f735265666c6563744c452e746f4d756c506f735265666c6563744c54}\textbf{To product positivity reflect less than.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,Zero\,Class}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Mul\,Pos\,Reflect\,LE}\left(\alpha\right)\). Then \(\operatorname{Mul\,Pos\,Reflect\,LT}\left(\alpha\right)\).
+\item[P70.] \refstepcounter{paperpremise}\label{premise:4d756c506f735374726963744d6f6e6f2e746f4d756c506f735265666c6563744c45}\textbf{To product positivity reflect at most.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Equip \(\alpha\) with a linear order. Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Mul\,Pos\,Strict\,Mono}\left(\alpha\right)\). Then \(\operatorname{Mul\,Pos\,Reflect\,LE}\left(\alpha\right)\).
+\item[P71.] \refstepcounter{paperpremise}\label{premise:4e4e5261742e696e7374436861725a65726f}\textbf{Inst char zero.} \(\operatorname{Char\,Zero}\left(\mathbb{Q}_{\ge 0}\right)\).
+\item[P72.] \refstepcounter{paperpremise}\label{premise:4e4e5261742e696e73744e6f6e7472697669616c}\textbf{Inst nontrivial.} \(\operatorname{Nontrivial}\left(\mathbb{Q}_{\ge 0}\right)\).
+\item[P73.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f616464}\textbf{Cast sum.} Let \(R\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(R\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{R}(m + n) = \operatorname{cast}_{R}(m) + \operatorname{cast}_{R}(n)\).
+\item[P74.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f6c65}\textbf{Cast at most.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Char\,Zero}\left(\alpha\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{\alpha}\left(m\right) \le \operatorname{cast}_{\alpha}\left(n\right) \iff m \le n\).
+\item[P75.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f6c74}\textbf{Cast less than.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Char\,Zero}\left(\alpha\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{\alpha}\left(m\right) < \operatorname{cast}_{\alpha}\left(n\right) \iff m < n\).
+\item[P76.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f6d756c}\textbf{Cast product.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Non\,Assoc\,Semiring}\left(\alpha\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{\alpha}(m \cdot n) = \operatorname{cast}_{\alpha}(m) \cdot \operatorname{cast}_{\alpha}(n)\).
+\item[P77.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f6e6f6e6e6567}\textbf{Cast nonnegative.} Let \(\alpha\) be a type. Equip \(\alpha\) with a semiring structure. Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(\alpha\right)\). Let \(n\) be a natural number. Then \(0 \le \operatorname{cast}_{\alpha}\left(n\right)\).
+\item[P78.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f6f6e65}\textbf{Cast one.} Let \(R\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(R\right)\). Then \(\operatorname{cast}_{R}\left(1\right) = 1\).
+\item[P79.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f706f73}\textbf{Cast positivity.} Let \(\alpha\) be a type. Equip \(\alpha\) with a semiring structure. Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Nontrivial}\left(\alpha\right)\). Let \(n\) be a natural number. Then \(0 < \operatorname{cast}_{\alpha}\left(n\right) \iff 0 < n\).
+\item[P80.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f7a65726f}\textbf{Cast zero.} Let \(R\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(R\right)\). Then \(\operatorname{cast}_{R}\left(0\right) = 0\).
+\item[P81.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f65715f7a65726f5f6f665f6c74}\textbf{Choose equals zero of less than.} Let \(n\) and \(k\) be natural numbers. Assume \(n < k\). Then \(\binom{n}{k} = 0\).
+\item[P82.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f6c655f6d6964646c65}\textbf{Choose at most middle.} Let \(r\) and \(n\) be natural numbers. Then \(\binom{n}{r} \le \binom{n}{\left\lfloor\frac{n}{2}\right\rfloor}\).
+\item[P83.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f706f73}\textbf{Choose positivity.} Let \(n\) and \(k\) be natural numbers. Assume \(k \le n\). Then \(0 < \binom{n}{k}\).
+\item[P84.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f73656c66}\textbf{Choose self.} Let \(n\) be a natural number. Then \(\binom{n}{n} = 1\).
+\item[P85.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f737563635f72696768745f6571}\textbf{Choose successor right equals.} Let \(n\) and \(k\) be natural numbers. Then \(\binom{n}{k + 1} \cdot \left(k + 1\right) = \binom{n}{k} \cdot \left(n - k\right)\).
+\item[P86.] \refstepcounter{paperpremise}\label{premise:4e61742e63686f6f73655f7a65726f5f7269676874}\textbf{Choose zero right.} Let \(n\) be a natural number. Then \(\binom{n}{0} = 1\).
+\item[P87.] \refstepcounter{paperpremise}\label{premise:4e61742e6469765f6c655f73656c66}\textbf{Div at most self.} Let \(n\) and \(k\) be natural numbers. Then \(n / k \le n\).
+\item[P88.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}\textbf{Inst canonically ordered sum.} \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+\item[P89.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}\textbf{Inst is ordered sum monoid.} \(\text{translation preserves order on }\mathbb{N}\).
+\item[P90.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{Inst is ordered cancel sum monoid.} \(\text{translation preserves and reflects order on }\mathbb{N}\).
+\item[P91.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449735374726963744f72646572656452696e67}\textbf{Strict order on the natural numbers.} \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+\item[P92.] \refstepcounter{paperpremise}\label{premise:4e61742e696e73744e655a65726f53756363}\textbf{Inst differs from zero successor.} Let \(n\) be a natural number. Then \(\operatorname{Ne\,Zero}\left(n + 1\right)\).
+\item[P93.] \refstepcounter{paperpremise}\label{premise:4e61742e696e73744f726465726564537562}\textbf{Inst ordered difference.} \(\operatorname{Ordered\,Sub}\left(\mathbb{N}\right)\).
+\item[P94.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6f665f737563635f6c65}\textbf{At most of successor at most.} Let \(n\) and \(m\) be natural numbers. If \(n + 1 \le m\), then \(n \le m\).
+\item[P95.] \refstepcounter{paperpremise}\label{premise:4e61742e6c745f737563635f696666}\textbf{Less than successor if and only if.} Let \(m\) and \(n\) be natural numbers. Then \(m < n + 1 \iff m \le n\).
+\item[P96.] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f6c655f6d756c5f7269676874}\textbf{Multiplying by a common natural number preserves order.} Let \(n\), \(m\) and \(k\) be natural numbers. If \(n \le m\), then \(n \cdot k \le m \cdot k\).
+\item[P97.] \refstepcounter{paperpremise}\label{premise:4e61742e707265645f6c65}\textbf{Pred at most.} Let \(n\) be a natural number. Then \(\operatorname{pred}\left(n\right) \le n\).
+\item[P98.] \refstepcounter{paperpremise}\label{premise:4e61742e7375625f73656c66}\textbf{Difference self.} Let \(n\) be a natural number. Then \(n - n = 0\).
+\item[P99.] \refstepcounter{paperpremise}\label{premise:4e61742e737563635f6c655f696666}\textbf{Successor at most if and only if.} Let \(m\) and \(n\) be natural numbers. Then \(m + 1 \le n \iff m < n\).
+\item[P100.] \refstepcounter{paperpremise}\label{premise:4e652e73796d6d}\textbf{Symm.} Let \(\alpha\) be a sort. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \ne b\). Then \(b \ne a\).
+\item[P101.] \refstepcounter{paperpremise}\label{premise:506f734d756c5265666c6563744c452e746f506f734d756c5265666c6563744c54}\textbf{To positivity product reflect less than.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,Zero\,Class}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Pos\,Mul\,Reflect\,LE}\left(\alpha\right)\). Then \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(\alpha\right)\).
+\item[P102.] \refstepcounter{paperpremise}\label{premise:506f734d756c5374726963744d6f6e6f2e746f506f734d756c5265666c6563744c45}\textbf{To positivity product reflect at most.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Equip \(\alpha\) with a linear order. Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Pos\,Mul\,Strict\,Mono}\left(\alpha\right)\). Then \(\operatorname{Pos\,Mul\,Reflect\,LE}\left(\alpha\right)\).
+\item[P103.] \refstepcounter{paperpremise}\label{premise:5365742e53697a65642e636172645f6c65}\textbf{Cardinality at most.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\). Then \(\left|x\right| \le \binom{\left|\alpha\right|}{r}\).
+\item[P104.] \refstepcounter{paperpremise}\label{premise:5365742e53697a65642e656d7074795f6d656d5f696666}\textbf{Empty membership if and only if.} Let \(\alpha\) be a type. Let \(A\) be a subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\operatorname{Sized}\left(r, A\right)\). Then \(\varnothing \in A \iff A = \{\varnothing\}\).
+\item[P105.] \refstepcounter{paperpremise}\label{premise:5365742e53697a65642e736861646f77}\textbf{Shadow.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\). Then \(\operatorname{Sized}(r - 1,\allowbreak{} \operatorname{underlying\,set}(\operatorname{Finset\mathord{:}shadow}(x)))\).
+\item[P106.] \refstepcounter{paperpremise}\label{premise:6164645f636f6d6d}\textbf{Addition commutativity.} Let \(G\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Comm\,Magma}\left(G\right)\). Let \(a\) and \(b\) be elements of \(G\). Then \(a + b = b + a\).
+\item[P107.] \refstepcounter{paperpremise}\label{premise:6164645f646976}\textbf{Sum div.} Let \(K\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Division\,Semiring}\left(K\right)\). Let \(a\), \(b\), and \(c\) be elements of \(K\). Then \(\left(a + b\right) / c = a / c + b / c\).
+\item[P108.] \refstepcounter{paperpremise}\label{premise:6164645f6c655f6164645f6c656674}\textbf{Sum at most sum left.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{LE}\left(\alpha\right)\). Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(b\) and \(c\) be elements of \(\alpha\). Assume \(b \le c\). Let \(a\) be an element of \(\alpha\). Then \(a + b \le a + c\).
+\item[P109.] \refstepcounter{paperpremise}\label{premise:6164645f747375625f6164645f65715f747375625f7269676874}\textbf{Sum tsub sum equals tsub right.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(\mathit{inst}_{5}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LE}\left(\alpha\right)\). Let \(a\), \(c\), and \(b\) be elements of \(\alpha\). Then \(a + c - \left(b + c\right) = a - b\).
+\item[P110.] \refstepcounter{paperpremise}\label{premise:6164645f747375625f63616e63656c5f7269676874}\textbf{Sum tsub cancel right.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LE}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Then \(a + b - b = a\).
+\item[P111.] \refstepcounter{paperpremise}\label{premise:616e645f74727565}\textbf{And true.} Let \(p\) be a proposition. Then \(\left(p \land \mathrm{True}\right) = p\).
+\item[P112.] \refstepcounter{paperpremise}\label{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65}\textbf{Contravariant less than of covariant at most.} Let \(N\) be a type. Let \(\mathit{mu}\) be a function of type \(N \to N \to N\). Equip \(N\) with a linear order. Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Covariant\,Class}(N,\allowbreak{} N,\allowbreak{} \mathit{mu},\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \le \mathit{x2})\). Then \(\operatorname{Contravariant\,Class}(N,\allowbreak{} N,\allowbreak{} \mathit{mu},\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} < \mathit{x2})\).
+\item[P113.] \refstepcounter{paperpremise}\label{premise:6469765f65715f6d756c5f696e76}\textbf{Div equals product inv.} Let \(G\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Div\,Inv\,Monoid}\left(G\right)\). Let \(a\) and \(b\) be elements of \(G\). Then \(a / b = a \cdot \operatorname{inv}\left(b\right)\).
+\item[P114.] \refstepcounter{paperpremise}\label{premise:6469765f6c655f6469765f696666e28280}\textbf{Div at most div iff0.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Group\,With\,Zero}\left(G_{0}\right)\). Equip \(G_{0}\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(G_{0}\right)\). Let \(a\), \(b\), \(c\), and \(d\) be elements of \(G_{0}\). Assume \(0 < b\). Assume \(0 < d\). Then \(a / b \le c / d \iff a \cdot d \le c \cdot b\).
+\item[P115.] \refstepcounter{paperpremise}\label{premise:6469765f6c655f696666e28280}\textbf{Div at most iff0.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Group\,With\,Zero}\left(G_{0}\right)\). Equip \(G_{0}\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Mul\,Pos\,Reflect\,LT}\left(G_{0}\right)\). Let \(a\), \(b\), and \(c\) be elements of \(G_{0}\). Assume \(0 < c\). Then \(b / c \le a \iff b \le a \cdot c\).
+\item[P116.] \refstepcounter{paperpremise}\label{premise:6469765f6e6f6e6e6567}\textbf{Div nonnegative.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Group\,With\,Zero}\left(G_{0}\right)\). Equip \(G_{0}\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(G_{0}\right)\). Let \(a\) and \(b\) be elements of \(G_{0}\). Assume \(0 \le a\). Assume \(0 \le b\). Then \(0 \le a / b\).
+\item[P117.] \refstepcounter{paperpremise}\label{premise:6469765f6f6e65}\textbf{Div one.} Let \(G\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Div\,Inv\,One\,Monoid}\left(G\right)\). Let \(a\) be an element of \(G\). Then \(a / 1 = a\).
+\item[P118.] \refstepcounter{paperpremise}\label{premise:6469765f7a65726f}\textbf{Div zero.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Group\,With\,Zero}\left(G_{0}\right)\). Let \(a\) be an element of \(G_{0}\). Then \(a / 0 = 0\).
+\item[P119.] \refstepcounter{paperpremise}\label{premise:65715f6f665f686571}\textbf{Equals of heq.} Let \(\alpha\) be a sort. Let \(a\) and \(a^{'}\) be elements of \(\alpha\). Assume \(\left(a\, :\, \alpha\right)\text{ is heterogeneously equal to }\left(a^{'}\, :\, \alpha\right)\). Then \(a = a^{'}\).
+\item[P120.] \refstepcounter{paperpremise}\label{premise:65715f73656c66}\textbf{Equals self.} Let \(\alpha\) be a sort. Let \(a\) be an element of \(\alpha\). Then \(\left(a = a\right) = \mathrm{True}\).
+\item[P121.] \refstepcounter{paperpremise}\label{premise:65715f74727565}\textbf{Equals true.} Let \(p\) be a proposition. Assume \(p\). Then \(p = \mathrm{True}\).
+\item[P122.] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e6772}\textbf{Forall congruence.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) = q\left(a\right)\). Then \((\forall a\, :\, \alpha,\; p(a)) = (\forall a\, :\, \alpha,\; q(a))\).
+\item[P123.] \refstepcounter{paperpremise}\label{premise:66756e657874}\textbf{Function extensionality.} Let \(\alpha\) be a sort. Let \(\beta\) be a function of type \(\alpha \to \mathsf{Sort}\). Let \(f\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Let \(g\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Assume \(\forall x\, :\, \alpha,\; f\left(x\right) = g\left(x\right)\). Then \(f = g\).
+\item[P124.] \refstepcounter{paperpremise}\label{premise:696d706c6965735f636f6e6772}\textbf{Implies congruence.} Let \(p_{1}\) and \(p_{2}\) be sorts. Let \(q_{1}\) and \(q_{2}\) be sorts. Assume \(p_{1} = p_{2}\). Assume \(q_{1} = q_{2}\). Then \(\left(p_{1} \to q_{1}\right) = \left(p_{2} \to q_{2}\right)\).
+\item[P125.] \refstepcounter{paperpremise}\label{premise:696d706c6965735f74727565}\textbf{Implies true.} Let \(\alpha\) be a sort. Then \(\left(\forall a\, :\, \alpha,\; \mathrm{True}\right) = \mathrm{True}\).
+\item[P126.] \refstepcounter{paperpremise}\label{premise:696e737449735374726963744f72646572656452696e674e4e526174}\textbf{Inst is strict ordered ring nnrat.} \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+\item[P127.] \refstepcounter{paperpremise}\label{premise:696e765f616e7469e28280}\textbf{Inv anti0.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Group\,With\,Zero}\left(G_{0}\right)\). Equip \(G_{0}\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(G_{0}\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Mul\,Pos\,Reflect\,LT}\left(G_{0}\right)\). Let \(a\) and \(b\) be elements of \(G_{0}\). Assume \(0 < b\). Assume \(b \le a\). Then \(\operatorname{inv}\left(a\right) \le \operatorname{inv}\left(b\right)\).
+\item[P128.] \refstepcounter{paperpremise}\label{premise:6c655f6f665f6d756c5f6c655f6d756c5f7269676874}\textbf{At most of product at most product right.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Equip \(\alpha\) with a preorder. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Mul\,Pos\,Reflect\,LE}\left(\alpha\right)\). Assume \(b \cdot a \le c \cdot a\). Assume \(0 < a\). Then \(b \le c\).
+\item[P129.] \refstepcounter{paperpremise}\label{premise:6c655f72666c}\textbf{At most rfl.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) be an element of \(\alpha\). Then \(a \le a\).
+\item[P130.] \refstepcounter{paperpremise}\label{premise:6c655f7472616e73}\textbf{At most trans.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le c\). Then \(a \le c\).
+\item[P131.] \refstepcounter{paperpremise}\label{premise:6c655f747375625f6f665f6164645f6c655f6c656674}\textbf{At most tsub of sum at most left.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LE}\left(\alpha\right)\). Assume \(a + b \le c\). Then \(b \le c - a\).
+\item[P132.] \refstepcounter{paperpremise}\label{premise:6c745f6f725f6c65}\textbf{Less than or at most.} Let \(\alpha\) be a type. Equip \(\alpha\) with a linear order. Let \(a\) and \(b\) be elements of \(\alpha\). Then \(a < b \lor b \le a\).
+\item[P133.] \refstepcounter{paperpremise}\label{premise:6d756c5f6173736f63}\textbf{Multiplication associativity.} Let \(G\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semigroup}\left(G\right)\). Let \(a\), \(b\), and \(c\) be elements of \(G\). Then \(a \cdot b \cdot c = a \cdot \left(b \cdot c\right)\).
+\item[P134.] \refstepcounter{paperpremise}\label{premise:6d756c5f636f6d6d}\textbf{Multiplication commutativity.} Let \(G\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Magma}\left(G\right)\). Let \(a\) and \(b\) be elements of \(G\). Then \(a \cdot b = b \cdot a\).
+\item[P135.] \refstepcounter{paperpremise}\label{premise:6d756c5f65715f6d756c5f6c6566745f696666}\textbf{Product equals product left if and only if.} Let \(M_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Cancel\,Monoid\,With\,Zero}\left(M_{0}\right)\). Let \(a\), \(b\), and \(c\) be elements of \(M_{0}\). Then \(a \cdot b = a \cdot c \iff b = c \lor a = 0\).
+\item[P136.] \refstepcounter{paperpremise}\label{premise:6d756c5f696e765f6c655f696666e2828027}\textbf{Product inv at most iff0'.} Let \(G_{0}\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Group\,With\,Zero}\left(G_{0}\right)\). Equip \(G_{0}\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(G_{0}\right)\). Let \(a\), \(b\), and \(c\) be elements of \(G_{0}\). Assume \(0 < c\). Then \(b \cdot \operatorname{inv}\left(c\right) \le a \iff b \le c \cdot a\).
+\item[P137.] \refstepcounter{paperpremise}\label{premise:6d756c5f6f6e65}\textbf{Product one.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,One\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(a \cdot 1 = a\).
+\item[P138.] \refstepcounter{paperpremise}\label{premise:6e736d756c5f65715f6d756c}\textbf{Repeated addition equals product.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Non\,Assoc\,Semiring}\left(\alpha\right)\). Let \(n\) be a natural number. Let \(a\) be an element of \(\alpha\). Then \(n \mathbin{\bullet} a = \operatorname{cast}_{\alpha}\left(n\right) \cdot a\).
+\item[P139.] \refstepcounter{paperpremise}\label{premise:6f6e655f6d756c}\textbf{One product.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,One\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(1 \cdot a = a\).
+\item[P140.] \refstepcounter{paperpremise}\label{premise:706f735f6966665f6e655f7a65726f}\textbf{Positivity if and only if differs from zero.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Zero\,Class}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Then \(0 < a \iff a \ne 0\).
+\item[P141.] \refstepcounter{paperpremise}\label{premise:737375627365745f6f665f7375627365745f6f665f6e65}\textbf{Ssubset of subset of differs from.} Let \(\alpha\) be a type. Equip \(\alpha\) with a subset relation. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Has\,SSubset}\left(\alpha\right)\). Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Is\,Nonstrict\,Strict\,Order}(\alpha,\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subsetneq \mathit{x2})\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Is\,Antisymm}(\alpha,\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\). Assume \(a \subseteq b\). Assume \(a \ne b\). Then \(a \subsetneq b\).
+\item[P142.] \refstepcounter{paperpremise}\label{premise:747375625f6164645f63616e63656c5f6f665f6c65}\textbf{Tsub sum cancel of at most.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Exists\,Add\,Of\,LE}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{4}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{5}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \le b\). Then \(b - a + a = b\).
+\item[P143.] \refstepcounter{paperpremise}\label{premise:747375625f6164645f65715f6164645f74737562}\textbf{Tsub sum equals sum tsub.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Exists\,Add\,Of\,LE}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{4}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{5}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Let \(\mathit{inst}_{6}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LE}\left(\alpha\right)\). Assume \(b \le a\). Then \(a - b + c = a + c - b\).
+\item[P144.] \refstepcounter{paperpremise}\label{premise:747375625f706f735f6966665f6c74}\textbf{Tsub positivity if and only if less than.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a linear order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{3}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\) and \(b\) be elements of \(\alpha\). Then \(0 < a - b \iff b < a\).
+\item[P145.] \refstepcounter{paperpremise}\label{premise:747375625f73656c66}\textbf{Tsub self.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Canonically\,Ordered\,Add}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{3}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Then \(a - a = 0\).
+\item[P146.] \refstepcounter{paperpremise}\label{premise:747375625f74737562}\textbf{Tsub tsub.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(b\), \(a\), and \(c\) be elements of \(\alpha\). Then \(b - a - c = b - \left(a + c\right)\).
+\item[P147.] \refstepcounter{paperpremise}\label{premise:747375625f747375625f6c655f747375625f616464}\textbf{Tsub tsub at most tsub sum.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Add\,Left\,Mono}\left(\alpha\right)\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Then \(a - \left(b - c\right) \le a - b + c\).
+\item[P148.] \refstepcounter{paperpremise}\label{premise:747375625f7a65726f}\textbf{Tsub zero.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Equip \(\alpha\) with a commutative additive monoid structure. Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Then \(a - 0 = a\).
+\item[P149.] \refstepcounter{paperpremise}\label{premise:7a65726f5f616464}\textbf{Zero sum.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Zero\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(0 + a = a\).
+\item[P150.] \refstepcounter{paperpremise}\label{premise:7a65726f5f6c745f6f6e65}\textbf{Zero less than one.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{One}\left(\alpha\right)\). Equip \(\alpha\) with a partial order. Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Ne\,Zero}\left(1\right)\). Then \(0 < 1\).
+\end{description}
+
+\section{Local lym}
+\begin{lemma}[{A bound on weighted cardinalities}]\label{theorem:1}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\). Then
+\begin{center}
+\(\displaystyle |x| \cdot r \le |\operatorname{Finset\mathord{:}shadow}(x)| \cdot (|\alpha| - r + 1).\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+Set \(i\) equal to \(x_{1} \mapsto x_{2} \mapsto \operatorname{dec}((\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})(x_{1},\allowbreak{} x_{2}))\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(s \in x\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x_{1}\) in \(\alpha\).
+By definition, we obtain \(\left(x_{1} \in s\right) = \left(x_{1} \in s\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f62697061727469746542656c6f77} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}\) in place of its parameter \(r\), we obtain \(s \setminus \{x_{1}\} \in N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s) \iff s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}(x) \land (\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})(s \setminus \{x_{1}\},\allowbreak{} s)\).
+By propositional extensionality, we obtain \((s \setminus \{x_{1}\} \in N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)) = (s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}(x) \land s \setminus \{x_{1}\} \subseteq s)\).
+By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = x_{1} \in s\) and \(p_{2} = x_{1} \in s\) and \(q_{1} = s \setminus \{x_{1}\} \in N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)\) and \(q_{2} = s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}(x) \land s \setminus \{x_{1}\} \subseteq s\), we obtain \((x_{1} \in s \implies s \setminus \{x_{1}\} \in N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)) = (x_{1} \in s \implies s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}(x) \land s \setminus \{x_{1}\} \subseteq s)\).
+\end{proofstep}
+Fix \(x_{1}\) in \(\alpha\).
+Assume \(x_{1} \in s\).
+Use the hypothesis \(s \in x\).
+Use the hypothesis \(x_{1} \in s\).
+By Prerequisite~P\ref{premise:46696e7365742e65726173655f6d656d5f736861646f77}, we obtain \(s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e65726173655f737562736574} with \(x_{1}\) in place of its parameter \(a\), we obtain \(s \setminus \{x_{1}\} \subseteq s\).
+Combining the two conclusions, we obtain \(s \setminus \{x_{1}\} \in \operatorname{Finset\mathord{:}shadow}(x) \land s \setminus \{x_{1}\} \subseteq s\).
+Rewriting with Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772} and the identity established above in the preceding result gives \(\forall x_{1}\, :\, \alpha,\; x_{1} \in s \implies s \setminus \{x_{1}\} \in N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e696d6167655f7375627365745f696666} in the preceding result gives \(\operatorname{erase}(s)[s] \subseteq N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)\).
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f63617264} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(|\operatorname{erase}(s)[s]| \le |N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)|\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636172645f696d6167655f6f665f696e6a4f6e} and Prerequisite~P\ref{premise:46696e7365742e65726173655f696e6a4f6e} in the preceding result gives \(|s| \le |N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)|\).
+Rewriting with \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\) and \(s \in x\) in the preceding result gives \(r \le |N^{-}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{Finset\mathord{:}shadow}(x)}(s)|\).
+\end{proofstep}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(s \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(t\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(t \in N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}, x}(s)\).
+Assume \(x = \{\varnothing\}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(\{\varnothing\})\right)\).
+Assume \(s \in \operatorname{Finset\mathord{:}shadow}\left(\{\varnothing\}\right)\).
+Assume \(t \in \{\varnothing\} \land s \subseteq t\).
+Use the hypothesis \(s \in \operatorname{Finset\mathord{:}shadow}\left(\{\varnothing\}\right)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e736861646f775f73696e676c65746f6e5f656d707479} in the preceding result gives \(s \in \varnothing\).
+By Prerequisite~P\ref{premise:46696e7365742e6e6f745f6d656d5f656d707479} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(s\) in place of its parameter \(a\), we obtain \(\mathrm{False}\).
+\end{proofstep}
+Use the hypothesis \(x = \{\varnothing\}\).
+Reversing the equality, we obtain \(\{\varnothing\} = x\).
+Use the hypothesis \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\).
+Use the hypothesis \(s \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\).
+Use the hypothesis \(t \in N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}, x}(s)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f62697061727469746541626f7665} in the preceding result gives \(t \in x \land s \subseteq t\).
+Substituting equals, we obtain \(\mathrm{False}\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636f655f65715f73696e676c65746f6e} in the preceding result gives \(\neg \left(\operatorname{underlying\,set}(x) = \{\varnothing\}\right)\).
+Rewriting with Prerequisite~P\ref{premise:5365742e53697a65642e656d7074795f6d656d5f696666} (using \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\)) in the preceding result gives \(\varnothing \notin \operatorname{underlying\,set}(x)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f636f65} in the preceding result gives \(\varnothing \notin x\).
+By Prerequisite~P\ref{premise:46696e7365742e6578697374735f65715f696e736572745f696666}, we obtain \((\exists a\, :\, \alpha,\; a \notin s \land \{a\} \cup s = t) \iff s \subseteq t \land |s| + 1 = |t|\).
+Use the hypothesis \(t \in N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}, x}(s)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f62697061727469746541626f7665} in the preceding result gives \(t \in x \land s \subseteq t\).
+Taking the second conjunct, we obtain \(s \subseteq t\).
+Rewriting with Prerequisite~P\ref{premise:5365742e53697a65642e736861646f77} (using \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\) and \(s \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\)), Prerequisite~P\ref{premise:4966662e6d70}, Prerequisite~P\ref{premise:46696e7365742e73697a65645f736861646f775f696666} (using \(\varnothing \notin x\)), Prerequisite~P\ref{premise:5365742e53697a65642e736861646f77} (using \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\)), Prerequisite~P\ref{premise:416e642e6c656674}, propositional extensionality, Prerequisite~P\ref{premise:46696e7365742e6d656d5f62697061727469746541626f7665}, \(t \in N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}, x}(s)\) and substitution of equals gives \(\left|s\right| + 1 = \left|t\right|\).
+Combining the two conclusions, we obtain \(s \subseteq t \land \left|s\right| + 1 = \left|t\right|\).
+By the reverse implication, we obtain \(\exists a\, :\, \alpha,\; a \notin s \land \{a\} \cup s = t\).
+Use the previously proved fact \(\exists a\, :\, \alpha,\; a \notin s \land \{a\} \cup s = t\).
+Consider the following case.
+\begin{proofstep}
+Fix \(a\) in \(\alpha\).
+Assume \(a \notin s \land \{a\} \cup s = t\).
+Use the hypothesis \(a \notin s \land \{a\} \cup s = t\).
+Consider the following case.
+\begin{proofstep}
+Assume \(a \notin s\).
+Assume \(\{a\} \cup s = t\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\{a\} \cup s \in x \land s \subseteq \{a\} \cup s\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f636f6d706c}, we obtain \(a \in s^{\mathrm c} \iff a \notin s\).
+Use the hypothesis \(a \notin s\).
+By the reverse implication, we obtain \(a \in s^{\mathrm c}\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f696d6167655f6f665f6d656d} with \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(f = a_{1} \mapsto \{a_{1}\} \cup s\), we obtain \(\{a\} \cup s \in \left(a_{1} \mapsto \{a_{1}\} \cup s\right)\left[s^{\mathrm c}\right]\).
+\end{proofstep}
+Use the hypothesis \(\{a\} \cup s = t\).
+Use the hypothesis \(t \in N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}, x}(s)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f62697061727469746541626f7665} in the preceding result gives \(t \in x \land s \subseteq t\).
+Substituting equals, we obtain \(t \in \left(a_{1} \mapsto \{a_{1}\} \cup s\right)\left[s^{\mathrm c}\right]\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(t \in \left(a_{1} \mapsto \{a_{1}\} \cup s\right)\left[s^{\mathrm c}\right]\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(t \in \left(a \mapsto \{a\} \cup s\right)\left[s^{\mathrm c}\right]\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f63617264} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(|N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} x}(s)| \le |(a \mapsto \{a\} \cup s)[s^{\mathrm c}]|\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636172645f696d6167655f6f665f696e6a4f6e} and Prerequisite~P\ref{premise:46696e7365742e696e736572745f696e6a5f6f6e27} in the preceding result gives \(|N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} x}(s)| \le |s^{\mathrm c}|\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636172645f636f6d706c} in the preceding result gives \(|N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} x}(s)| \le |\alpha| - |s|\).
+Rewriting with Prerequisite~P\ref{premise:5365742e53697a65642e736861646f77} (using \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\) and \(s \in \operatorname{Finset\mathord{:}shadow}\left(x\right)\)) in the preceding result gives \(|N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} x}(s)| \le |\alpha| - (r - 1)\).
+By Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, we obtain \(\operatorname{Ordered\,Sub}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }\mathbb{N}\).
+By Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Add\,Left\,Mono}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:747375625f747375625f6c655f747375625f616464} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|\alpha\right| - \left(r - 1\right) \le \left|\alpha\right| - r + 1\).
+By Prerequisite~P\ref{premise:6c655f7472616e73} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(|N^{+}_{\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} x}(s)| \le |\alpha| - r + 1\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6d756c5f6c655f636172645f6d756c27} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2}\) in place of its parameter \(r\), we obtain \(|x| \cdot r \le |\operatorname{Finset\mathord{:}shadow}(x)| \cdot (|\alpha| - r + 1)\).
+
+\end{proof}
+
+\begin{corollary}[{A bound on weighted cardinalities}]\label{theorem:2}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x)\right)\). Then
+\begin{center}
+\(\displaystyle |x| \cdot r \le |\operatorname{Finset\mathord{:}shadow}(x)| \cdot (|\alpha| - r + 1).\)
+\end{center}
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{theorem:1}.
+
+\end{proof}
+
+\begin{lemma}[{Local lubell yamamoto meshalkin inequality div}]\label{theorem:3}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(r \ne 0\). Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x_{1})\right)\). Then
+\begin{center}
+\(\displaystyle \operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1}).\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:6c745f6f725f6c65} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(a = \left|\alpha\right|\) and \(b = r\), we obtain \(\left|\alpha\right| < r \lor r \le \left|\alpha\right|\).
+Consider the following case.
+\begin{proofstep}
+Assume \(\left|\alpha\right| < r\).
+Use the hypothesis \(x\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f506f734d756c5374726963744d6f6e6f}, we obtain \(\operatorname{Pos\,Mul\,Strict\,Mono}\left(x\right)\).
+By Prerequisite~P\ref{premise:506f734d756c5374726963744d6f6e6f2e746f506f734d756c5265666c6563744c45}, we obtain \(\operatorname{Pos\,Mul\,Reflect\,LE}\left(x\right)\).
+By Prerequisite~P\ref{premise:506f734d756c5265666c6563744c452e746f506f734d756c5265666c6563744c54}, we obtain \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(x\right)\).
+Use the hypothesis \(x\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(x\right)\).
+By Prerequisite~P\ref{premise:4e61742e636173745f6e6f6e6e6567} with \(n = \left|\operatorname{Finset\mathord{:}shadow}\left(x_{1}\right)\right|\), we obtain \(0 \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|)\).
+Use the hypothesis \(x\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(x\right)\).
+By Prerequisite~P\ref{premise:4e61742e636173745f6e6f6e6e6567} with \(n = \binom{\left|\alpha\right|}{r - 1}\), we obtain \(0 \le \operatorname{cast}_{x}\left(\binom{\left|\alpha\right|}{r - 1}\right)\).
+By Prerequisite~P\ref{premise:6469765f6e6f6e6e6567}, we obtain \(0 \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+Rewriting with Prerequisite~P\ref{premise:6469765f7a65726f} in the preceding result gives \(\operatorname{cast}_{x}(|x_{1}|) / 0 \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e636173745f7a65726f} in the preceding result gives \(\operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(0) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e63686f6f73655f65715f7a65726f5f6f665f6c74} (using \(\left|\alpha\right| < r\)) in the preceding result gives \(\operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(r \le \left|\alpha\right|\).
+By Lemma~\ref{theorem:1}, we obtain \(|x_{1}| \cdot r \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r + 1)\).
+In the zero case,
+\begin{proofstep}
+Assume \(0 \ne 0\).
+Assume \(0 \le \left|\alpha\right|\).
+Assume \(|x_{1}| \cdot 0 \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - 0 + 1)\).
+By definition, we obtain \(0 = 0\).
+Applying the hypothesis \(0 \ne 0\), we obtain \(\mathrm{False}\).
+The contradiction rules out this case. Hence \(|x_{1}| \cdot \binom{|\alpha|}{0 - 1} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{0}\).
+\end{proofstep}
+In the successor case,
+\begin{proofstep}
+Fix \(r_{1}\) in \(\mathbb{N}\).
+Assume \(r_{1} + 1 \ne 0\).
+Assume \(r_{1} + 1 \le \left|\alpha\right|\).
+Assume \(|x_{1}| \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - (r_{1} + 1) + 1)\).
+By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f4d756c506f735374726963744d6f6e6f} with \(R = \mathbb{N}\), we obtain \(\operatorname{Mul\,Pos\,Strict\,Mono}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:4d756c506f735374726963744d6f6e6f2e746f4d756c506f735265666c6563744c45} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Mul\,Pos\,Reflect\,LE}\left(\mathbb{N}\right)\).
+The substitution uses the following argument.
+\begin{proofstep}
+Assume \(\operatorname{inst\,LENat} = \operatorname{to\,LE}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\operatorname{to\,LE} = \operatorname{to\,LE}\).
+Assume \(\text{the proof of }(\operatorname{to\,LE} = \operatorname{to\,LE})\text{ agrees under transport with the proof of }(\operatorname{to\,LE} = \operatorname{to\,LE})\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = r_{1} + 1\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \lor x_{1} = \varnothing\).
+Rewriting with Prerequisite~P\ref{premise:6164645f747375625f63616e63656c5f7269676874}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}, Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} and Prerequisite~P\ref{premise:46696e7365742e636172645f65715f7a65726f} in the preceding result gives \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1)\).
+Assume \(\text{the proof of }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1))\text{ agrees under transport with the proof of }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1))\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = \left|\alpha\right| - r_{1}\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} \lor |\operatorname{Finset\mathord{:}shadow}(x_{1})| = 0\).
+Rewriting with Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f737563635f72696768745f6571} and Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} in the preceding result gives \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\).
+Assume \(\text{the proof of }(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1))\text{ agrees under transport with the proof of }(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1))\).
+By reflexivity, we obtain \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\) heterogeneously equal to itself.
+\end{proofstep}
+Use the hypothesis \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\).
+Reversing the equality, we obtain \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = \left|\alpha\right| - r_{1}\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} \lor |\operatorname{Finset\mathord{:}shadow}(x_{1})| = 0\).
+Rewriting with Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f737563635f72696768745f6571} and Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} in the preceding result gives \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+Substituting equals, we obtain \(\text{the proof of }(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}})\text{ agrees under transport with the proof of }(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)) \implies (|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\, :\, \mathsf{Prop})\text{ is heterogeneously equal to }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\, :\, \mathsf{Prop})\).
+\end{proofstep}
+By definition, we obtain \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = \left|\alpha\right| - r_{1}\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (|\alpha| - r_{1}) = (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}} \lor |\operatorname{Finset\mathord{:}shadow}(x_{1})| = 0\).
+Rewriting with Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f737563635f72696768745f6571} and Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} in the preceding result gives \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+By reflexivity, we obtain the same proof of \(|\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1) = |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\) on both sides of the heterogeneous equality.
+Substituting equals, we obtain \((|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\, :\, \mathsf{Prop})\text{ is heterogeneously equal to }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\, :\, \mathsf{Prop})\).
+\end{proofstep}
+Use the hypothesis \(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1)\).
+Reversing the equality, we obtain \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = r_{1} + 1\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \lor x_{1} = \varnothing\).
+Rewriting with Prerequisite~P\ref{premise:6164645f747375625f63616e63656c5f7269676874}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}, Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} and Prerequisite~P\ref{premise:46696e7365742e636172645f65715f7a65726f} in the preceding result gives \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+Substituting equals, we obtain \(\text{the proof of }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}})\text{ agrees under transport with the proof of }(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1)) \implies (|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\, :\, \mathsf{Prop})\text{ is heterogeneously equal to }(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\, :\, \mathsf{Prop})\).
+\end{proofstep}
+By definition, we obtain \(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+By Prerequisite~P\ref{premise:6d756c5f636f6d6d} with \(G = \mathbb{N}\) and \(a = \binom{\left|\alpha\right|}{r_{1}}\) and \(b = r_{1} + 1\), we obtain \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+The first alternative suffices. Hence \(\binom{|\alpha|}{r_{1}} \cdot (r_{1} + 1) = (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \lor x_{1} = \varnothing\).
+Rewriting with Prerequisite~P\ref{premise:6164645f747375625f63616e63656c5f7269676874}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964}, Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:6d756c5f6173736f63}, Prerequisite~P\ref{premise:6d756c5f65715f6d756c5f6c6566745f696666} and Prerequisite~P\ref{premise:46696e7365742e636172645f65715f7a65726f} in the preceding result gives \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\).
+By reflexivity, we obtain the same proof of \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) = |x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}}\) on both sides of the heterogeneous equality.
+Substituting equals, we obtain \((|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\, :\, \mathsf{Prop})\text{ is heterogeneously equal to }(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\, :\, \mathsf{Prop})\).
+\end{proofstep}
+Use the hypothesis \(\operatorname{inst\,LENat} = \operatorname{to\,LE}\).
+Reversing the equality, we obtain \(\operatorname{to\,LE} = \operatorname{inst\,LENat}\).
+By definition, we obtain \(\operatorname{to\,LE} = \operatorname{to\,LE}\).
+Substituting equals, we obtain \(\text{the proof of }(\operatorname{to\,LE} = \operatorname{inst\,LENat})\text{ agrees under transport with the proof of }(\operatorname{to\,LE} = \operatorname{to\,LE}) \implies (|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\, :\, \mathsf{Prop})\text{ is heterogeneously equal to }(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\, :\, \mathsf{Prop})\).
+\end{proofstep}
+Use the hypothesis \(|x_{1}| \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - (r_{1} + 1) + 1)\).
+Rewriting with Prerequisite~P\ref{premise:747375625f6164645f65715f6164645f74737562} (using \(r_{1} + 1 \le \left|\alpha\right|\)), Prerequisite~P\ref{premise:43616e6f6e6963616c6c794f7264657265644164642e746f4578697374734164644f664c45}, Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964} and Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65} in the preceding result gives \(|x_{1}| \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| + 1 - (r_{1} + 1))\).
+Rewriting with Prerequisite~P\ref{premise:6164645f747375625f6164645f65715f747375625f7269676874}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964} and Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65} in the preceding result gives \(|x_{1}| \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1})\).
+By Prerequisite~P\ref{premise:4e61742e6d756c5f6c655f6d756c5f7269676874} with \(k = \binom{\left|\alpha\right|}{r_{1}}\), we obtain \(|x_{1}| \cdot (r_{1} + 1) \cdot \binom{|\alpha|}{r_{1}} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r_{1}) \cdot \binom{|\alpha|}{r_{1}}\).
+Rewriting with Prerequisite~P\ref{premise:65715f6f665f686571} and the auxiliary result established above in the preceding result gives \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \cdot (r_{1} + 1) \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1} \cdot (r_{1} + 1)\).
+By Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}, we obtain \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:706f735f6966665f6e655f7a65726f} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(0 < r_{1} + 1 \iff r_{1} + 1 \ne 0\).
+Use the hypothesis \(r_{1} + 1 \ne 0\).
+By the reverse implication, we obtain \(0 < r_{1} + 1\).
+By Prerequisite~P\ref{premise:6c655f6f665f6d756c5f6c655f6d756c5f7269676874} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(|x_{1}| \cdot \binom{|\alpha|}{r_{1} + 1 - 1} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r_{1} + 1}\).
+\end{proofstep}
+Use the hypothesis \(r \ne 0\).
+Use the hypothesis \(r \le \left|\alpha\right|\).
+Use the previously proved fact \(|x_{1}| \cdot r \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot (|\alpha| - r + 1)\).
+The zero and successor cases exhaust the natural numbers. Hence \(|x_{1}| \cdot \binom{|\alpha|}{r - 1} \le |\operatorname{Finset\mathord{:}shadow}(x_{1})| \cdot \binom{|\alpha|}{r}\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e636173745f6d756c}, Prerequisite~P\ref{premise:4e61742e636173745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} (using \(x\text{ is a strictly ordered semiring}\)) and Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(x\text{ is a strictly ordered semiring}\)) in the preceding result gives \(\operatorname{cast}_{x}(|x_{1}|) \cdot \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) \cdot \operatorname{cast}_{x}(\binom{|\alpha|}{r})\).
+Rewriting with Prerequisite~P\ref{premise:6469765f6c655f6469765f696666e28280}, Prerequisite~P\ref{premise:506f734d756c5265666c6563744c452e746f506f734d756c5265666c6563744c54}, Prerequisite~P\ref{premise:506f734d756c5374726963744d6f6e6f2e746f506f734d756c5265666c6563744c45}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f506f734d756c5374726963744d6f6e6f} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:4e61742e636173745f7a65726f}, Prerequisite~P\ref{premise:4e61742e636173745f6c74}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:4e61742e63686f6f73655f706f73} (using \(r \le \left|\alpha\right|\)), Prerequisite~P\ref{premise:4e61742e63686f6f73655f706f73}, Prerequisite~P\ref{premise:4c452e6c652e7472616e73} (using \(r \le \left|\alpha\right|\)) and Prerequisite~P\ref{premise:4e61742e707265645f6c65} in the preceding result gives \(\operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+\end{proofstep}
+The two alternatives exhaust the cases. Hence \(\operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1})\).
+
+\end{proof}
+
+\begin{corollary}[{Cardinality div choose at most cardinality shadow div choose}]\label{theorem:4}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(r\) be a natural number. Assume \(r \ne 0\). Assume \(\operatorname{Sized}\left(r, \operatorname{underlying\,set}(x_{1})\right)\). Then
+\begin{center}
+\(\displaystyle \operatorname{cast}_{x}(|x_{1}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r - 1}).\)
+\end{center}
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{theorem:3}.
+
+\end{proof}
+
+\section{Lym}
+\subsection{Falling}
+\begin{lemma}[{Membership falling}]\label{theorem:5}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(s\) be a finite subset of \(\alpha\). Then
+\begin{center}
+\(\displaystyle s \in \operatorname{falling}(k,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k.\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(i\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f706f77657273657443617264}, we obtain \(s \in \mathcal P_{k}(i) \iff s \subseteq i \land \left|s\right| = k\).
+By propositional extensionality, we obtain \(\left(s \in \mathcal P_{k}(i)\right) = \left(s \subseteq i \land \left|s\right| = k\right)\).
+Applying the same function to equal arguments, we obtain \((i \in x \land s \in \mathcal P_{k}(i)) = (i \in x \land (s \subseteq i \land |s| = k))\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(\exists i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in x \land (s \subseteq i \land |s| = k)\).
+Use the hypothesis \(\exists i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in x \land (s \subseteq i \land |s| = k)\).
+Consider the following case.
+\begin{proofstep}
+Fix \(w\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(w \in x \land \left(s \subseteq w \land \left|s\right| = k\right)\).
+Use the hypothesis \(w \in x \land \left(s \subseteq w \land \left|s\right| = k\right)\).
+Consider the following case.
+\begin{proofstep}
+Assume \(w \in x\).
+Assume \(s \subseteq w \land \left|s\right| = k\).
+Use the hypothesis \(s \subseteq w \land \left|s\right| = k\).
+Consider the following case.
+\begin{proofstep}
+Assume \(s \subseteq w\).
+Assume \(\left|s\right| = k\).
+Choose the witness \(w\).
+Use the hypothesis \(w \in x\).
+Use the hypothesis \(s \subseteq w\).
+Combining the two conclusions, we obtain \(w \in x \land s \subseteq w\).
+This witness proves existence. Hence \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+Rewriting with Prerequisite~P\ref{premise:616e645f74727565} in the preceding result gives \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = |s|\).
+Use the hypothesis \(\left|s\right| = k\).
+Substituting equals, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(i\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Use the hypothesis \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Taking the second conjunct gives \(\left|s\right| = k\).
+Applying the same function to equal arguments, we obtain \(\left(\left|s\right| = k\right) = \left(k = k\right)\).
+By Prerequisite~P\ref{premise:65715f73656c66} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(k\) in place of its parameter \(a\), we obtain \(\left(k = k\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \(\left(\left|s\right| = k\right) = \mathrm{True}\).
+Applying the same function to equal arguments, we obtain \(\left(s \subseteq i \land \left|s\right| = k\right) = \left(s \subseteq i \land \mathrm{True}\right)\).
+By Prerequisite~P\ref{premise:616e645f74727565} with \(p = s \subseteq i\), we obtain \(\left(s \subseteq i \land \mathrm{True}\right) = \left(s \subseteq i\right)\).
+Chaining the equalities, we obtain \(\left(s \subseteq i \land \left|s\right| = k\right) = \left(s \subseteq i\right)\).
+Applying the same function to equal arguments, we obtain \((i \in x \land (s \subseteq i \land |s| = k)) = (i \in x \land s \subseteq i)\).
+\end{proofstep}
+Use the hypothesis \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Taking the first conjunct gives \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+Rewriting with Prerequisite~P\ref{premise:66756e657874}, \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\) and the identity established above gives \(\exists i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in x \land (s \subseteq i \land |s| = k)\).
+\end{proofstep}
+Together the two implications give the equivalence. Hence \((\exists i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in x \land (s \subseteq i \land |s| = k)) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \((\exists i\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; i \in x \land s \in \mathcal P_{k}(i)) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f737570} in the preceding result gives \(s \in \operatorname{sup}(x,\allowbreak{} \operatorname{powerset\,Card}(k)) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+By the preceding argument, we obtain \(s \in \operatorname{falling}(k,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+
+\end{proof}
+
+\begin{corollary}[{Sized falling}]\label{theorem:6}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Then
+\begin{center}
+\(\displaystyle \operatorname{Sized}(k,\allowbreak{} \operatorname{underlying\,set}(\operatorname{falling}(k,\allowbreak{} x))).\)
+\end{center}
+\end{corollary}
+
+\begin{proof}
+By Lemma~\ref{theorem:5}, we obtain \(x_{1} \in \operatorname{falling}(k,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land x_{1} \subseteq t) \land |x_{1}| = k\).
+Use the hypothesis \(x_{1} \in \operatorname{underlying\,set}(\operatorname{falling}\left(k, x\right))\).
+By the forward implication, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land x_{1} \subseteq t) \land |x_{1}| = k\).
+Taking the second conjunct, we obtain \(\left|x_{1}\right| = k\).
+
+\end{proof}
+
+\begin{lemma}[{Slice subset falling}]\label{theorem:7}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Then \(\operatorname{slice}\left(x, k\right) \subseteq \operatorname{falling}\left(k, x\right)\).
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{theorem:5}, we obtain \(s \in \operatorname{falling}(k,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(s \in x\).
+Choose the witness \(s\).
+Use the hypothesis \(s \in x\).
+By Prerequisite~P\ref{premise:46696e7365742e5375627365742e7265666c}, we obtain \(s \subseteq s\).
+Combining the two conclusions, we obtain \(s \in x \land s \subseteq s\).
+This witness proves existence. Hence \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f736c696365}, we obtain \(s \in \operatorname{slice}\left(x, k\right) \iff s \in x \land \left|s\right| = k\).
+Use the hypothesis \(s \in \operatorname{slice}\left(x, k\right)\).
+By the forward implication, we obtain \(s \in x \land \left|s\right| = k\).
+By Prerequisite~P\ref{premise:416e642e696d705f6c656674}, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+By the reverse implication, we obtain \(s \in \operatorname{falling}\left(k, x\right)\).
+
+\end{proof}
+
+\begin{theorem}[{Falling zero subset}]\label{theorem:8}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Then \(\operatorname{falling}\left(0, x\right) \subseteq \{\varnothing\}\).
+\end{theorem}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:46696e7365742e7375627365745f73696e676c65746f6e5f69666627} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\operatorname{falling}(0,\allowbreak{} x) \subseteq \{\varnothing\} \iff (\forall b\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; b \in \operatorname{falling}(0,\allowbreak{} x) \implies b = \varnothing)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x_{1}\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(x_{1} \in \operatorname{falling}\left(0, x\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e636172645f65715f7a65726f}, we obtain \(\left|x_{1}\right| = 0 \iff x_{1} = \varnothing\).
+By Corollary~\ref{theorem:6} with \(k = 0\), we obtain \(\left|x_{1}\right| = 0\).
+By the forward implication, we obtain \(x_{1} = \varnothing\).
+\end{proofstep}
+By the reverse implication, we obtain \(\operatorname{falling}\left(0, x\right) \subseteq \{\varnothing\}\).
+
+\end{proof}
+
+\begin{lemma}[{Slice union shadow falling successor}]\label{theorem:9}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Then
+\begin{center}
+\(\displaystyle \operatorname{slice}(x,\allowbreak{} k) \cup \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(k + 1,\allowbreak{} x)) = \operatorname{falling}(k,\allowbreak{} x).\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(s_{1}\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+By Lemma~\ref{theorem:5}, we obtain \(s_{1} \in \operatorname{falling}(k + 1,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1\).
+By propositional extensionality, we obtain \((s_{1} \in \operatorname{falling}(k + 1,\allowbreak{} x)) = ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1)\).
+Applying the same function to equal arguments, we obtain \((s_{1} \in \operatorname{falling}(k + 1,\allowbreak{} x) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)) = (((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s))\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+Use the hypothesis \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+Consider the following case.
+\begin{proofstep}
+Assume \(s \in x \land \left|s\right| = k\).
+Choose the witness \(s\).
+Use the hypothesis \(s \in x \land \left|s\right| = k\).
+Taking the first conjunct, we obtain \(s \in x\).
+By Prerequisite~P\ref{premise:46696e7365742e5375627365742e7265666c}, we obtain \(s \subseteq s\).
+Combining the two conclusions, we obtain \(s \in x \land s \subseteq s\).
+This witness proves existence. Hence \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+Use the hypothesis \(s \in x \land \left|s\right| = k\).
+Taking the second conjunct, we obtain \(\left|s\right| = k\).
+Combining the two conclusions, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s)\).
+Use the hypothesis \(\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s)\).
+Consider the following case.
+\begin{proofstep}
+Fix \(s_{1}\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s)\).
+Use the hypothesis \(((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s)\).
+Consider the following case.
+\begin{proofstep}
+Assume \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1\).
+Assume \(\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s\).
+Use the hypothesis \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1\).
+Consider the following case.
+\begin{proofstep}
+Assume \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t\).
+Assume \(\left|s_{1}\right| = k + 1\).
+Use the hypothesis \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Fix \(t\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(t \in x \land s_{1} \subseteq t\).
+Use the hypothesis \(t \in x \land s_{1} \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Assume \(t \in x\).
+Assume \(s_{1} \subseteq t\).
+Use the hypothesis \(\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s\).
+Consider the following case.
+\begin{proofstep}
+Fix \(a_{1}\) in \(\alpha\).
+Assume \(a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s\).
+Use the hypothesis \(a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s\).
+Consider the following case.
+\begin{proofstep}
+Assume \(a_{1} \in s_{1}\).
+Assume \(s_{1} \setminus \{a_{1}\} = s\).
+Choose the witness \(t\).
+Use the hypothesis \(t \in x\).
+By Prerequisite~P\ref{premise:46696e7365742e696e737449735472616e73537562736574}, we obtain \(\operatorname{Is\,Trans}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
+By Prerequisite~P\ref{premise:46696e7365742e65726173655f737562736574} with \(a_{1}\) in place of its parameter \(a\) and \(s_{1}\) in place of its parameter \(s\), we obtain \(s_{1} \setminus \{a_{1}\} \subseteq s_{1}\).
+Use the hypothesis \(s_{1} \subseteq t\).
+By Prerequisite~P\ref{premise:4861735375627365742e5375627365742e7472616e73} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(s_{1} \setminus \{a_{1}\} \subseteq t\).
+Combining the two conclusions, we obtain \(t \in x \land s_{1} \setminus \{a_{1}\} \subseteq t\).
+This witness proves existence. Hence \(\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \setminus \{a_{1}\} \subseteq t_{1}\).
+By definition, we obtain \(k + 1 - 1 = k\).
+Rewriting with \(\left|s_{1}\right| = k + 1\) in the preceding result gives \(\left|s_{1}\right| - 1 = k\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636172645f65726173655f6f665f6d656d} (using \(a_{1} \in s_{1}\)) in the preceding result gives \(\left|s_{1} \setminus \{a_{1}\}\right| = k\).
+Combining the two conclusions, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \setminus \{a_{1}\} \subseteq t_{1}) \land |s_{1} \setminus \{a_{1}\}| = k\).
+Use the hypothesis \(s_{1} \setminus \{a_{1}\} = s\).
+Substituting equals, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s \subseteq t_{1}) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s \subseteq t_{1}) \land |s| = k\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s \subseteq t_{1}) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s \subseteq t_{1}) \land |s| = k\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the two conjuncts, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+The two alternatives exhaust the cases. Hence \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Use the hypothesis \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Consider the following case.
+\begin{proofstep}
+Assume \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+Assume \(\left|s\right| = k\).
+Use the hypothesis \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Fix \(t\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(t \in x \land s \subseteq t\).
+Use the hypothesis \(t \in x \land s \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Assume \(t \in x\).
+Assume \(s \subseteq t\).
+Distinguish whether \(s \in x\) holds.
+Consider the following case.
+\begin{proofstep}
+Assume \(s \in x\).
+Use the hypothesis \(s \in x\).
+Use the hypothesis \(\left|s\right| = k\).
+Combining the two conclusions, we obtain \(s \in x \land \left|s\right| = k\).
+The first alternative suffices. Hence \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(s \notin x\).
+By Prerequisite~P\ref{premise:46696e7365742e737375627365745f696666}, we obtain \(s \subsetneq t \iff (\exists a_{1}\, :\, \alpha,\; a_{1} \notin s \land \{a_{1}\} \cup s \subseteq t)\).
+By Prerequisite~P\ref{premise:46696e7365742e696e737449734e6f6e7374726963745374726963744f7264657253756273657453537562736574}, we obtain \(\operatorname{Is\,Nonstrict\,Strict\,Order}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subsetneq \mathit{x2})\).
+By Prerequisite~P\ref{premise:46696e7365742e696e73744973416e746973796d6d537562736574}, we obtain \(\operatorname{Is\,Antisymm}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
+Use the hypothesis \(s \subseteq t\).
+Use the hypothesis \(t \in x\).
+Use the hypothesis \(s \notin x\).
+By Prerequisite~P\ref{premise:4d656d626572736869702e6d656d2e6e655f6f665f6e6f745f6d656d} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\) and \(\beta = \mathcal{P}_{\mathrm{fin}}(\mathcal{P}_{\mathrm{fin}}(\alpha))\), we obtain \(t \ne s\).
+By Prerequisite~P\ref{premise:4e652e73796d6d} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(s \ne t\).
+By Prerequisite~P\ref{premise:737375627365745f6f665f7375627365745f6f665f6e65} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(s \subsetneq t\).
+By the forward implication, we obtain \(\exists a_{1}\, :\, \alpha,\; a_{1} \notin s \land \{a_{1}\} \cup s \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Fix \(a_{1}\) in \(\alpha\).
+Assume \(a_{1} \notin s \land \{a_{1}\} \cup s \subseteq t\).
+Use the hypothesis \(a_{1} \notin s \land \{a_{1}\} \cup s \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Assume \(a_{1} \notin s\).
+Assume \(\{a_{1}\} \cup s \subseteq t\).
+Choose the witness \(\{a_{1}\} \cup s\).
+Choose the witness \(t\).
+Use the hypothesis \(t \in x\).
+Use the hypothesis \(\{a_{1}\} \cup s \subseteq t\).
+Combining the two conclusions, we obtain \(t \in x \land \{a_{1}\} \cup s \subseteq t\).
+This witness proves existence. Hence \(\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land \{a_{1}\} \cup s \subseteq t_{1}\).
+Rewriting with \(\left|s\right| = k\) and Prerequisite~P\ref{premise:46696e7365742e636172645f696e736572745f6f665f6e6f745f6d656d} (using \(a_{1} \notin s\)) gives \(\left|\{a_{1}\} \cup s\right| = k + 1\).
+Combining the two conclusions, we obtain \((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land \{a_{1}\} \cup s \subseteq t_{1}) \land |\{a_{1}\} \cup s| = k + 1\).
+Choose the witness \(a_{1}\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f696e736572745f73656c66} with \(a_{1}\) in place of its parameter \(a\), we obtain \(a_{1} \in \{a_{1}\} \cup s\).
+Use the hypothesis \(a_{1} \notin s\).
+By Prerequisite~P\ref{premise:46696e7365742e65726173655f696e73657274}, we obtain \(\left(\{a_{1}\} \cup s\right) \setminus \{a_{1}\} = s\).
+Combining the two conclusions, we obtain \(a_{1} \in \{a_{1}\} \cup s \land \left(\{a_{1}\} \cup s\right) \setminus \{a_{1}\} = s\).
+This witness proves existence. Hence \(\exists a_{2}\, :\, \alpha,\; a_{2} \in \{a_{1}\} \cup s \land (\{a_{1}\} \cup s) \setminus \{a_{2}\} = s\).
+Combining the two conclusions, we obtain \(((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land \{a_{1}\} \cup s \subseteq t_{1}) \land |\{a_{1}\} \cup s| = k + 1) \land (\exists a_{2}\, :\, \alpha,\; a_{2} \in \{a_{1}\} \cup s \land (\{a_{1}\} \cup s) \setminus \{a_{2}\} = s)\).
+This witness proves existence. Hence \(\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{2}\, :\, \alpha,\; a_{2} \in s_{1} \land s_{1} \setminus \{a_{2}\} = s)\).
+The second alternative suffices. Hence \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{2}\, :\, \alpha,\; a_{2} \in s_{1} \land s_{1} \setminus \{a_{2}\} = s))\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{2}\, :\, \alpha,\; a_{2} \in s_{1} \land s_{1} \setminus \{a_{2}\} = s))\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+The proposition or its negation holds. Hence \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t_{1} \in x \land s_{1} \subseteq t_{1}) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a_{1}\, :\, \alpha,\; a_{1} \in s_{1} \land s_{1} \setminus \{a_{1}\} = s))\).
+\end{proofstep}
+Together the two implications give the equivalence. Hence \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = k + 1) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s \subseteq t) \land |s| = k\).
+Rewriting with Prerequisite~P\ref{premise:66756e657874}, Lemma~\ref{theorem:5} and the identity established above in the preceding result gives \(s \in x \land |s| = k \lor (\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; s_{1} \in \operatorname{falling}(k + 1,\allowbreak{} x) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)) \iff s \in \operatorname{falling}(k,\allowbreak{} x)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f736861646f775f696666} in the preceding result gives \(s \in x \land |s| = k \lor s \in \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(k + 1,\allowbreak{} x)) \iff s \in \operatorname{falling}(k,\allowbreak{} x)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f736c696365} in the preceding result gives \(s \in \operatorname{slice}(x,\allowbreak{} k) \lor s \in \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(k + 1,\allowbreak{} x)) \iff s \in \operatorname{falling}(k,\allowbreak{} x)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e696f6e} in the preceding result gives \(s \in \operatorname{slice}(x,\allowbreak{} k) \cup \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(k + 1,\allowbreak{} x)) \iff s \in \operatorname{falling}(k,\allowbreak{} x)\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e657874} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\operatorname{slice}(x,\allowbreak{} k) \cup \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(k + 1,\allowbreak{} x)) = \operatorname{falling}(k,\allowbreak{} x)\).
+
+\end{proof}
+
+\begin{lemma}[{Disjoint slice shadow falling}]\label{theorem:10}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Let \(m\) and \(n\) be natural numbers. Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x))\). Then
+\begin{center}
+\(\displaystyle \operatorname{Disjoint}(\operatorname{slice}(x,\allowbreak{} m),\allowbreak{} \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(n,\allowbreak{} x))).\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:46696e7365742e6469736a6f696e745f7269676874} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(\operatorname{Disjoint}(\operatorname{slice}(x,\allowbreak{} m),\allowbreak{} \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(n,\allowbreak{} x))) \iff (\forall a\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; a \in \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(n,\allowbreak{} x)) \implies a \notin \operatorname{slice}(x,\allowbreak{} m))\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(s \in \operatorname{Finset\mathord{:}shadow}\left(\operatorname{falling}\left(n, x\right)\right)\).
+Assume \(s \in \operatorname{slice}\left(x, m\right)\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(s_{1}\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+By Lemma~\ref{theorem:5}, we obtain \(s_{1} \in \operatorname{falling}(n,\allowbreak{} x) \iff (\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n\).
+By propositional extensionality, we obtain \((s_{1} \in \operatorname{falling}(n,\allowbreak{} x)) = ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n)\).
+Applying the same function to equal arguments, we obtain \((s_{1} \in \operatorname{falling}(n,\allowbreak{} x) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)) = (((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s))\).
+\end{proofstep}
+Use the hypothesis \(s \in \operatorname{Finset\mathord{:}shadow}\left(\operatorname{falling}\left(n, x\right)\right)\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e6d656d5f736861646f775f696666} in the preceding result gives \(\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; s_{1} \in \operatorname{falling}(n,\allowbreak{} x) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)\).
+Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \(\exists s_{1}\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; ((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)\).
+Consider the following case.
+\begin{proofstep}
+Fix \(s_{1}\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)\).
+Use the hypothesis \(((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n) \land (\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s)\).
+Consider the following case.
+\begin{proofstep}
+Assume \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n\).
+Assume \(\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s\).
+Use the hypothesis \((\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t) \land |s_{1}| = n\).
+Consider the following case.
+\begin{proofstep}
+Assume \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t\).
+Assume \(\left|s_{1}\right| = n\).
+Use the hypothesis \(\exists t\, :\, \mathcal{P}_{\mathrm{fin}}(\alpha),\; t \in x \land s_{1} \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Fix \(t\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(t \in x \land s_{1} \subseteq t\).
+Use the hypothesis \(t \in x \land s_{1} \subseteq t\).
+Consider the following case.
+\begin{proofstep}
+Assume \(t \in x\).
+Assume \(s_{1} \subseteq t\).
+Use the hypothesis \(\exists a\, :\, \alpha,\; a \in s_{1} \land s_{1} \setminus \{a\} = s\).
+Consider the following case.
+\begin{proofstep}
+Fix \(a\) in \(\alpha\).
+Assume \(a \in s_{1} \land s_{1} \setminus \{a\} = s\).
+Use the hypothesis \(a \in s_{1} \land s_{1} \setminus \{a\} = s\).
+Consider the following case.
+\begin{proofstep}
+Assume \(a \in s_{1}\).
+Assume \(s_{1} \setminus \{a\} = s\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(s_{1} \setminus \{a\} \in \operatorname{slice}\left(x, m\right)\).
+Use the hypothesis \(s_{1} \setminus \{a\} \in \operatorname{slice}\left(x, m\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e736c6963655f737562736574}, we obtain \(s_{1} \setminus \{a\} \in x\).
+Use the hypothesis \(t \in x\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(s_{1} \setminus \{a\} = t\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(s_{1} \setminus \{a\} \in x\).
+Assume \(s_{1} \subseteq s_{1} \setminus \{a\}\).
+Use the hypothesis \(a \in s_{1}\).
+Applying the hypothesis \(s_{1} \subseteq s_{1} \setminus \{a\}\), we obtain \(a \in s_{1} \setminus \{a\}\).
+By Prerequisite~P\ref{premise:46696e7365742e6e6f745f6d656d5f6572617365} with \(s_{1}\) in place of its parameter \(s\), we obtain \(\mathrm{False}\).
+\end{proofstep}
+Use the hypothesis \(s_{1} \setminus \{a\} = t\).
+Use the hypothesis \(t \in x\).
+Use the hypothesis \(s_{1} \subseteq t\).
+Substituting equals, we obtain \(\mathrm{False}\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e696e737449735472616e73537562736574}, we obtain \(\operatorname{Is\,Trans}(\mathcal{P}_{\mathrm{fin}}(\alpha),\allowbreak{} \mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2})\).
+By Prerequisite~P\ref{premise:46696e7365742e65726173655f737562736574} with \(s_{1}\) in place of its parameter \(s\), we obtain \(s_{1} \setminus \{a\} \subseteq s_{1}\).
+Use the hypothesis \(s_{1} \subseteq t\).
+By Prerequisite~P\ref{premise:4861735375627365742e5375627365742e7472616e73} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(s_{1} \setminus \{a\} \subseteq t\).
+Applying the hypothesis \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x))\), we obtain \(\mathrm{False}\).
+\end{proofstep}
+Use the hypothesis \(s_{1} \setminus \{a\} = s\).
+Use the hypothesis \(s \in \operatorname{slice}\left(x, m\right)\).
+Substituting equals, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the two conjuncts, we obtain \(\mathrm{False}\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(\mathrm{False}\).
+\end{proofstep}
+By the reverse implication, we obtain \(\operatorname{Disjoint}(\operatorname{slice}(x,\allowbreak{} m),\allowbreak{} \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(n,\allowbreak{} x)))\).
+
+\end{proof}
+
+\begin{lemma}[{At most cardinality falling div choose}]\label{theorem:11}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Assume equality on \(\alpha\) is decidable. Let \(k\) be a natural number. Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Fix a finite enumeration of \(\alpha\). Assume \(k \le \left|\alpha\right|\). Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x_{1}))\). Then
+\begin{center}
+\(\displaystyle \sum_{r\in \{i\in\mathbb{N}\mid i<k + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - k,\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k}).\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+Consider the following case.
+\begin{proofstep}
+Assume \(0 \le \left|\alpha\right|\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x_{2}\) in \(\mathbb{N}\).
+Assume \(x_{2} \in \{0\}\).
+By definition, we obtain \(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}}) = \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})\).
+\end{proofstep}
+By Lemma~\ref{theorem:7} with \(\left|\alpha\right|\) in place of its parameter \(k\) and \(x_{1}\) in place of its parameter \(x\), we obtain \(\operatorname{slice}(x_{1},\allowbreak{} |\alpha|) \subseteq \operatorname{falling}(|\alpha|,\allowbreak{} x_{1})\).
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f63617264} with \(\mathcal{P}_{\mathrm{fin}}(\alpha)\) as its type parameter \(\alpha\), we obtain \(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha|)| \le |\operatorname{falling}(|\alpha|,\allowbreak{} x_{1})|\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}, Prerequisite~P\ref{premise:7a65726f5f616464}, Prerequisite~P\ref{premise:46696e7365742e73756d5f73696e676c65746f6e}, Prerequisite~P\ref{premise:747375625f7a65726f}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f73656c66}, Prerequisite~P\ref{premise:4e61742e636173745f6f6e65}, Prerequisite~P\ref{premise:6469765f6f6e65}, Prerequisite~P\ref{premise:4e61742e636173745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(x\text{ is a strictly ordered semiring}\)) and the identity established above in the preceding result gives \(\sum_{r\in \{i\in\mathbb{N}\mid i<0 + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - 0,\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - 0})\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Fix \(k_{1}\) in \(\mathbb{N}\).
+Assume as induction hypothesis that \(k_{1} \le |\alpha| \implies \sum_{r\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1}})\).
+Assume \(k_{1} + 1 \le \left|\alpha\right|\).
+Use the hypothesis \(x\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(x\right)\).
+By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }x\).
+By Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, we obtain \(\operatorname{Add\,Left\,Mono}\left(x\right)\).
+Use the hypothesis \(k_{1} + 1 \le \left|\alpha\right|\).
+By Prerequisite~P\ref{premise:4e61742e6c655f6f665f737563635f6c65}, we obtain \(k_{1} \le \left|\alpha\right|\).
+Applying the induction hypothesis, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1}})\).
+By Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}, we obtain \(\operatorname{Canonically\,Ordered\,Add}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, we obtain \(\operatorname{Ordered\,Sub}\left(\mathbb{N}\right)\).
+By Prerequisite~P\ref{premise:747375625f706f735f6966665f6c74} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(0 < \left|\alpha\right| - k_{1} \iff k_{1} < \left|\alpha\right|\).
+By Prerequisite~P\ref{premise:4e61742e737563635f6c655f696666}, we obtain \(k_{1} + 1 \le \left|\alpha\right| \iff k_{1} < \left|\alpha\right|\).
+Use the hypothesis \(k_{1} + 1 \le \left|\alpha\right|\).
+By the forward implication, we obtain \(k_{1} < \left|\alpha\right|\).
+By the reverse implication, we obtain \(0 < \left|\alpha\right| - k_{1}\).
+By Prerequisite~P\ref{premise:4c542e6c742e6e6527} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|\alpha\right| - k_{1} \ne 0\).
+By Corollary~\ref{theorem:6} with \(\left|\alpha\right| - k_{1}\) in place of its parameter \(k\) and \(x_{1}\) in place of its parameter \(x\), we obtain \(\operatorname{Sized}(|\alpha| - k_{1},\allowbreak{} \operatorname{underlying\,set}(\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1})))\).
+By Lemma~\ref{theorem:3}, we obtain \(\operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1}}) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1})\).
+By Prerequisite~P\ref{premise:4c452e6c652e7472616e73}, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1})\).
+By Prerequisite~P\ref{premise:6164645f6c655f6164645f6c656674} with \(a = \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - k_{1} - 1)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1})\), we obtain \(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - k_{1} - 1)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1}) + \sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - k_{1} - 1)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1}) + \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - k_{1},\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1})\).
+Rewriting with Prerequisite~P\ref{premise:747375625f6164645f63616e63656c5f6f665f6c65}, Prerequisite~P\ref{premise:43616e6f6e6963616c6c794f7264657265644164642e746f4578697374734164644f664c45}, Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:4e61742e696e737449734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:6c655f747375625f6f665f6164645f6c655f6c656674} (using \(k_{1} + 1 \le \left|\alpha\right|\)), Prerequisite~P\ref{premise:49734c65667443616e63656c4164642e6164644c6566745265666c6563744c455f6f665f6164644c6566745265666c6563744c54}, Prerequisite~P\ref{premise:497343616e63656c4164642e746f49734c65667443616e63656c416464}, Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f497343616e63656c416464}, Prerequisite~P\ref{premise:4e61742e696e737449734f72646572656443616e63656c4164644d6f6e6f6964} and Prerequisite~P\ref{premise:636f6e74726176617269616e745f6c745f6f665f636f76617269616e745f6c65} in the preceding result gives \(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - k_{1} - 1)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1}) + \sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - k_{1} - 1)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1}) + \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - k_{1} - 1 + 1,\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k_{1} - 1})\).
+Rewriting with Prerequisite~P\ref{premise:747375625f74737562} and Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562} in the preceding result gives \(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) + \sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) + \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - (k_{1} + 1) + 1,\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Prerequisite~P\ref{premise:6164645f636f6d6d} in the preceding result gives \(\sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) + \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) + \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - (k_{1} + 1) + 1,\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Prerequisite~P\ref{premise:6164645f646976} in the preceding result gives \(\sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) + \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) \le (\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) + \operatorname{cast}_{x}(|\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - (k_{1} + 1) + 1,\allowbreak{} x_{1}))|)) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e636173745f616464} in the preceding result gives \(\sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) + \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))| + |\operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - (k_{1} + 1) + 1,\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e636172645f756e696f6e5f6f665f6469736a6f696e74} and Lemma~\ref{theorem:10} (using \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x_{1}))\)) in the preceding result gives \(\sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) + \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) \le \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1)) \cup \operatorname{Finset\mathord{:}shadow}(\operatorname{falling}(|\alpha| - (k_{1} + 1) + 1,\allowbreak{} x_{1}))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Lemma~\ref{theorem:9} in the preceding result gives \(\sum_{x_{2}\in \{i\in\mathbb{N}\mid i<k_{1} + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - x_{2})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - x_{2}})) + \operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - (k_{1} + 1))|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)}) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - (k_{1} + 1),\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f72616e67655f73756363} in the preceding result gives \(\sum_{r\in \{i\in\mathbb{N}\mid i<k_{1} + 1 + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - (k_{1} + 1),\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - (k_{1} + 1)})\).
+\end{proofstep}
+Use the hypothesis \(k \le \left|\alpha\right|\).
+By induction on the natural number, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<k + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - k,\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - k})\).
+
+\end{proof}
+
+\subsection{Further results}
+\begin{lemma}[{Lubell yamamoto meshalkin inequality sum cardinality div choose}]\label{theorem:12}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Fix a finite enumeration of \(\alpha\). Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x_{1}))\). Then
+\begin{center}
+\(\displaystyle \sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r})) \le 1.\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:6c655f72666c} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|\alpha\right| \le \left|\alpha\right|\).
+By Lemma~\ref{theorem:11}, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le \operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - |\alpha|,\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - |\alpha|})\).
+By Corollary~\ref{theorem:6} with \(k = 0\) and \(x_{1}\) in place of its parameter \(x\), we obtain \(\operatorname{Sized}(0,\allowbreak{} \operatorname{underlying\,set}(\operatorname{falling}(0,\allowbreak{} x_{1})))\).
+By Prerequisite~P\ref{premise:5365742e53697a65642e636172645f6c65}, we obtain \(\left|\operatorname{falling}\left(0, x_{1}\right)\right| \le \binom{\left|\alpha\right|}{0}\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e63686f6f73655f7a65726f5f7269676874} in the preceding result gives \(\left|\operatorname{sup}\left(x_{1}, \operatorname{powerset\,Card}\left(0\right)\right)\right| \le 1\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e7375625f73656c66}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f7a65726f5f7269676874} and Prerequisite~P\ref{premise:6f6e655f6d756c} in the preceding result gives \(|\operatorname{falling}(|\alpha| - |\alpha|,\allowbreak{} x_{1})| \le 1 \cdot \binom{|\alpha|}{|\alpha| - |\alpha|}\).
+Rewriting with Prerequisite~P\ref{premise:4e61742e636173745f6f6e65}, Prerequisite~P\ref{premise:4e61742e636173745f6d756c}, Prerequisite~P\ref{premise:4e61742e636173745f6c65}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} (using \(x\text{ is a strictly ordered semiring}\)) and Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(x\text{ is a strictly ordered semiring}\)) in the preceding result gives \(\operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - |\alpha|,\allowbreak{} x_{1})|) \le 1 \cdot \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - |\alpha|})\).
+Rewriting with Prerequisite~P\ref{premise:6469765f6c655f696666e28280}, Prerequisite~P\ref{premise:4d756c506f735265666c6563744c452e746f4d756c506f735265666c6563744c54}, Prerequisite~P\ref{premise:4d756c506f735374726963744d6f6e6f2e746f4d756c506f735265666c6563744c45}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f4d756c506f735374726963744d6f6e6f} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:4e61742e636173745f7a65726f}, Prerequisite~P\ref{premise:4e61742e636173745f6c74}, Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f}, Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(x\text{ is a strictly ordered semiring}\)), Prerequisite~P\ref{premise:747375625f73656c66}, Prerequisite~P\ref{premise:4e61742e696e737443616e6f6e6963616c6c794f726465726564416464}, Prerequisite~P\ref{premise:4e61742e696e73744f726465726564537562}, Prerequisite~P\ref{premise:4e61742e63686f6f73655f7a65726f5f7269676874}, Prerequisite~P\ref{premise:7a65726f5f6c745f6f6e65}, Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}, Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, Prerequisite~P\ref{premise:4e61742e696e73744e655a65726f53756363} and substitution of equals in the preceding result gives \(\operatorname{cast}_{x}(|\operatorname{falling}(|\alpha| - |\alpha|,\allowbreak{} x_{1})|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - |\alpha|}) \le 1\).
+By Prerequisite~P\ref{premise:4c452e6c652e7472616e73}, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} |\alpha| - r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{|\alpha| - r})) \le 1\).
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f666c6970} in the preceding result gives \(\sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r})) \le 1\).
+
+\end{proof}
+
+\begin{corollary}[{Sum cardinality slice div choose at most one}]\label{theorem:13}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Fix a finite enumeration of \(\alpha\). Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x_{1}))\). Then
+\begin{center}
+\(\displaystyle \sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r})) \le 1.\)
+\end{center}
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{theorem:12}.
+
+\end{proof}
+
+\begin{lemma}[{Lubell yamamoto meshalkin inequality sum inv choose}]\label{theorem:14}
+Let \(x\) and \(\alpha\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Semifield}\left(x\right)\). Equip \(x\) with a linear order. Assume \(x\text{ is a strictly ordered semiring}\). Fix a finite enumeration of \(\alpha\). Let \(x_{1}\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x_{1}))\). Then
+\begin{center}
+\(\displaystyle \sum_{s\in x_{1}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{|s|}))) \le 1.\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(i\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+By definition, we obtain \(\left(i \in x_{1}\right) = \left(i \in x_{1}\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e6d656d5f72616e6765}, we obtain \(|i| \in \{i_{1}\in\mathbb{N}\mid i_{1}<|\alpha| + 1\} \iff |i| < |\alpha| + 1\).
+By propositional extensionality, we obtain \((|i| \in \{i_{1}\in\mathbb{N}\mid i_{1}<|\alpha| + 1\}) = (|i| < |\alpha| + 1)\).
+By Prerequisite~P\ref{premise:4e61742e6c745f737563635f696666}, we obtain \(\left|i\right| < \left|\alpha\right| + 1 \iff \left|i\right| \le \left|\alpha\right|\).
+By propositional extensionality, we obtain \(\left(\left|i\right| < \left|\alpha\right| + 1\right) = \left(\left|i\right| \le \left|\alpha\right|\right)\).
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f756e6976} with \(s = i\), we obtain \(\left|i\right| \le \left|\alpha\right|\).
+By Prerequisite~P\ref{premise:65715f74727565}, we obtain \(\left(\left|i\right| \le \left|\alpha\right|\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \(\left(\left|i\right| < \left|\alpha\right| + 1\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \(\left(\left|i\right| \in \{i_{1}\in\mathbb{N}\mid i_{1}<\left|\alpha\right| + 1\}\right) = \mathrm{True}\).
+By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = i \in x_{1}\) and \(p_{2} = i \in x_{1}\) and \(q_{1} = \left|i\right| \in \{i_{1}\in\mathbb{N}\mid i_{1}<\left|\alpha\right| + 1\}\) and \(q_{2} = \mathrm{True}\), we obtain \((i \in x_{1} \implies |i| \in \{i_{1}\in\mathbb{N}\mid i_{1}<|\alpha| + 1\}) = (i \in x_{1} \implies \mathrm{True})\).
+By Prerequisite~P\ref{premise:696d706c6965735f74727565} with \(i \in x_{1}\) as its type parameter \(\alpha\), we obtain \(\left(i \in x_{1} \implies \mathrm{True}\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \((i \in x_{1} \implies |i| \in \{i_{1}\in\mathbb{N}\mid i_{1}<|\alpha| + 1\}) = \mathrm{True}\).
+\end{proofstep}
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f27}, Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}, Prerequisite~P\ref{premise:696d706c6965735f74727565} and the identity established above gives \(\sum_{s\in x_{1}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{|s|}))) = \sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\sum_{s\in \{s\in x_{1} \mid |s| = r\}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{r}))))\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x_{2}\) in \(\mathbb{N}\).
+Assume \(x_{2} \in \{i\in\mathbb{N}\mid i<\left|\alpha\right| + 1\}\).
+By Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} with \(\iota = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(b = \operatorname{inv}\left(\operatorname{cast}_{x}\left(\binom{\left|\alpha\right|}{x_{2}}\right)\right)\), we obtain \(\sum_{x_{3}\in \{s\in x_{1} \mid |s| = x_{2}\}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))) = |\{s\in x_{1} \mid |s| = x_{2}\}| \mathbin{\bullet} \operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))\).
+By Prerequisite~P\ref{premise:6e736d756c5f65715f6d756c} with \(n = \left|\{s\in x_{1} \mid \left|s\right| = x_{2}\}\right|\) and \(\operatorname{inv}\left(\operatorname{cast}_{x}\left(\binom{\left|\alpha\right|}{x_{2}}\right)\right)\) in place of its parameter \(a\), we obtain \(|\{s\in x_{1} \mid |s| = x_{2}\}| \mathbin{\bullet} \operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}})) = \operatorname{cast}_{x}(|\{s\in x_{1} \mid |s| = x_{2}\}|) \cdot \operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))\).
+Chaining the equalities, we obtain \(\sum_{x_{3}\in \{s\in x_{1} \mid |s| = x_{2}\}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))) = \operatorname{cast}_{x}(|\{s\in x_{1} \mid |s| = x_{2}\}|) \cdot \operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x_{2}\) in \(\mathbb{N}\).
+Assume \(x_{2} \in \{i\in\mathbb{N}\mid i<\left|\alpha\right| + 1\}\).
+By Prerequisite~P\ref{premise:6469765f65715f6d756c5f696e76} with \(\operatorname{cast}_{x}\left(\left|\{A\in x_{1} \mid \left|A\right| = x_{2}\}\right|\right)\) in place of its parameter \(a\) and \(b = \operatorname{cast}_{x}\left(\binom{\left|\alpha\right|}{x_{2}}\right)\), we obtain \(\operatorname{cast}_{x}(|\{A\in x_{1} \mid |A| = x_{2}\}|) / \operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}) = \operatorname{cast}_{x}(|\{A\in x_{1} \mid |A| = x_{2}\}|) \cdot \operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{x_{2}}))\).
+\end{proofstep}
+Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772} and the two identities established above gives \(\sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\sum_{s\in \{s\in x_{1} \mid |s| = r\}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{r})))) = \sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}))\).
+By transitivity of the displayed relations, we obtain \(\sum_{s\in x_{1}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{|s|}))) = \sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r}))\).
+By Lemma~\ref{theorem:12}, we obtain \(\sum_{r\in \{i\in\mathbb{N}\mid i<|\alpha| + 1\}}(\operatorname{cast}_{x}(|\operatorname{slice}(x_{1},\allowbreak{} r)|) / \operatorname{cast}_{x}(\binom{|\alpha|}{r})) \le 1\).
+By transitivity of the displayed relations, we obtain \(\sum_{s\in x_{1}}(\operatorname{inv}(\operatorname{cast}_{x}(\binom{|\alpha|}{|s|}))) \le 1\).
+
+\end{proof}
+
+\begin{theorem}[{Sperner's theorem}]\label{theorem:15}
+Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be a finite subset of \(\mathcal{P}_{\mathrm{fin}}(\alpha)\). Assume \(\operatorname{Is\,Antichain}(\mathit{x1} \mapsto \mathit{x2} \mapsto \mathit{x1} \subseteq \mathit{x2},\allowbreak{} \operatorname{underlying\,set}(x))\). Then
+\begin{center}
+\(\displaystyle |x| \le \binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}.\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4e4e5261742e696e73744e6f6e7472697669616c}, we obtain \(\operatorname{Nontrivial}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4e61742e636173745f706f73} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}) \iff 0 < \binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}\).
+By Prerequisite~P\ref{premise:4e61742e6469765f6c655f73656c66} with \(n = \left|\alpha\right|\) and \(k = 2\), we obtain \(\left\lfloor\frac{\left|\alpha\right|}{2}\right\rfloor \le \left|\alpha\right|\).
+By Prerequisite~P\ref{premise:4e61742e63686f6f73655f706f73}, we obtain \(0 < \binom{\left|\alpha\right|}{\left\lfloor\frac{\left|\alpha\right|}{2}\right\rfloor}\).
+By the reverse implication, we obtain \(0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})\).
+By definition, we obtain \(\sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}}) = \sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}})\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\text{translation preserves order on }\mathbb{Q}_{\ge 0}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(s\) in \(\mathcal{P}_{\mathrm{fin}}(\alpha)\).
+Assume \(s \in x\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f506f734d756c5374726963744d6f6e6f} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Pos\,Mul\,Strict\,Mono}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:506f734d756c5374726963744d6f6e6f2e746f506f734d756c5265666c6563744c45} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Pos\,Mul\,Reflect\,LE}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:506f734d756c5265666c6563744c452e746f506f734d756c5265666c6563744c54} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Pos\,Mul\,Reflect\,LT}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f4d756c506f735374726963744d6f6e6f} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Mul\,Pos\,Strict\,Mono}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4d756c506f735374726963744d6f6e6f2e746f4d756c506f735265666c6563744c45} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Mul\,Pos\,Reflect\,LE}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4d756c506f735265666c6563744c452e746f4d756c506f735265666c6563744c54} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Mul\,Pos\,Reflect\,LT}\left(\mathbb{Q}_{\ge 0}\right)\).
+Using Prerequisite~P\ref{premise:4e61742e636173745f7a65726f} with \(R = \mathbb{Q}_{\ge 0}\) in reverse gives \(0 = \operatorname{cast}_{\mathbb{Q}_{\ge 0}}\left(0\right)\).
+Applying the same function to equal arguments, we obtain \((0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})) = (\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(0) < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|}))\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\text{translation preserves order on }\mathbb{Q}_{\ge 0}\).
+By Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Add\,Left\,Mono}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Zero\,LEOne\,Class}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4e4e5261742e696e7374436861725a65726f}, we obtain \(\operatorname{Char\,Zero}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4e61742e636173745f6c74} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(0) < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|}) \iff 0 < \binom{|\alpha|}{|s|}\).
+By propositional extensionality, we obtain \((\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(0) < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})) = (0 < \binom{|\alpha|}{|s|})\).
+Chaining the equalities, we obtain \((0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})) = (0 < \binom{|\alpha|}{|s|})\).
+Reversing the equality, we obtain \((0 < \binom{|\alpha|}{|s|}) = (0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|}))\).
+By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f756e6976}, we obtain \(\left|s\right| \le \left|\alpha\right|\).
+By Prerequisite~P\ref{premise:4e61742e63686f6f73655f706f73}, we obtain \(0 < \binom{\left|\alpha\right|}{\left|s\right|}\).
+Transporting the result along the equality, we obtain \(0 < \operatorname{cast}_{\mathbb{Q}_{\ge 0}}\left(\binom{\left|\alpha\right|}{\left|s\right|}\right)\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\text{translation preserves order on }\mathbb{Q}_{\ge 0}\).
+By Prerequisite~P\ref{premise:49734f7264657265644164644d6f6e6f69642e746f4164644c6566744d6f6e6f} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{Add\,Left\,Mono}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373} with \(R = \mathbb{Q}_{\ge 0}\), we obtain \(\operatorname{Zero\,LEOne\,Class}\left(\mathbb{Q}_{\ge 0}\right)\).
+By Prerequisite~P\ref{premise:4e61742e63686f6f73655f6c655f6d6964646c65} with \(r = \left|s\right|\) and \(n = \left|\alpha\right|\), we obtain \(\binom{|\alpha|}{|s|} \le \binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}\).
+By Prerequisite~P\ref{premise:47436f6e67722e6e6174436173745f6c655f6e617443617374} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(\alpha\), we obtain \(\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|}) \le \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})\).
+By Prerequisite~P\ref{premise:696e765f616e7469e28280} with \(G_{0} = \mathbb{Q}_{\ge 0}\), we obtain \(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}} \le \mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})}}\).
+\end{proofstep}
+By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f73756d} with \(\iota = \mathcal{P}_{\mathrm{fin}}(\alpha)\) and \(N = \mathbb{Q}_{\ge 0}\), we obtain \(\sum_{i\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}}) \le \sum_{i\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|i|})}})\).
+By transitivity of the displayed relations, we obtain \(\sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}}) \le \sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})}})\).
+By Prerequisite~P\ref{premise:696e737449735374726963744f72646572656452696e674e4e526174}, we obtain \(\mathbb{Q}_{\ge 0}\text{ is a strictly ordered semiring}\).
+By Lemma~\ref{theorem:14} with \(\mathbb{Q}_{\ge 0}\) as its type parameter \(x\), we obtain \(\sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{|s|})}}) \le 1\).
+By transitivity of the displayed relations, we obtain \(\sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}}) \le 1\).
+Use the previously proved fact \(\sum_{s\in x}(\mathord{\frac{1}{\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor})}}) \le 1\).
+Applying Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} and Prerequisite~P\ref{premise:6e736d756c5f65715f6d756c} to the preceding bound gives the inequality over the nonnegative rationals \(\displaystyle \frac{|x|}{\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}} \le 1\).
+Since \(0 < \binom{\left|\alpha\right|}{\left\lfloor\frac{\left|\alpha\right|}{2}\right\rfloor}\), multiplying by the denominator preserves the order. By Prerequisite~P\ref{premise:6d756c5f696e765f6c655f696666e2828027}, this gives \(\operatorname{cast}_{\mathbb{Q}_{\ge 0}}(|x|) \le \operatorname{cast}_{\mathbb{Q}_{\ge 0}}(\binom{|\alpha|}{\lfloor\frac{|\alpha|}{2}\rfloor}) \cdot 1\).
+Rewriting with Prerequisite~P\ref{premise:6d756c5f6f6e65} and Prerequisite~P\ref{premise:4e61742e636173745f6c65} in the preceding result gives \(\left|x\right| \le \binom{\left|\alpha\right|}{\left\lfloor\frac{\left|\alpha\right|}{2}\right\rfloor}\).
+
+\end{proof}
+
+\end{document}

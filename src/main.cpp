@@ -17,44 +17,68 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         if (argc < 3 || argc % 2 == 0) {
-            std::cerr << "Usage: lean-to-latex INPUT.json OUTPUT.tex [--threshold N] [--chapter FILE]\n"
+            std::cerr << "Usage: lean-to-latex INPUT.json OUTPUT.tex [--threshold N] [--chapter FILE | --paper TITLE] [--proof-budget N]\n"
+                         "       [--proof-weights hypothesis=1,application=1,rewrite=2,binding=1,branch=4,certificate=3]\n"
                          "       lean-to-latex --list-chapter FILE\n";
             return 2;
         }
         std::size_t threshold = 5;
         std::optional<proof::Chapter> chapter;
+        std::optional<std::string> paperTitle;
+        std::optional<std::size_t> proofBudget;
+        std::optional<proof::ProofWeights> proofWeights;
         bool thresholdSpecified = false;
         for (int i = 3; i < argc; i += 2) {
             const std::string option = argv[i];
-            if (option == "--threshold" && !thresholdSpecified) {
-                thresholdSpecified = true;
+            if ((option == "--threshold" && !thresholdSpecified) ||
+                (option == "--proof-budget" && !proofBudget)) {
                 const std::string value = argv[i + 1];
-                const auto parsed = std::from_chars(value.data(), value.data() + value.size(), threshold);
+                std::size_t n;
+                const auto parsed = std::from_chars(value.data(), value.data() + value.size(), n);
                 if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size())
-                    throw std::runtime_error("The threshold must be a nonnegative integer");
-            } else if (option == "--chapter" && !chapter) {
+                    throw std::runtime_error(option + " must be a nonnegative integer");
+                if (option == "--threshold") { threshold = n; thresholdSpecified = true; }
+                else proofBudget = n;
+            } else if (option == "--proof-weights" && !proofWeights) {
+                proofWeights = proof::parseProofWeights(argv[i+1]);
+            } else if (option == "--chapter" && !chapter && !paperTitle) {
                 chapter = proof::readChapter(argv[i + 1]);
+            } else if (option == "--paper" && !chapter && !paperTitle) {
+                paperTitle = argv[i + 1];
             } else {
                 throw std::runtime_error("Unknown or repeated option " + option);
             }
         }
         std::ifstream input(argv[1], std::ios::binary);
         if (!input) throw std::runtime_error("Cannot read the adapter input");
-        const auto checked = proof::readJson(input);
+        auto checked = proof::readJson(input);
+        if (paperTitle) chapter = proof::automaticPaper(checked, *paperTitle);
+        if (proofBudget || proofWeights) {
+            if (!chapter || !chapter->paper) throw std::runtime_error("Proof detail controls require a paper");
+            if (proofBudget) chapter->proofBudget = *proofBudget;
+            if (proofWeights) chapter->proofWeights = *proofWeights;
+        }
+        if (chapter) {
+            if (chapter->paper) proof::prepareCheckedNames(checked);
+            proof::applyChapterSymbols(checked, *chapter);
+            proof::preparePaper(*chapter, checked);
+        }
         std::ostringstream document;
         const auto result = proof::writeDocument(checked, document, std::cerr, threshold,
                                                  chapter ? &*chapter : nullptr);
         // Binary mode keeps line endings identical on Windows and Unix.
         std::ofstream output(argv[2], std::ios::binary | std::ios::trunc);
         if (!output) throw std::runtime_error("Cannot open the LaTeX output");
-        output << document.str();
+        output << (chapter && chapter->paper ? proof::wrapPaperMath(document.str()) : document.str());
         output.close();
         if (!output) throw std::runtime_error("Cannot write the LaTeX output");
         std::cerr << result.theorems - result.incomplete << '/' << result.theorems
                   << " proofs complete\n";
         if (result.alternates > 0)
             std::cerr << result.alternates << " separately checked alternate proofs selected\n";
-        return result.incomplete == 0 ? 0 : 1;
+        if (result.incompleteDefinitions)
+            std::cerr << result.incompleteDefinitions << " definitions have unrendered equations\n";
+        return result.incomplete == 0 && !result.incompleteDefinitions ? 0 : 1;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
         return 2;

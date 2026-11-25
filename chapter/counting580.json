@@ -1,0 +1,27 @@
+{
+  "format": "paper",
+  "title": "Avoiding consecutive heads in fair coin tosses",
+  "introduction": "How likely is it that a long run of fair coin tosses contains no consecutive heads? Counting admissible words gives both an exact recurrence and an exponential upper bound. Throughout the paper, one denotes heads and zero denotes tails. All binary words of a fixed length are equally likely under independent fair tosses.",
+  "symbols": {
+    "Counting580.openCount": "A",
+    "Counting580.forcedCount": "B"
+  },
+  "glossary": [
+    {"term": "A", "definition": "The number of admissible completions of the given length when the preceding bit is zero. This is also the count when there is no preceding bit."},
+    {"term": "B", "definition": "The number of admissible completions when the preceding bit is one. A nonempty completion must start with zero."},
+    {"term": "Empty word", "definition": "Each starting state admits one completion of length zero."}
+  ],
+  "sections": [
+    {
+      "title": "Splitting by the first bit",
+      "introduction": "From the open state, a first zero leaves the remaining suffix open, while a first one forces the next bit to be zero. These alternatives have different first bits and exhaust the admissible words. From the forced state, the only possible first bit is zero. The two rules yield a Fibonacci recurrence with initial counts one and two.",
+      "theorems": ["Counting580.split_at_first_bit", "Counting580.forced_zero", "Counting580.two_step_recurrence"]
+    },
+    {
+      "title": "A bound from disjoint pairs",
+      "introduction": "Group the tosses into consecutive pairs. Only three of the four patterns within any pair can occur, and a head on one side of a pair boundary can impose a further restriction. For twice k tosses the total number of outcomes is four to the power k. Dividing the final count bound by that total bounds the probability by three quarters to the power k. For four tosses the recurrence gives eight admissible words out of sixteen, while the bound permits nine.",
+      "theorems": ["Counting580.forced_le_open", "Counting580.two_bit_bound", "Counting580.exponential_bound"],
+      "main": "Counting580.exponential_bound"
+    }
+  ]
+}

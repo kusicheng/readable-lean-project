@@ -1,0 +1,31 @@
+{
+  "format": "paper",
+  "title": "How many edges fit across a bipartition?",
+  "introduction": "Split a fixed set of vertices into two parts and join every vertex in one part to every vertex in the other. Which split gives the most edges? Moving vertices from the larger part to the smaller gives both a maximizing split and an exact count of the edges gained. The formal results use the part sizes as their variables.",
+  "glossary": [
+    {
+      "term": "Complete bipartite graph",
+      "definition": "A simple graph with two disjoint vertex parts, every possible edge between the parts, and no edges inside either part. With part sizes a and b, each edge has a unique endpoint in each part, so there are a times b edges."
+    }
+  ],
+  "sections": [
+    {
+      "title": "The effect of a transfer",
+      "introduction": "Start with parts of sizes a and b plus d. Transfer d vertices from the second part to the first and join all pairs across the new parts. The new sizes are a plus d and b. In the second theorem, b is the sum of a and c, so c may be zero. Each moved vertex gains b edges to the vertices left behind and loses a edges to the old first part. Pairs of moved vertices stay in the same part throughout. The gain is therefore d times c.",
+      "theorems": [
+        "Optimization580.transfer_size",
+        "Optimization580.transfer_gain",
+        "Optimization580.transfer_bound"
+      ]
+    },
+    {
+      "title": "The balanced split attains the bound",
+      "introduction": "Write a for the smaller original part. If the gap between parts is twice d, transfer d vertices to get two equal parts. If the gap is twice d plus one, the same move leaves a gap of one. These two cases exhaust the possible gaps. For a fixed number of vertices the resulting part sizes are the lower and upper integer halves of the total. Their product is attained by the complete bipartite graph on that split. For example, on eleven vertices moving from parts of sizes three and eight to sizes five and six raises the edge count from twenty-four to thirty.",
+      "theorems": [
+        "Optimization580.even_split",
+        "Optimization580.odd_split"
+      ],
+      "main": "Optimization580.odd_split"
+    }
+  ]
+}

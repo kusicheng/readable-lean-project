@@ -1,0 +1,38 @@
+{
+  "format": "paper",
+  "title": "The sharp bound for an intersecting family",
+  "introduction": "Fix a ground set of n plus one points, with one distinguished point. How many subsets can we select if every two selected subsets share a point? Pairing each subset with its complement gives the upper bound. Selecting every subset that contains the distinguished point attains it. On a ground set of four points this permits eight of the sixteen subsets.",
+  "symbols": {
+    "Intersecting580.maximumSize": "M",
+    "Intersecting580.emptyPairs": "E",
+    "Intersecting580.doublePairs": "D",
+    "Intersecting580.starSize": "S"
+  },
+  "glossary": [
+    {"term": "Intersection", "definition": "Subsets are represented by binary membership words. Every two members of the family, including two choices of the same member, must share a point."},
+    {"term": "M", "definition": "Maximum cardinality of an intersecting family on the distinguished point and n other points."},
+    {"term": "E and D", "definition": "Numbers of complementary pairs with zero and two selected members, respectively, in a family of maximum cardinality."},
+    {"term": "S", "definition": "Cardinality of the star consisting of all subsets containing the distinguished point."}
+  ],
+  "prerequisites": {
+    "Intersecting580.census": "Counting occupied places in complementary pairs",
+    "Intersecting580.complements_excluded": "An intersecting family excludes simultaneous complements",
+    "Intersecting580.star_initial": "The star on one point",
+    "Intersecting580.star_doubles": "Adding a point doubles the star",
+    "Intersecting580.star_competes": "The star is an admissible family",
+    "Nat.le_antisymm": "Opposite inequalities imply equality"
+  },
+  "sections": [
+    {
+      "title": "One place per complementary pair",
+      "introduction": "Index a pair by choosing which of the n other points occur alongside the distinguished point. The second member is the complement of the first. Every subset belongs to exactly one such pair, so there are two to the power n pairs. An empty pair contributes no members, a singly occupied pair contributes one, and a doubly occupied pair contributes two. Consequently the family size plus the number of empty pairs equals the number of pairs plus the number of doubly occupied pairs. Complements share no point, so an intersecting family has no doubly occupied pair. The first theorem gives this last counting inference for arbitrary family size s, empty count e, pair count p, and double count d.",
+      "theorems": ["Intersecting580.occupancy_bound", "Intersecting580.maximum_upper"]
+    },
+    {
+      "title": "A star attains the bound",
+      "introduction": "The star selects the member containing the distinguished point from every pair. All selected subsets therefore intersect at that point. There is one choice when there are no other points, and adjoining another point doubles the number of star members by allowing that point to be included or omitted. Combining the size of the star with the upper bound determines the maximum.",
+      "theorems": ["Intersecting580.star_size", "Intersecting580.exact_maximum"],
+      "main": "Intersecting580.exact_maximum"
+    }
+  ]
+}

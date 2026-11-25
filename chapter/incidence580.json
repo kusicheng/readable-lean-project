@@ -1,0 +1,46 @@
+{
+  "format": "paper",
+  "title": "Counting incidences by rows and columns",
+  "introduction": "A bipartite graph has two natural edge counts. Sum the degrees on one side or sum them on the other. We prove the equality for every finite binary incidence matrix and then use it to rule out impossible block sizes for a regular incidence structure.",
+  "symbols": {
+    "Incidence580.entry": "E",
+    "Incidence580.row": "H",
+    "Incidence580.column": "V",
+    "Incidence580.rows": "R",
+    "Incidence580.columns": "C"
+  },
+  "glossary": [
+    {
+      "term": "Incidence matrix",
+      "definition": "Rows represent points, columns represent blocks, and a one marks membership. In the graph interpretation the row and column indices are the two vertex classes, and a one marks an edge."
+    },
+    {
+      "term": "Encoding",
+      "definition": "Number the cells from zero along successive diagonals of constant row index plus column index, in increasing column order within each diagonal. E(m,i,j) is the bit of the natural number m in the position assigned to row i and column j. Any finite binary rectangle can be encoded by setting exactly its occupied bits."
+    },
+    {
+      "term": "Degrees and totals",
+      "definition": "H(m,i,c) counts ones in row i across the first c columns. V(m,j,r) counts ones in column j down the first r rows. In the rectangle of the first r rows and c columns, R(m,r,c) sums the row degrees and C(m,r,c) sums the column degrees."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Two ways to count the edges",
+      "introduction": "Append a row to a rectangle and read the result column by column. Every old column keeps its previous ones and gains at most the new cell. Summing these new cells gives the degree of the appended row. Inducting on the number of rows now identifies the two edge counts.",
+      "theorems": [
+        "Incidence580.empty_rows",
+        "Incidence580.add_one_row",
+        "Incidence580.incidence_count"
+      ]
+    },
+    {
+      "title": "An obstruction for block designs",
+      "introduction": "Suppose v points each lie in r blocks and each of b blocks contains k points. Adding the v equal row degrees gives v times r, and adding the b equal column degrees gives b times k. The next two theorems take those totals as hypotheses. For example, a structure with ten points of degree three cannot have every block of size four, since four does not divide thirty.",
+      "theorems": [
+        "Incidence580.parameter_balance",
+        "Incidence580.block_size_divides"
+      ],
+      "main": "Incidence580.block_size_divides"
+    }
+  ]
+}

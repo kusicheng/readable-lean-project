@@ -1,8 +1,13 @@
 #include "chapter.hpp"
 #include "expressions.hpp"
 
+#include <algorithm>
+#include <charconv>
+#include <cctype>
 #include <fstream>
+#include <functional>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 
 namespace proof {
@@ -47,9 +52,13 @@ void fields(const Node& node, const std::set<std::string>& allowed) {
 }
 
 Selection selection(const Node& node) {
-    if (node.isString()) return {prose(node, "theorem"), {}};
-    fields(node, {"theorem", "alternate"});
-    return {field(node, "theorem", true), field(node, "alternate", true)};
+    if (node.isString()) return {prose(node, "theorem"), {}, {}, {}};
+    fields(node, {"theorem", "alternate", "role", "title"});
+    auto role = field(node, "role", node.lookup("role") != nullptr);
+    if (!role.empty() && role != "theorem" && role != "lemma" && role != "corollary")
+        throw std::runtime_error("Unknown mathematical result role " + role);
+    return {field(node, "theorem", true), field(node, "alternate", node.lookup("alternate") != nullptr),
+            role, field(node, "title", node.lookup("title") != nullptr)};
 }
 
 Section section(const Node& node) {
@@ -77,12 +86,269 @@ std::string Selection::request() const {
     return alternate.empty() ? theorem : theorem + "=" + alternate;
 }
 
+bool containsConstant(const Node& expr, const std::string& symbol) {
+    if (expr.is("c")) return expr.at(1).atom == symbol;
+    return std::any_of(expr.children.begin(),expr.children.end(),[&](const Node& child) {
+        return child.array && containsConstant(child,symbol);
+    });
+}
+
+// A source author can supply a conventional mathematical title in the first
+// sentence of a docstring. Keep the proof text and all statements generated.
+static std::string documentedTitle(const std::string& doc) {
+    const auto first = doc.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return {};
+    const auto paragraph = doc.find("\n\n",first);
+    std::string line = doc.substr(first,paragraph - first);
+    for (const std::string caseTitle : {"First case of the inductive step","Second case of the inductive step"})
+        if (line.compare(0,caseTitle.size()+1,caseTitle+":")==0) return caseTitle;
+    const std::string version = "This is the version of **";
+    if (line.compare(0,version.size(),version)==0)
+        line.erase(0,version.size()-2);
+    const bool bold = line.compare(0,2,"**")==0;
+    std::string direction;
+    if (bold) {
+        const auto close = line.find("**",2);
+        if (close == std::string::npos) return {};
+        const auto suffix = line.substr(close+2,line.find('.',close+2)-(close+2));
+        const bool qualified = suffix.compare(0,5," for ")==0 || suffix.compare(0,4," on ")==0;
+        if (suffix == ", forward direction" || suffix == ", reverse direction")
+            direction = " (" + suffix.substr(2) + ")";
+        line = line.substr(2,close-2);
+        if (!line.empty() && line.back()=='.') line.pop_back();
+        else if (qualified) line += suffix;
+    } else {
+        line = line.substr(0,line.find('.'));
+        if (line.compare(0,4,"The ")!=0) return {};
+        const auto space = line.find_last_of(" \t\r\n");
+        const auto last = line.substr(space+1);
+        static const std::set<std::string> names{"lemma","theorem","principle","formula","identity","inequality"};
+        if (!names.count(last)) return {};
+    }
+    std::istringstream words(line);
+    std::string word, title;
+    while (words >> word) {
+        // Theorem names may contain accented Latin letters, as in Turán.
+        // Keep the same narrow title grammar for punctuation and source markup.
+        for (std::size_t i=0; i<word.size(); ++i) {
+            const auto c = static_cast<unsigned char>(word[i]);
+            if ((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='\'' || c=='-') continue;
+            if (i+1 == word.size()) return {};
+            const auto next = static_cast<unsigned char>(word[i+1]);
+            if (next<0x80 || next>0xbf ||
+                !((c==0xc3 && next!=0x97 && next!=0xb7) || c==0xc4 || c==0xc5)) return {};
+            ++i;
+        }
+        if (!title.empty()) title += ' ';
+        title += word;
+    }
+    if (title.size()>100) return {};
+    return title + direction;
+}
+
+static bool titleApplication(const Node& n, const char* name, std::size_t arity) {
+    return n.is("a") && n.children.size()==arity+2 && head(n)==name;
+}
+
+static bool titleVariable(const Node& n, const std::string& id) {
+    return n.is("v") && n.at(1).atom==id;
+}
+
+// The checked application f(x) identifies both the map and its bound argument.
+static std::string functionAt(const Node& n, const std::string& id) {
+    if (n.is("a") && n.children.size()==3 && n.at(1).is("v") && titleVariable(n.at(2),id))
+        return n.at(1).at(1).atom;
+    return {};
+}
+
+struct FiberMeasure {
+    const Node& source;
+    std::string map;
+    std::string weight;
+};
+
+static std::optional<FiberMeasure> fiberMeasure(const Node& quantity, const std::string& y) {
+    const Node& measure = titleApplication(quantity,"Nat.cast",3) ? argument(quantity,0) : quantity;
+    const bool weighted = titleApplication(quantity,"Finset.sum",5);
+    if (!weighted && !titleApplication(measure,"Finset.card",2)) return {};
+    const auto& filter = argument(measure,weighted ? 1 : 0);
+    if (!titleApplication(filter,"Finset.filter",4)) return {};
+    const auto& predicate = filter.at(3);
+    if (!predicate.is("l") || !titleApplication(predicate.at(4),"Eq",3)) return {};
+    const auto& eq = predicate.at(4);
+    if (!titleVariable(argument(eq,0),y)) return {};
+    const auto map = functionAt(argument(eq,1),predicate.at(1).atom);
+    if (map.empty()) return {};
+    std::string weight;
+    if (weighted) {
+        const auto& summand = argument(measure,0);
+        if (!summand.is("l")) return {};
+        weight = functionAt(summand.at(4),summand.at(1).atom);
+        if (weight.empty()) return {};
+    }
+    return FiberMeasure{argument(filter,0),map,weight};
+}
+
+static bool finiteMembership(const Node& n) {
+    return titleApplication(n,"Membership.mem",5) && titleApplication(n.at(4),"Finset.instMembership",1);
+}
+
+static std::string fiberSetting(const Node& statement, const Node& witness, const FiberMeasure& fiber) {
+    const auto& claim = witness.at(4);
+    const auto& y = witness.at(1).atom;
+    const bool bounded = titleApplication(claim,"And",2);
+    if (bounded) {
+        const auto& mem = argument(claim,1);
+        if (!finiteMembership(mem) || !titleVariable(argument(mem,0),y) || !argument(mem,1).is("v") ||
+            !fiber.source.is("v")) return {};
+    }
+    for (const Node* binder=&statement; binder->is("q"); binder=&binder->at(4)) {
+        const auto& hypothesis = binder->at(3);
+        if (!bounded) {
+            if (titleApplication(fiber.source,"Finset.univ",2) && titleApplication(hypothesis,"Fintype",1) &&
+                witness.at(3).is("v") && titleVariable(argument(hypothesis,0),witness.at(3).at(1).atom))
+                return " for maps between finite types";
+            continue;
+        }
+        if (!hypothesis.is("q") || !hypothesis.at(4).is("q")) continue;
+        const auto& target = argument(argument(claim,1),1).at(1).atom;
+        const auto& source = fiber.source.at(1).atom;
+        const auto& index = hypothesis.at(1).atom;
+        const auto& premise = hypothesis.at(4).at(3);
+        const auto& result = hypothesis.at(4).at(4);
+        if (finiteMembership(premise) && titleVariable(argument(premise,1),source) &&
+            titleVariable(argument(premise,0),index) && finiteMembership(result) &&
+            titleVariable(argument(result,1),target) && functionAt(argument(result,0),index)==fiber.map)
+            return " for maps into the target";
+        if (fiber.weight.empty() || !titleApplication(premise,"Not",1) || !titleApplication(result,"LE.le",4))
+            continue;
+        const auto& outside = argument(premise,0);
+        if (!finiteMembership(outside) || !titleVariable(argument(outside,1),target) ||
+            !titleVariable(argument(outside,0),index)) continue;
+        for (const bool nonpositive : {true,false}) {
+            const auto& zero = argument(result,nonpositive ? 0 : 1);
+            if (!titleApplication(zero,"OfNat.ofNat",3) || !zero.at(3).is("n") || zero.at(3).at(1).atom!="0" ||
+                !titleApplication(zero.at(4),"Zero.toOfNat0",2)) continue;
+            const auto outsideFiber = fiberMeasure(argument(result,nonpositive ? 1 : 0),index);
+            if (outsideFiber && titleVariable(outsideFiber->source,source) && outsideFiber->map==fiber.map &&
+                outsideFiber->weight==fiber.weight)
+                return nonpositive ? " when fibers outside the target have nonpositive weight" :
+                                     " when fibers outside the target have nonnegative weight";
+        }
+    }
+    return {};
+}
+
+static std::string resultTitle(const Node& record) {
+    const auto& name = record.at(0).atom;
+    const auto leaf = name.substr(name.find_last_of('.')+1);
+    // The hypotheses are printed in the statement. Names that encode them as
+    // repeated "of ..." clauses do not need to reproduce them in the heading.
+    const auto summary = leaf.substr(0,leaf.find("_of_"));
+    if (summary.size()>5 && summary.compare(summary.size()-5,5,"_cond")==0 && summary.size()<leaf.size()) {
+        const auto condition = declarationTitle(summary.substr(0,summary.size()-5)) + " condition";
+        const auto operation = leaf.substr(summary.size()+4);
+        if (operation=="erase") return condition + " after deletion";
+        if (operation=="restrict") return condition + " for a restricted family";
+        if (operation=="compl") return condition + " on the complement";
+    }
+    const Node* conclusion = &record.at(1);
+    while (conclusion->is("q")) conclusion = &conclusion->at(4);
+    const auto comparison = head(*conclusion);
+    const bool weak = comparison == "LE.le", strict = comparison == "LT.lt", equal = comparison == "Eq";
+    if ((weak || strict || equal) && conclusion->is("a") && conclusion->children.size() >= 4) {
+        const auto& a = argument(*conclusion,1);
+        const auto& b = argument(*conclusion,0);
+        const auto left = head(a), right = head(b);
+        if (equal && left == right && containsConstant(a,"Finset.bipartiteAbove") &&
+            containsConstant(b,"Finset.bipartiteBelow")) {
+            if (left == "Finset.prod") return "A product over incidences in two orders";
+            if (left == "Finset.sum") return containsConstant(a,"Finset.card") ?
+                "Counting incidences by rows and columns" : "A sum over incidences in two orders";
+        }
+        const bool sizes = left == right && (left == "Fintype.card" || left == "Finset.card");
+        if (sizes && weak && leaf.find("leftTotal") != std::string::npos)
+            return "A cardinality bound from a left-total relation";
+        if (sizes && weak && leaf.find("rightTotal") != std::string::npos)
+            return "A cardinality bound from a right-total relation";
+        if (sizes && weak && leaf.find("subsingleton") != std::string::npos)
+            return "A cardinality bound from fibers of size at most one";
+        const bool weighted = left == right && (left == "HSMul.hSMul" || left == "HMul.hMul") &&
+            containsConstant(a,"Finset.card") && containsConstant(b,"Finset.card");
+        if (weighted) return equal ? "An equality of weighted cardinalities" :
+            strict ? "A strict bound on weighted cardinalities" : "A bound on weighted cardinalities";
+        if (equal && left == "Finset.card" && containsConstant(a,"Finset.powerset") && right == "HPow.hPow")
+            return "The number of subsets of a finite set";
+        if (equal && left == "Finset.card" && containsConstant(a,"Finset.powersetCard") && right == "Nat.choose")
+            return "The number of subsets of a prescribed size";
+    }
+    if (head(*conclusion) == "Exists") {
+        const auto& predicate = term(argument(*conclusion,0));
+        if (predicate.is("l")) {
+            const Node* condition = &predicate.at(4);
+            if (head(*condition) == "And") condition = &argument(*condition,0);
+            const auto relation = head(*condition);
+            const auto& id = predicate.at(1).atom;
+            const auto contains = [&](auto&& self,const Node& n) -> bool {
+                if (n.is("v")) return n.at(1).atom == id;
+                for (const auto& c : n.children) if (c.array && self(self,c)) return true;
+                return false;
+            };
+            if ((relation == "LT.lt" || relation == "LE.le") && condition->children.size() >= 4) {
+                const bool left = contains(contains,argument(*condition,1));
+                const bool right = contains(contains,argument(*condition,0));
+                if (left != right) {
+                    const auto& quantity = argument(*condition,left ? 1 : 0);
+                    const auto fiber = fiberMeasure(quantity,id);
+                    if (!fiber && leaf.find("fiber")==std::string::npos) return declarationTitle(summary);
+                    const bool sum = fiber ? !fiber->weight.empty() : containsConstant(quantity,"Finset.sum");
+                    if (!sum && !containsConstant(quantity,"Finset.card") &&
+                        !containsConstant(quantity,"Fintype.card")) return declarationTitle(summary);
+                    std::string title = "A fiber ";
+                    title += sum ? "with weight " : "with size ";
+                    if (relation == "LT.lt") title += left ? "below" : "above";
+                    else title += left ? "at most" : "at least";
+                    if (!fiber) return title + " the bound";
+                    const bool naturalSize = !sum && condition->children.size()==6 &&
+                                             head(condition->at(2))=="Nat";
+                    title += naturalSize ? " the natural-number bound" : " the bound";
+                    return title + fiberSetting(record.at(1),predicate,*fiber);
+                }
+            }
+        }
+    }
+    return declarationTitle(summary);
+}
+
 Chapter readChapter(const std::filesystem::path& path) {
     const auto root = read(path);
-    fields(root, {"title", "introduction", "terminology", "glossary", "sections"});
+    fields(root, {"title", "introduction", "terminology", "glossary", "sections",
+                  "symbols", "prerequisites", "format"});
     Chapter chapter;
     chapter.title = field(root, "title", true);
     chapter.introduction = field(root, "introduction");
+    if (root.lookup("format")) {
+        const auto format = field(root, "format", true);
+        if (format != "paper" && format != "chapter") throw std::runtime_error("Unknown document format");
+        chapter.paper = format == "paper";
+    }
+    if (const auto* titles = root.lookup("prerequisites")) {
+        if (!titles->isObject) throw std::runtime_error("Expected a dictionary of prerequisite titles");
+        for (const auto& entry : titles->object)
+            chapter.prerequisiteTitles.emplace(entry.first, field(*titles, entry.first, true));
+    }
+    if (const auto* symbols = root.lookup("symbols")) {
+        if (!symbols->isObject) throw std::runtime_error("Expected a symbol dictionary");
+        std::set<std::string> used;
+        for (const auto& entry : symbols->object) {
+            const auto label = prose(entry.second, "symbol");
+            if (label.empty() || !std::all_of(label.begin(), label.end(),
+                    [](char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); }))
+                throw std::runtime_error("A mathematical symbol must contain only ASCII letters");
+            if (!used.insert(label).second) throw std::runtime_error("Duplicate mathematical symbol " + label);
+            chapter.symbols.emplace(entry.first, label);
+        }
+    }
     if (const auto* terminology = root.lookup("terminology")) {
         fields(*terminology, {"witness", "induction_hypothesis"});
         if (terminology->lookup("witness"))
@@ -118,6 +384,475 @@ Chapter readChapter(const std::filesystem::path& path) {
         }
     }
     return chapter;
+}
+
+void applyChapterSymbols(Node& checked, const Chapter& chapter) {
+    if (chapter.symbols.empty()) return;
+    const auto& catalog = checked.at(3);
+    if (!catalog.array) throw std::runtime_error("Missing checked symbol catalog");
+    std::map<std::string, std::size_t> arities;
+    for (const auto& entry : catalog.children) {
+        const auto& digits = entry.at(1).atom;
+        std::size_t arity;
+        const auto end = digits.data() + digits.size();
+        const auto parsed = std::from_chars(digits.data(), end, arity);
+        if (parsed.ec != std::errc{} || parsed.ptr != end)
+            throw std::runtime_error("Invalid checked symbol arity");
+        arities.emplace(entry.at(0).atom, arity);
+    }
+    for (const auto& entry : chapter.symbols) {
+        if (!arities.count(entry.first))
+            throw std::runtime_error("Expected a referenced natural-number definition: " + entry.first);
+    }
+    const auto annotate = [&](auto&& self, Node& node) -> void {
+        if (!node.array) return;
+        if (node.is("a") || node.is("c")) {
+            const auto name = head(node);
+            const auto symbol = chapter.symbols.find(name);
+            if (symbol != chapter.symbols.end() &&
+                arities.at(name) == (node.is("a") ? node.children.size() - 2 : 0))
+                node.mathSymbol = symbol->second;
+        }
+        for (auto& child : node.children) self(self, child);
+    };
+    // Source traces, private helpers and constructor signatures can repeat the
+    // same formula as a theorem statement and must use the same notation.
+    for (const auto i : {0u,1u,4u,5u,6u,9u})
+        if (i<checked.children.size()) annotate(annotate,checked.children[i]);
+}
+
+std::string declarationTitle(const std::string& name) {
+    if (name == "Finset.powersetCard") return "Subsets of prescribed cardinality";
+    const auto leaf = name.substr(name.find_last_of('.') + 1);
+    std::vector<std::string> words;
+    std::string word;
+    const auto flush = [&] {
+        if (!word.empty()) words.push_back(word);
+        word.clear();
+    };
+    for (std::size_t i = 0; i < leaf.size(); ++i) {
+        const unsigned char c = leaf[i];
+        // A subscript digit in a declaration name identifies a variant.
+        // Use a text-font digit in the heading; formulas keep their subscripts.
+        if (c==0xe2 && i+2<leaf.size() && static_cast<unsigned char>(leaf[i+1])==0x82) {
+            const auto digit = static_cast<unsigned char>(leaf[i+2]);
+            if (digit>=0x80 && digit<=0x89) {
+                word += static_cast<char>('0'+digit-0x80);
+                i += 2;
+                continue;
+            }
+        }
+        if (c == '_') { flush(); continue; }
+        if (i > 0 && std::isupper(c) && std::islower(static_cast<unsigned char>(leaf[i-1])))
+            flush();
+        word += static_cast<char>(std::tolower(c));
+    }
+    flush();
+    static const std::map<std::string, std::string> terms{
+        {"le", "at most"}, {"lt", "less than"}, {"ge", "at least"}, {"gt", "greater than"},
+        {"eq", "equals"}, {"ne", "differs from"}, {"iff", "if and only if"},
+        {"mem", "membership"}, {"dvd", "divisibility"}, {"card", "cardinality"},
+        {"nodup", "without repetitions"}, {"mul", "product"}, {"succ", "successor"},
+        {"inj", "injectivity"}, {"add", "sum"}, {"sub", "difference"}, {"pow", "power"},
+        {"funext","function extensionality"}, {"coe","coercion"}, {"comm","commutation"},
+        {"congr","congruence"}, {"nsmul","repeated addition"}, {"prod","product"},
+        {"pos","positivity"}, {"nonpos","nonpositive"}, {"nonneg","nonnegative"},
+        {"ssubsets","proper subsets"}, {"powerset","power set"}, {"univ","whole space"},
+        {"const","constant"}
+    };
+    std::string result;
+    for (const auto& token : words) {
+        if (!result.empty()) result += ' ';
+        const auto it = terms.find(token);
+        result += it == terms.end() ? token : it->second;
+    }
+    if (!result.empty()) result[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(result[0])));
+    return result;
+}
+
+std::string prerequisiteLabel(const std::string& name) {
+    static constexpr char digits[] = "0123456789abcdef";
+    std::string key = "premise:";
+    for (unsigned char c : name) {
+        key += digits[c / 16];
+        key += digits[c % 16];
+    }
+    return key;
+}
+
+// Automatically sized TeX delimiters form unbreakable boxes. Use ordinary
+// delimiters in long inline formulas so TeX can wrap at their operators.
+std::string wrapPaperMath(std::string text) {
+    // The checked formula printer uses this atom only for the standard
+    // rational reciprocal. Look in prerequisites as well as proof bodies.
+    if (text.find("\\mathord{\\frac{1}{") != std::string::npos) {
+        const auto abstractEnd = text.find("\\end{abstract}\n");
+        const std::string heading = abstractEnd == std::string::npos ? "\\maketitle\n" : "\\end{abstract}\n";
+        const auto end = text.find(heading);
+        if (end != std::string::npos)
+            text.insert(end + heading.size(), "\nFor rational reciprocals we use the convention "
+                        "\\(1/0 = 0\\).\n\n");
+    }
+    std::size_t start = 0;
+    while ((start = text.find("\\(",start)) != std::string::npos) {
+        const auto end = text.find("\\)",start+2);
+        if (end == std::string::npos) break;
+        auto segment = text.substr(start+2,end-start-2);
+        if (segment.size() > 110) {
+            for (const std::string command : {"\\left","\\right"}) {
+                std::size_t pos = 0;
+                while ((pos=segment.find(command,pos)) != std::string::npos) {
+                    const auto after = pos+command.size();
+                    if (after < segment.size() && segment[after] == '.')
+                        segment.erase(pos,command.size()+1);
+                    else if (after < segment.size() && std::string("()[]|\\").find(segment[after]) != std::string::npos)
+                        segment.erase(pos,command.size());
+                    else pos = after;
+                }
+            }
+            for (std::size_t i=0; (i=segment.find(", ",i)) != std::string::npos; i+=15)
+                if (i==0 || segment[i-1]!='\\') segment.insert(i+1,"\\allowbreak{}");
+            text.replace(start+2,end-start-2,segment);
+        }
+        start += segment.size()+4;
+    }
+    return text;
+}
+
+std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, const Chapter& chapter,
+                                  DefinitionRules& rules) {
+    if (checked.children.size() < 5) return 0;
+    std::map<std::string, const Node*> definitions;
+    for (const auto& entry : checked.at(4).children)
+        definitions.emplace(entry.at(0).atom, &entry);
+    std::set<std::string> visited;
+    std::vector<std::string> order;
+    const auto visit = [&](auto&& self, const Node& node) -> void {
+        if (node.is("c")) {
+            const auto& name = node.at(1).atom;
+            const auto it = definitions.find(name);
+            if (it != definitions.end() && visited.insert(name).second) {
+                self(self, it->second->at(1));
+                order.push_back(name);
+            }
+            return;
+        }
+        for (const auto& child : node.children)
+            if (child.array) self(self, child);
+    };
+    for (const auto& record : checked.at(0).children) visit(visit, record.at(1));
+    if (order.empty()) return 0;
+    std::size_t incomplete = 0;
+    std::size_t ordinal = 0;
+    output << "\\section*{Definitions}\n";
+    for (const auto& name : order) {
+        const auto alias = chapter.symbols.find(name);
+        const auto title = escapeLatex(declarationTitle(name));
+        output << "\\paragraph{" << title;
+        if (alias != chapter.symbols.end()) output << " (\\(" << alias->second << "\\))";
+        output << ".} ";
+        const auto& entry = *definitions.at(name);
+        const auto& equations = entry.at(1).children;
+        const auto* names = entry.children.size()>2 ? &entry.at(2).children : nullptr;
+        if (names && names->size()!=equations.size())
+            throw std::runtime_error("Mismatched defining equation names for " + name);
+        const bool numbered = names && std::any_of(names->begin(),names->end(),[](const Node& n) {
+            return !n.atom.empty();
+        });
+        std::map<std::string,std::size_t> seen;
+        bool missing = false;
+        for (std::size_t i=0; i<equations.size(); ++i) {
+            const auto& equation = equations[i];
+            const auto line = describeCheckedStatement(equation);
+            if (!line) { missing = true; continue; }
+            const auto [it,inserted] = seen.emplace(*line,ordinal+1);
+            if (inserted) {
+                if (numbered) {
+                    ++ordinal;
+                    output << "\\par\\noindent\\refstepcounter{definingequation}\\label{defeq:"
+                           << ordinal << "}\\textup{(D" << ordinal << ")} ";
+                }
+                output << *line << '\n';
+            }
+            if (numbered && !(*names)[i].atom.empty())
+                rules.emplace((*names)[i].atom,DefiningEquation{&equation,
+                    "defining equation~D\\ref{defeq:" + std::to_string(it->second) + "}"});
+        }
+        if (missing || seen.empty()) {
+            ++incomplete;
+            output << "Some defining equations could not be rendered.\n";
+        }
+        output << '\n';
+    }
+    return incomplete;
+}
+
+static void theoremDependencies(const Node& expression, const std::map<std::string, const Node*>& records,
+                         const std::map<std::string,const Node*>& helpers, std::set<std::string>& expanded,
+                         std::set<std::string>& dependencies) {
+    const auto& raw = term(expression);
+    if (raw.is("c")) {
+        const auto& name = raw.at(1).atom;
+        if (records.count(name)) dependencies.insert(name);
+        else if (auto it = helpers.find(name); it != helpers.end() && expanded.insert(name).second)
+            theoremDependencies(*it->second,records,helpers,expanded,dependencies);
+    } else {
+        for (const auto& child : raw.children) {
+            if (child.array) theoremDependencies(child,records,helpers,expanded,dependencies);
+        }
+    }
+}
+
+static std::map<std::string,const Node*> proofHelpers(const Node& document) {
+    std::map<std::string,const Node*> helpers;
+    if (document.children.size() > 6)
+        for (const auto& helper : document.at(6).children)
+            helpers.emplace(helper.at(0).atom,&helper.at(2));
+    return helpers;
+}
+
+std::string selectedAlternate(const Node& record) {
+    return record.children.size() > 3 ? record.at(3).atom : "";
+}
+
+std::vector<const Node*> orderTheorems(const Node& document, const Chapter* chapter) {
+    const auto& records = document.at(0);
+    const auto helpers = proofHelpers(document);
+    std::map<std::string, const Node*> byName;
+    for (const auto& record : records.children) {
+        if (!byName.emplace(record.at(0).atom, &record).second)
+            throw std::runtime_error("Duplicate theorem in document");
+    }
+    std::vector<const Node*> selected;
+    std::map<std::string, std::size_t> sectionIds;
+    if (chapter) {
+        for (std::size_t index = 0; index < chapter->sections.size(); ++index) {
+            for (const auto& theorem : chapter->sections[index].theorems) {
+                const auto found = byName.find(theorem.theorem);
+                if (found == byName.end() || selectedAlternate(*found->second) != theorem.alternate)
+                    throw std::runtime_error("Missing checked proof selection " + theorem.request());
+                selected.push_back(found->second);
+                sectionIds.emplace(theorem.theorem, index);
+            }
+        }
+        if (selected.size() != byName.size())
+            throw std::runtime_error("Unexpected checked theorems outside the chapter selection");
+    } else {
+        for (const auto& record : records.children) selected.push_back(&record);
+    }
+    std::set<std::string> visited;
+    std::set<std::string> active;
+    std::vector<const Node*> ordered;
+    std::function<void(const Node&)> visit = [&](const Node& record) {
+        const auto& name = record.at(0).atom;
+        if (visited.count(name) != 0) return;
+        if (!active.insert(name).second) throw std::runtime_error("Cyclic theorem dependency");
+        std::set<std::string> dependencies;
+        std::set<std::string> expanded;
+        theoremDependencies(record.at(2), byName, helpers, expanded, dependencies);
+        for (const auto* candidate : selected) {
+            const auto& dependency = candidate->at(0).atom;
+            if (dependencies.count(dependency) == 0) continue;
+            if (chapter && sectionIds.at(dependency) > sectionIds.at(name))
+                throw std::runtime_error(name + " depends on a later section via " + dependency);
+            visit(*candidate);
+        }
+        active.erase(name);
+        visited.insert(name);
+        ordered.push_back(&record);
+    };
+    for (const auto* record : selected) visit(*record);
+    return ordered;
+}
+
+Chapter automaticPaper(const Node& checked, const std::string& title) {
+    if (title.find_first_not_of(" \t\r\n") == std::string::npos)
+        throw std::runtime_error("A paper title must contain text");
+    Chapter chapter;
+    chapter.paper = true;
+    chapter.title = title;
+    // Give familiar single-sorted arithmetic the same specialization path as a
+    // configured paper. Wider signatures retain their checked generic notation.
+    if (checked.children.size() > 4) {
+        std::map<std::string,std::vector<std::string>> candidates;
+        std::map<std::string,std::string> numeric;
+        for (const auto& entry : checked.at(3).children) numeric.emplace(entry.at(0).atom,entry.at(1).atom);
+        std::map<std::string,std::vector<std::string>> sequences;
+        for (const auto& entry : checked.at(4).children) {
+            const auto& name = entry.at(0).atom;
+            if (!numeric.count(name)) continue;
+            const auto leaf = name.substr(name.find_last_of('.') + 1);
+            if (!leaf.empty() && leaf.find_first_not_of(
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == std::string::npos) {
+                candidates[leaf].push_back(name);
+                if (numeric.at(name)=="1" && leaf.size()>3 && leaf.compare(0,3,"num")==0 &&
+                    leaf[3]>='A' && leaf[3]<='Z') sequences[leaf.substr(3,1)].push_back(name);
+            }
+        }
+        for (const auto& item : candidates)
+            if (item.second.size() == 1) chapter.symbols.emplace(item.second.front(), item.first);
+        if (!sequences.empty()) {
+            std::set<std::string> bound;
+            const auto visit = [&](auto&& self, const Node& node) -> void {
+                if (node.is("q") || node.is("l") || node.is("t")) bound.insert(node.at(2).atom);
+                for (const auto& child : node.children) if (child.array) self(self,child);
+            };
+            visit(visit,checked);
+            for (const auto& [symbol,names] : sequences)
+                if (names.size()==1 && !candidates.count(symbol) && !bound.count(symbol))
+                    chapter.symbols[names.front()] = symbol;
+        }
+    }
+    std::map<std::string,std::vector<std::string>> sections;
+    std::map<std::string,std::string> titles;
+    if (checked.children.size() > 8) {
+        static const std::map<std::string,std::string> headings{
+            {"Powerset","Power sets"}, {"SSubsets","Proper subsets"}, {"powersetCard","Subsets of prescribed size"},
+            {"Bipartite","Bipartite relations"}, {"OrderedSemiring","Bounds in ordered semirings"},
+            {"StrictOrderedSemiring","Strict bounds in ordered semirings"}, {"Finset","Finite sets"},
+            {"Set","Sets"}, {"Fintype","Finite types"}, {"Nat","Natural numbers"}, {"SimpleGraph","Simple graphs"}
+        };
+        for (const auto& entry : checked.at(8).children) {
+            const auto& scope = entry.at(1).children;
+            auto& names = sections[entry.at(0).atom];
+            if (entry.children.size() > 3 && entry.at(3).isString())
+                titles.emplace(entry.at(0).atom,documentedTitle(entry.at(3).atom));
+            const auto add = [&](const std::string& name) {
+                if (name.empty() || name == "[anonymous]") return;
+                const auto leaf = name.substr(name.find_last_of('.') + 1);
+                const auto it = headings.find(leaf);
+                names.push_back(it == headings.end() ? declarationTitle(leaf) : it->second);
+            };
+            if (scope.empty()) add(entry.at(2).atom);
+            for (const auto& name : scope) add(name.atom);
+        }
+    }
+    for (const auto* record : orderTheorems(checked,nullptr)) {
+        if (record->children.size() != 3)
+            throw std::runtime_error("Automatic papers require original checked proofs");
+        const auto& name = record->at(0).atom;
+        const auto& path = sections[name];
+        if (chapter.sections.empty() || chapter.sections.back().sourceHeadings != path)
+            chapter.sections.push_back({path.empty() ? "Results" : path.back(),{},{},{},path});
+        chapter.sections.back().theorems.push_back({name, {}, {}, titles[name]});
+    }
+    if (chapter.sections.size() == 1) {
+        chapter.sections.front().title = "Results";
+        chapter.sections.front().sourceHeadings.clear();
+    }
+    return chapter;
+}
+
+void writeSectionHeading(std::ostream& out, const Section& section, const Section* previous) {
+    const auto& path = section.sourceHeadings;
+    if (path.empty()) {
+        out << "\\section{" << escapeLatex(section.title) << "}\n";
+        return;
+    }
+    static const char* levels[] = {"section","subsection","subsubsection","paragraph","subparagraph"};
+    const auto heading = [&](std::size_t level,const std::string& title) {
+        out << "\\" << levels[std::min<std::size_t>(level,4)] << "{" << escapeLatex(title) << "}\n";
+    };
+    std::size_t common = 0;
+    while (previous && common < path.size() && common < previous->sourceHeadings.size() &&
+           path[common] == previous->sourceHeadings[common]) ++common;
+    if (common == path.size()) {
+        const bool sizes = std::all_of(section.theorems.begin(),section.theorems.end(),[](const Selection& s) {
+            return s.title.find("cardinalit") != std::string::npos;
+        });
+        heading(common,sizes ? "Cardinality bounds" : "Further results");
+    }
+    for (auto i=common; i<path.size(); ++i) heading(i,path[i]);
+}
+
+void preparePaper(Chapter& chapter, const Node& checked) {
+    if (!chapter.paper) return;
+    std::map<std::string, const Node*> proofs;
+    std::map<std::string, const Node*> signatures;
+    std::map<std::string, std::string> titles;
+    std::set<std::string> used;
+    for (const auto& record : checked.at(0).children) {
+        proofs.emplace(record.at(0).atom, &record.at(2));
+        signatures.emplace(record.at(0).atom, &record.at(1));
+        titles.emplace(record.at(0).atom,resultTitle(record));
+    }
+    const auto helpers = proofHelpers(checked);
+    for (const auto& item : proofs) {
+        std::set<std::string> expanded;
+        theoremDependencies(*item.second,proofs,helpers,expanded,used);
+    }
+    std::set<std::string> simplifiedResults;
+    if (checked.children.size()>5) {
+        for (const auto& trace : checked.at(5).children) {
+            if (trace.children.size()<3 || trace.at(2).children.size()!=1) continue;
+            for (const auto& event : trace.at(1).children) {
+                if (event.at(0).atom=="simp" && event.at(1).children.size()==1 &&
+                    event.at(2).children.empty() && event.at(1).at(0).at(0).atom==trace.at(2).at(0).atom)
+                    simplifiedResults.insert(trace.at(0).atom);
+            }
+        }
+    }
+    // Substitution, symmetry and chaining can turn earlier lemmas into a
+    // corollary without introducing any independent mathematical premise.
+    const std::set<std::string> composition{"Eq.trans", "Eq.symm", "congrArg", "congrFun",
+        "congr", "Eq.mp", "Eq.mpr", "Iff.mp", "Iff.mpr", "Iff.symm", "Iff.trans",
+        "Eq.refl", "rfl", "id", "And.left", "And.right"};
+    const auto follows = [&](auto&& self, const Node& expr, bool& citesEarlier) -> bool {
+        const auto& raw = term(expr);
+        if (raw.is("l")) return self(self, raw.at(4), citesEarlier);
+        if (raw.is("v")) return true;
+        const auto name = head(raw);
+        if (proofs.count(name)) citesEarlier = true;
+        else if (!composition.count(name)) return false;
+        if (raw.is("c")) return true;
+        if (!raw.is("a") || raw.at(1).children.size() < 5) return false;
+        const Node* binder = proofs.count(name) ? signatures.at(name) : nullptr;
+        std::size_t position = 0;
+        for (const auto& index : raw.at(1).at(4).children) {
+            std::size_t i = 0;
+            const char* end = index.atom.data() + index.atom.size();
+            const auto parsed = std::from_chars(index.atom.data(), end, i);
+            if (parsed.ec != std::errc{} || parsed.ptr != end || i >= raw.children.size()-2) return false;
+            while (binder && position < i) {
+                binder = binder->is("q") ? &binder->at(4) : nullptr;
+                ++position;
+            }
+            // A specialization can supply a concrete carrier's order or algebra
+            // through instance synthesis. Its explicit mathematical premises
+            // still have to be hypotheses or consequences of earlier results.
+            if (binder && binder->is("q") && binder->children.size() > 5 &&
+                binder->at(5).atom == "instance") continue;
+            if (!self(self, raw.at(i+2), citesEarlier)) return false;
+        }
+        return true;
+    };
+    for (auto& section : chapter.sections) {
+        for (auto& result : section.theorems) {
+            const auto it = proofs.find(result.theorem);
+            if (it == proofs.end()) throw std::runtime_error("Missing checked proof for " + result.theorem);
+            if (result.title.empty()) result.title = titles.at(result.theorem);
+            if (!result.role.empty()) continue;
+            const Node* argumentProof = it->second;
+            // A single closing simplification can specialize the statement of
+            // a prior result. The final argument of equality transport proves
+            // the original statement; all rewrite evidence is still narrated.
+            if (simplifiedResults.count(result.theorem)) {
+                while (term(*argumentProof).is("l")) argumentProof = &term(*argumentProof).at(4);
+                while (term(*argumentProof).is("a")) {
+                    const auto& app = term(*argumentProof);
+                    const auto rule = head(app);
+                    if ((rule=="id" && app.children.size()==4) ||
+                        ((rule=="Eq.mp" || rule=="Eq.mpr") && app.children.size()==6))
+                        argumentProof = &argument(app,0);
+                    else break;
+                }
+            }
+            bool citesEarlier = false;
+            if (section.main == result.theorem) result.role = "theorem";
+            else if (follows(follows, *argumentProof, citesEarlier) && citesEarlier) result.role = "corollary";
+            else result.role = used.count(result.theorem) ? "lemma" : "theorem";
+        }
+    }
 }
 
 std::string escapeLatex(const std::string& prose) {

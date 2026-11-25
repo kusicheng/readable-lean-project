@@ -1,0 +1,186 @@
+Proof complexity in the generated arithmetic and counting papers
+
+Open the first table to compare the tactic with a whole paper. The last two
+tables list every rule that contributed points to the two arithmetic calls.
+
+                                  Proofs or calls     Score
+  Rational bound, linarith call                 1       218
+  Rational bound, entire theorem                1       222
+  Integer bound, omega call                     1       128
+  Integer bound, entire theorem                 1       132
+  Six-proof counting paper                      6        77
+  Mathlib pigeonhole paper                     29       655
+
+A theorem score includes its tactic. In this example the extra four points
+are the bindings for two variables and two hypotheses. The paper totals sum
+the theorem scores once each. Only individual proofs and supported arithmetic
+calls use the expansion budget. Definitions, prerequisites, and page count
+are outside these totals. A cited theorem contributes an application at its
+point of use. Its original proof contributes to its own theorem score.
+
+Why the rational example scores 218
+
+  Observed family                              Occurrences   Points
+  Ring normalization                                    68       68
+  Numeral normalization                                 53       53
+  Reflexivity of equality (Eq.refl)                     27       54
+  All other counted operations                          27       43
+  Total                                                175      218
+
+The first three rows contribute 175 of 218 points (80.3%). Seven applications
+of rules in the Linarith namespace cost 21 points. Setting only the certificate
+weight to zero would still give this call 197 points. The compact proof takes
+three sentences to give the contradiction. The expanded proof takes seven.
+
+Default weights and observed counts
+
+  Operation                 Weight    linarith count    omega count
+  hypotheses                    1                 3              6
+  applications                  1               135             15
+  rewrites                      2                29             17
+  bindings                      1                 1              6
+  branches                      4                 0              1
+  certificate steps             3                 7             21
+
+The default budget is 24. A score above the budget selects compact narration.
+At the exact budget the renderer uses expanded narration. These weights are
+heuristics for presentation. They have no human-reading-time calibration.
+
+Counting paper by theorem
+
+  Theorem                                       Score     Mode at 24
+  Counting580.split_at_first_bit                    2     expanded
+  Counting580.forced_zero                           2     expanded
+  Counting580.two_step_recurrence                   7     expanded
+  Counting580.forced_le_open                       23     expanded
+  Counting580.two_bit_bound                        31     compact
+  Counting580.exponential_bound                    12     expanded
+
+All operations charged to linarith in Arithmetic.weighted_bound
+
+  Points    Count   Weight    Category           Lean name or operation
+      54       27        2    rewrites           Eq.refl
+      10       10        1    applications       Mathlib.Meta.NormNum.IsNat.of_raw
+       8        8        1    applications       Mathlib.Meta.NormNum.IsInt.of_raw
+       8        8        1    applications       Mathlib.Meta.NormNum.IsNat.to_isInt
+       8        8        1    applications       Mathlib.Meta.NormNum.isNat_ofNat
+       7        7        1    applications       Rat.instIsStrictOrderedRing
+       6        6        1    applications       Mathlib.Tactic.Ring.add_pf_zero_add
+       6        2        3    certificate steps  Linarith.sub_nonpos_of_le
+       5        5        1    applications       IsStrictOrderedRing.toIsOrderedRing
+       5        5        1    applications       Mathlib.Meta.NormNum.IsInt.to_raw_eq
+       5        5        1    applications       Mathlib.Tactic.Ring.add_pf_add_lt
+       5        5        1    applications       Mathlib.Tactic.Ring.add_pf_add_zero
+       5        5        1    applications       Mathlib.Tactic.Ring.cast_pos
+       4        4        1    applications       Mathlib.Meta.NormNum.isInt_add
+       4        4        1    applications       Mathlib.Meta.NormNum.isInt_mul
+       4        4        1    applications       Mathlib.Tactic.Ring.atom_pf
+       3        3        1    applications       Mathlib.Meta.NormNum.IsInt.to_isNat
+       3        3        1    applications       Mathlib.Tactic.Ring.add_congr
+       3        3        1    applications       Mathlib.Tactic.Ring.add_pf_add_overlap_zero
+       3        3        1    applications       Mathlib.Tactic.Ring.mul_add
+       3        3        1    applications       Mathlib.Tactic.Ring.neg_add
+       3        3        1    applications       Mathlib.Tactic.Ring.neg_one_mul
+       3        3        1    applications       Mathlib.Tactic.Ring.neg_zero
+       3        3        1    applications       Mathlib.Tactic.Ring.sub_congr
+       3        3        1    applications       Mathlib.Tactic.Ring.sub_pf
+       3        1        3    certificate steps  Linarith.add_lt_of_le_of_neg
+       3        1        3    certificate steps  Linarith.add_nonpos
+       3        1        3    certificate steps  Linarith.lt_irrefl
+       3        1        3    certificate steps  Linarith.mul_neg
+       3        1        3    certificate steps  Linarith.sub_neg_of_lt
+       3        3        1    hypotheses         local hypothesis
+       2        2        1    applications       Mathlib.Tactic.Ring.add_mul
+       2        2        1    applications       Mathlib.Tactic.Ring.add_overlap_pf_zero
+       2        2        1    applications       Mathlib.Tactic.Ring.mul_congr
+       2        2        1    applications       Mathlib.Tactic.Ring.mul_pf_right
+       2        2        1    applications       Mathlib.Tactic.Ring.mul_zero
+       2        2        1    applications       Mathlib.Tactic.Ring.neg_mul
+       2        2        1    applications       Mathlib.Tactic.Ring.zero_mul
+       2        1        2    rewrites           Eq.mp
+       2        1        2    rewrites           congrArg
+       1        1        1    applications       Mathlib.Meta.NormNum.IsNat.to_raw_eq
+       1        1        1    applications       Mathlib.Meta.NormNum.isNat_lt_true
+       1        1        1    applications       Mathlib.Meta.NormNum.isNat_mul
+       1        1        1    applications       Mathlib.Tactic.Ring.add_pf_add_gt
+       1        1        1    applications       Mathlib.Tactic.Ring.add_pf_add_overlap
+       1        1        1    applications       Mathlib.Tactic.Ring.cast_zero
+       1        1        1    applications       Mathlib.Tactic.Ring.mul_one
+       1        1        1    applications       Mathlib.Tactic.Ring.of_eq
+       1        1        1    applications       Rat.instCharZero
+       1        1        1    applications       le_of_not_gt
+       1        1        1    bindings           introduced variable or local fact
+     218    total
+
+All operations charged to omega in Arithmetic.rounded_bound
+
+  Points    Count   Weight    Category           Lean name or operation
+      16        8        2    rewrites           Eq.symm
+      10        5        2    rewrites           Eq.refl
+       9        3        3    certificate steps  Lean.Omega.Constraint.addInequality_sat
+       9        3        3    certificate steps  Lean.Omega.Int.sub_congr
+       9        3        3    certificate steps  Lean.Omega.LinearCombo.sub_eval
+       8        4        2    rewrites           Eq.trans
+       6        6        1    bindings           introduced variable or local fact
+       6        2        3    certificate steps  Lean.Omega.LinearCombo.coordinate_eval_0
+       6        2        3    certificate steps  Lean.Omega.LinearCombo.coordinate_eval_1
+       6        2        3    certificate steps  Lean.Omega.tidy_sat
+       6        6        1    hypotheses         local hypothesis
+       5        5        1    applications       id
+       4        1        4    branches           Decidable.byContradiction
+       3        3        1    applications       Int.sub_nonneg_of_le
+       3        3        1    applications       le_of_le_of_eq
+       3        1        3    certificate steps  Lean.Omega.Constraint.combine_sat'
+       3        1        3    certificate steps  Lean.Omega.Constraint.not_sat'_of_isImpossible
+       3        1        3    certificate steps  Lean.Omega.Int.lt_of_not_le
+       3        1        3    certificate steps  Lean.Omega.Int.mul_congr
+       3        1        3    certificate steps  Lean.Omega.LinearCombo.mul_eval
+       3        1        3    certificate steps  Lean.Omega.combo_sat'
+       2        2        1    applications       of_decide_eq_true
+       1        1        1    applications       Arithmetic.rounded_bound._proof_1
+       1        1        1    applications       Int.add_one_le_of_lt
+     128    total
+
+How the counts were collected
+
+Lean 4.19.0 ran tests/fixtures/Arithmetic.lean against Mathlib v4.19.0.
+The per-name rows were collected by logging each increment in a local build
+of src/proof_cost.cpp. Every category count and total was checked against the
+ordinary compiler diagnostics. Each occurrence in a proof argument counts.
+Reachable generated helper bodies are traversed once per scored proof.
+The score excludes elapsed time and unsuccessful tactic search.
+
+Compiler paths
+
+  src/proof_cost.hpp       Default weights
+  src/proof_cost.cpp       Traversal, operation classification and weighted sum
+  src/tactic_proof.cpp     Budget decision on the actual tactic assignment
+  src/narration.cpp        Enclosing theorem budget decision
+  papers/arithmetic-certificates.tex           Compact output
+  papers/arithmetic-certificates-expanded.tex  Expanded output
+
+Replaying the same rational proof with command-line overrides
+
+  Options                     Theorem score and mode    Tactic score and mode
+  Default settings              222  compact              218  compact
+  --proof-budget 217            222  compact              218  compact
+  --proof-budget 218            222  compact              218  expanded
+  --proof-weights certificate=0 201  compact              197  compact
+
+Each row uses the same checked proof. At 218 the reader gets the longer
+arithmetic explanation even though the enclosing theorem still uses its
+compact template. The last row uses the default budget of 24.
+
+Comparison with four directly compiled Mathlib papers
+
+                                 Theorem scores                  Theorems
+  File                    Count    Median    Maximum     Sum     scoring >=218
+  Degree sum                 12      69.5        668    1783                2
+  Double counting            22      20           75     690                0
+  Pigeonhole                 29      21           44     655                0
+  Powerset                   35      41          210    1997                0
+
+The single rational arithmetic call scores higher than 96 of the 98 whole
+proofs in these four files. Each row uses the theorem-level diagnostics from
+the unmodified source, with the default weights. These four files were the
+fully narrated modules in the earlier eight-file run in mathlib-coverage.tsv.
