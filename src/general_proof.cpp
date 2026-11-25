@@ -712,14 +712,15 @@ private:
             const auto claim = formula(*type,ctx);
             if (!claim) return {};
             if (source.is("v") && ctx.assumptions.count(source.at(1).atom)) {
-                prose_ << "By the definition of " << *claim << ", ";
+                prose_ << (ctx.provedFacts.count(source.at(1).atom) ? "Unpacking the result " : "Unpacking the hypothesis ")
+                       << *claim << " gives ";
             } else {
                 if (!derive(subject,type,ctx,true)) return false;
-                prose_ << "By the definition of this property, ";
+                prose_ << "Unpacking this property gives ";
             }
             for (std::size_t i=0; i<facts.size(); ++i)
                 prose_ << (i==0 ? "" : i+1==facts.size() ? " and " : ", ") << facts[i];
-            prose_ << (facts.size()==1 ? " holds.\n" : " hold.\n");
+            prose_ << ".\n";
 
             // Two fields used verbatim as the two conjuncts need no second
             // display. Check their identifiers, positions and the And premises.

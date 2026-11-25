@@ -47,7 +47,7 @@ def verify_property_patterns(workspace, env, lake, compiler):
     different_family[9].extend(order[9])
     for budget in (0, 1000000):
         text, audit = render(document, budget, 0)
-        check(r"\(a \le x\) and \(x \le b\) hold." in text and r"\(a \le b\)" in text
+        check(r"gives \(a \le x\) and \(x \le b\)." in text and r"\(a \le b\)" in text
               and PENDING not in text and "1/1 proofs complete" in audit, "Missing bounds or conclusion")
         for invalid in (certificate, legacy, different_family):
             text, audit = render(invalid, budget, 1)
