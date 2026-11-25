@@ -26,6 +26,9 @@ This history has no Git tags yet.
 
 ### Commits
 
+- 2026-11-24 — compiler optmizations (`52134d3`)
+- 2026-11-24 — fix compiler formatting (`4a62569`)
+- 2026-11-24 — fix compiler formatting (`ba58526`)
 - 2026-11-24 — update readme and add example docs (`4aa7681`)
 - 2026-11-24 — update readme and add example docs (`6e7093f`)
 - 2026-11-24 — add more readability rules and fix bugs in exmp (`2696aef`)
