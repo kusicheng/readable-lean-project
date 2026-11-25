@@ -29,6 +29,7 @@ This history has no Git tags yet.
 
 ### Commits
 
+- 2026-11-25 — add additional coverage pending verification (`2ddd990`)
 - 2026-11-24 — compiler optmizations (`52134d3`)
 - 2026-11-24 — fix compiler formatting (`4a62569`)
 - 2026-11-24 — fix compiler formatting (`ba58526`)
