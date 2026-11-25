@@ -50,6 +50,50 @@ private def expandPairMatch (e : Expr) : MetaM Expr := do
   let body := (mkApp2 app.alts[0]! (.proj ``Prod 0 pair) (.proj ``Prod 1 pair)).headBeta
   if ← isDefEq e body then return body else return e
 
+private def binaryTreeConstructors? (family : Name) : MetaM (Option (InductiveVal × Name × Name)) := do
+  let env ← getEnv
+  let some (.inductInfo ind) := env.find? family | return none
+  let [leaf, node] := ind.ctors | return none
+  unless ind.all == [family] && ind.numIndices == 0 && ind.numNested == 0 &&
+      isBRecOnRecursor env (mkBRecOnName family) && (← getConstInfoCtor leaf).numFields == 0 &&
+      (← getConstInfoCtor node).numFields == 3 do return none
+  return some (ind, leaf, node)
+
+/-- Relate the two recursive entries of a binary constructor's below-table
+    to the actual children. An abstract motive distinguishes left from right
+    even if the user's particular proposition happens to be constant. -/
+private def binaryInductionCase? (domain table proof : Expr) : MetaM (Option (Expr × Array Expr)) := do
+  let some below := domain.getAppFn.constName? | return none
+  let family := below.getPrefix
+  unless below == mkBelowName family do return none
+  let some (ind, leaf, node) ← binaryTreeConstructors? family | return none
+  let args := domain.getAppArgs
+  unless args.size == ind.numParams + 2 do return none
+  let params := args.extract 0 ind.numParams
+  let motive := args[ind.numParams]!
+  let index := args[ind.numParams+1]!
+  let target := (mkApp motive index).headBeta
+  unless (← isProp target) && (← isDefEq (← inferType proof) target) do return none
+  if index.isAppOf leaf && index.getAppArgs == params then return some (target, #[])
+  unless index.isAppOfArity node (ind.numParams+3) &&
+      index.getAppArgs.extract 0 ind.numParams == params do return none
+  let children := index.getAppArgs.extract (ind.numParams+1) (ind.numParams+3)
+  unless children.all (·.isFVar) && children.allDiff do return none
+  let project := fun (t : Expr) (side : Nat) => Expr.proj ``PProd 0 (.proj ``PProd side t)
+  withLocalDeclD `predicate (← inferType motive) fun predicate => do
+    let abstractDomain := mkAppN domain.getAppFn (params ++ #[predicate, index])
+    withLocalDeclD `table abstractDomain fun abstractTable => do
+      let mut targets := #[]
+      for child in children, i in [:children.size] do
+        let concrete := (mkApp motive child).headBeta
+        let checked ← try
+          pure ((← isDefEq (← inferType (project abstractTable i)) (mkApp predicate child)) &&
+            (← isDefEq (← inferType (project table i)) concrete))
+        catch _ => pure false
+        unless checked do return none
+        targets := targets.push concrete
+      return some (target, targets)
+
 /-- Export kernel expressions while opening binders for local type inference.
     Proof annotations are suppressed in type trees and on application heads. -/
 private partial def serialize (expression : Expr) (annotateProofs : Bool) : MetaM Json := do
@@ -59,9 +103,30 @@ private partial def serialize (expression : Expr) (annotateProofs : Bool) : Meta
     | .lam name domain body info => do
       let domainJson ← serialize domain false
       withLocalDecl name info domain fun var => do
-        let bodyJson ← serialize (body.instantiate1 var) annotateProofs
-        return Json.arr #[text "l", binderId var, binderName name, domainJson, bodyJson,
+        let proof := body.instantiate1 var
+        let bodyJson ← serialize proof annotateProofs
+        let fields := #[text "l", binderId var, binderName name, domainJson, bodyJson,
           binderKind info, ← roleFromType domain, ← roleFromType (← inferType e)]
+        -- A branch may prove P(k) in a definitionally different form, for example
+        -- with k+1 written as succ k. Certify the actual and expected propositions.
+        if annotateProofs && domain.isAppOfArity ``Nat.below 2 then
+          if let .arr annotated := bodyJson then
+            if annotated.size == 3 && annotated[0]! == text "p" then
+              let args := domain.getAppArgs
+              let target := (mkApp args[0]! args[1]!).headBeta
+              if (← isProp target) && (← isDefEq (← inferType proof) target) then
+                return Json.arr (fields.push (Json.arr #[text "inductionCase", annotated[1]!,
+                  ← serialize target false]))
+        if annotateProofs && domain.getAppFn.constName?.any (fun n => n == mkBelowName n.getPrefix) then
+          if let .arr annotated := bodyJson then
+            if annotated.size == 3 && annotated[0]! == text "p" then
+              if let some (target, children) ← binaryInductionCase? domain var proof then
+                let mut paths := #[]
+                for child in children, i in [:children.size] do
+                  paths := paths.push (Json.arr #[text (toString i), text "0", ← serialize child false])
+                return Json.arr (fields.push (Json.arr #[text "binaryTreeInductionCase", annotated[1]!,
+                  ← serialize target false, Json.arr paths]))
+        return Json.arr fields
     | .forallE name domain body info => do
       let domainJson ← serialize domain false
       withLocalDecl name info domain fun var => do
@@ -243,10 +308,85 @@ private def equationsFor (decl : DefinitionVal) : MetaM (Array DefiningEquation)
       unless equations.any (fun eq => eq.type == base) do equations := equations.push {type := base}
   return equations
 
+/-- Check that a comparison is equality of the sole data field of two generic
+    constructor patterns. Any other fields must actually be proofs. -/
+private def comparedRecordField? (ctor : ConstructorVal) (left right test : Expr) :
+    MetaM (Option Nat) := do
+  let arity := ctor.numParams + ctor.numFields
+  unless left.isAppOfArity ctor.name arity && right.isAppOfArity ctor.name arity do return none
+  let a := left.getAppArgs
+  let b := right.getAppArgs
+  unless a.extract 0 ctor.numParams == b.extract 0 ctor.numParams do return none
+  let leftFields := a.extract ctor.numParams arity
+  let rightFields := b.extract ctor.numParams arity
+  let fields := leftFields ++ rightFields
+  unless fields.all (·.isFVar) && fields.allDiff do return none
+  let mut data := #[]
+  for i in [:leftFields.size] do
+    unless ← isProp (← inferType leftFields[i]!) do data := data.push i
+  let #[i] := data | return none
+  let some (_, x, y) := test.eq? | return none
+  return if x == leftFields[i]! && y == rightFields[i]! then some i else none
+
+/-- A public equality instance can alias a private decision procedure. For
+    one-field records, verify its actual branch test and independently check
+    the kernel's constructor-injectivity equation before presenting the test. -/
+private def recordEqualityTest? (decl : DefinitionVal) (equations : Array DefiningEquation) :
+    MetaM (Option (Name × Json)) := do
+  unless decl.type.getForallBody.isAppOfArity ``DecidableEq 1 do return none
+  let #[eq] := equations | return none
+  let some rule := eq.rule | return none
+  forallTelescope eq.type fun params body => do
+    let some (type, lhs, rhs) := body.eq? | return none
+    unless type.isAppOfArity ``DecidableEq 1 && lhs.isAppOf decl.name &&
+        lhs.getAppArgs == params && rhs.getAppArgs == params do return none
+    let some helper := rhs.getAppFn.constName? | return none
+    let env ← getEnv
+    unless (isPrivateName helper || helper.hasMacroScopes) && env.isSafeDefinition helper do return none
+    let some family := type.appArg!.getAppFn.constName? | return none
+    unless isStructure env family do return none
+    let ctor := getStructureCtor env family
+    if isPrivateName ctor.name || ctor.name.isInternalDetail then return none
+    let fieldNames := getStructureFields env family
+    unless fieldNames.size == ctor.numFields do return none
+    let inj := mkInjectiveEqTheoremNameFor ctor.name
+    let some injInfo := env.find? inj | return none
+    let field ← forallTelescope injInfo.type fun binders conclusion => do
+      let some (_, recordEq, test) := conclusion.eq? | return none
+      let some (_, left, right) := recordEq.eq? | return none
+      unless binders == left.getAppArgs ++ right.getAppArgs.extract ctor.numParams right.getAppNumArgs do
+        return none
+      comparedRecordField? ctor left right test
+    let some i := field | return none
+    let some #[branch] ← (try getEqnsFor? helper catch _ => pure none) | return none
+    let .str parent suffix := branch | return none
+    unless parent == helper do return none
+    let branchField ← forallTelescope (← getConstInfo branch).type fun binders conclusion => do
+      let some (result, call, value) := conclusion.eq? | return none
+      unless call.isAppOf helper && call.getAppNumArgs == params.size + 2 &&
+          result.isAppOfArity ``Decidable 1 &&
+          (value.isAppOfArity ``dite 5 || value.isAppOfArity ``ite 5) do return none
+      let left := call.appFn!.appArg!
+      let right := call.appArg!
+      let patternVars := call.getAppArgs.extract 0 params.size ++
+        left.getAppArgs.extract ctor.numParams left.getAppNumArgs ++
+        right.getAppArgs.extract ctor.numParams right.getAppNumArgs
+      unless binders == patternVars do return none
+      let some (_, x, y) := result.appArg!.eq? | return none
+      unless x == left && y == right do return none
+      comparedRecordField? ctor left right value.getAppArgs[1]!
+    unless branchField == some i do return none
+    -- A hygienic Name may print its private prefix differently after appending
+    -- the equation suffix. Use the same spelling as the original alias above.
+    let test := Json.arr #[text "record-equality-test", text rule.toString, text family.toString,
+      text ctor.name.toString, text fieldNames[i]!.toString, text inj.toString,
+      text (helper.toString ++ "." ++ suffix)]
+    return some (ctor.name, test)
+
 /-- Follow the dependencies of defining equations within the selected packages.
     Imported standard-library internals stay outside a user module's definition list. -/
 private def localDefinitions (modules : Array Name) (seeds : NameSet) :
-    MetaM (Array Json × NameSet) := do
+    MetaM (Array Json × NameSet × NameSet) := do
   let env ← getEnv
   let standard := (← getLibDir (← getBuildDir)).normalize
   let directories ← liftM (m := IO) (modules.filterMapM fun mod => do
@@ -256,6 +396,7 @@ private def localDefinitions (modules : Array Name) (seeds : NameSet) :
   let mut candidates := seeds
   let mut todo := seeds.toList.toArray.qsort (fun a b => a.toString < b.toString)
   let mut definitions := #[]
+  let mut decisionConstructors : NameSet := {}
   let mut i := 0
   while i < todo.size do
     let name := todo[i]!
@@ -283,8 +424,12 @@ private def localDefinitions (modules : Array Name) (seeds : NameSet) :
           candidates := candidates.insert dep
           todo := todo.push dep
     let rules := equations.map fun eq => text (eq.rule.map (·.toString) |>.getD "")
-    definitions := definitions.push (name.toString, Json.arr #[text name.toString, Json.arr types, Json.arr rules])
-  return ((definitions.qsort (fun a b => a.1 < b.1)).map (·.2), candidates)
+    let mut entry := #[text name.toString, Json.arr types, Json.arr rules]
+    if let some (ctor, test) ← withCurrHeartbeats (recordEqualityTest? decl equations) then
+      decisionConstructors := decisionConstructors.insert ctor
+      entry := entry.push test
+    definitions := definitions.push (name.toString, Json.arr entry)
+  return ((definitions.qsort (fun a b => a.1 < b.1)).map (·.2), candidates, decisionConstructors)
 
 private def internalProofName (name : Name) : Bool :=
   name.isInternalDetail || name.hasMacroScopes || isPrivateName name
@@ -347,9 +492,10 @@ private def propertyConstructor? (name : Name) : MetaM (Option Json) := do
     return some <| Json.arr #[text name.toString, ← serialize ctor.type false,
       Json.arr (fields.map fun field => text field.toString), text (if property then "property" else "object")]
 
-/-- Verify that the sole branch takes the actual fields, in constructor order.
+/-- Certify a one-branch match on a record in Type or Prop. The motive must be
+    applied to the record built from the branch binders in constructor order.
     Proof irrelevance would make definitional equality too permissive here. -/
-private def matchedPropertyConstructor? (name : Name) (info : Match.MatcherInfo) :
+private def matchedStructureConstructor? (name : Name) (info : Match.MatcherInfo) :
     MetaM (Option Name) := do
   unless info.numDiscrs == 1 && info.altNumParams.size == 1 &&
       Match.getNumEqsFromDiscrInfos info.discrInfos == 0 do return none
@@ -359,7 +505,7 @@ private def matchedPropertyConstructor? (name : Name) (info : Match.MatcherInfo)
     let motive := xs[info.numParams]!
     let target ← whnf (← inferType xs[info.numParams + 1]!)
     let some family := target.getAppFn.constName? | return none
-    unless isStructure env family && (← isProp target) do return none
+    unless isStructure env family do return none
     let ctor := getStructureCtor env family
     if ctor.numFields == 0 || info.altNumParams != #[ctor.numFields] then return none
     forallBoundedTelescope (← inferType xs[info.numParams + 2]!) (some ctor.numFields) fun fields result => do
@@ -367,6 +513,50 @@ private def matchedPropertyConstructor? (name : Name) (info : Match.MatcherInfo)
       let pattern := result.appArg!
       unless pattern.isAppOf ctor.name && pattern.getAppArgs == target.getAppArgs ++ fields do return none
       return some ctor.name
+
+/-- Identify a two-alternative natural-number matcher from the types of its
+    alternatives. A nullary alternative receives a dummy Unit argument. -/
+private def matchesNatZeroSucc (name : Name) (info : Match.MatcherInfo) : MetaM Bool := do
+  unless info.numParams == 0 && info.numDiscrs == 1 && info.altNumParams == #[1, 1] &&
+      Match.getNumEqsFromDiscrInfos info.discrInfos == 0 do return false
+  forallBoundedTelescope (← getConstInfo name).type (some info.arity) fun xs _ => do
+    unless xs.size == 4 && (← whnf (← inferType xs[1]!)).isConstOf ``Nat do return false
+    let atIndex := fun (alt domain : Expr) (index : Expr → Expr) => do
+      forallBoundedTelescope (← inferType alt) (some 1) fun fields target => do
+        if fields.size != 1 || !target.isApp || target.appFn! != xs[0]! then return false
+        unless ← isDefEq (← inferType fields[0]!) domain do return false
+        isDefEq target.appArg! (index fields[0]!)
+    let zero ← atIndex xs[2]! (mkConst ``Unit) (fun _ => mkNatLit 0)
+    if !zero then return false
+    atIndex xs[3]! (mkConst ``Nat) (fun k => mkApp (mkConst ``Nat.succ) k)
+
+/-- Identify leaf and binary-node cases from the kernel constructors and the
+    registered matcher's result at each branch, in order. -/
+private def binaryTreeCases? (name : Name) (info : Match.MatcherInfo) : MetaM (Option Json) := do
+  unless info.numDiscrs == 1 && info.altNumParams == #[1, 3] &&
+      Match.getNumEqsFromDiscrInfos info.discrInfos == 0 do return none
+  forallBoundedTelescope (← getConstInfo name).type (some info.arity) fun xs _ => do
+    unless xs.size == info.numParams + 4 do return none
+    let motive := xs[info.numParams]!
+    let target ← whnf (← inferType xs[info.numParams+1]!)
+    let some family := target.getAppFn.constName? | return none
+    let some (ind, leaf, node) ← binaryTreeConstructors? family | return none
+    unless target.getAppNumArgs == ind.numParams do return none
+    let leafOK ← forallBoundedTelescope (← inferType xs[info.numParams+2]!) (some 1) fun vars result => do
+      unless vars.size == 1 && result.isApp && result.appFn! == motive &&
+          (← isDefEq (← inferType vars[0]!) (mkConst ``Unit)) do return false
+      let index := result.appArg!
+      return index.isAppOf leaf && index.getAppArgs == target.getAppArgs
+    unless leafOK do return none
+    let nodeOK ← forallBoundedTelescope (← inferType xs[info.numParams+3]!) (some 3) fun vars result => do
+      unless vars.size == 3 && result.isApp && result.appFn! == motive do return false
+      if ← isDefEq (← inferType vars[0]!) target then return false
+      unless (← isDefEq (← inferType vars[1]!) target) && (← isDefEq (← inferType vars[2]!) target) do
+        return false
+      let index := result.appArg!
+      return index.isAppOf node && index.getAppArgs == target.getAppArgs ++ vars
+    unless nodeOK do return none
+    return some <| Json.arr #[text "binaryTreeCases", text family.toString, text leaf.toString, text node.toString]
 
 /-- Internal declarations cannot be cited as public prerequisites. Follow their
     actual theorem bodies, including private user lemmas, lifted proofs and
@@ -454,7 +644,11 @@ private def exportDocument (modules : Array Name) (requests : List String) : Met
       for dep in declaration.type.getUsedConstants do candidates := candidates.insert dep
       let typeJson ← withCurrHeartbeats (serialize declaration.type false)
       let visibility := if helpers.contains name then "internal" else "public"
-      prerequisites := prerequisites.push (Json.arr #[text name.toString, typeJson, text visibility])
+      let mut entry := #[text name.toString, typeJson, text visibility]
+      if visibility == "public" then
+        if let some doc ← findSimpleDocString? env name (includeBuiltin := false) then
+          entry := entry.push (text (doc.take 512))
+      prerequisites := prerequisites.push (Json.arr entry)
       if helpers.contains name then
         helperBodies := helperBodies.push (Json.arr #[text name.toString, typeJson,
           ← proofEvidence name declaration.value])
@@ -468,15 +662,20 @@ private def exportDocument (modules : Array Name) (requests : List String) : Met
         text name.toString, text (toString info.numParams), text (toString info.numDiscrs),
         Json.arr (info.altNumParams.map (fun size => text (toString size))),
         text (toString (Match.getNumEqsFromDiscrInfos info.discrInfos))]
-      if let some ctor ← withCurrHeartbeats (matchedPropertyConstructor? name info) then
+      if let some ctor ← withCurrHeartbeats (matchedStructureConstructor? name info) then
         matchedConstructors := matchedConstructors.insert ctor
         record := record.push (text ctor.toString)
+      else if ← withCurrHeartbeats (matchesNatZeroSucc name info) then
+        record := record.push (Json.arr #[text "natCases", text "Nat.zero", text "Nat.succ"])
+      else if let some cases ← withCurrHeartbeats (binaryTreeCases? name info) then
+        record := record.push cases
       matchers := matchers.push (Json.arr record)
+  let (definitions, allCandidates, decisionConstructors) ← localDefinitions modules candidates
+  for name in decisionConstructors do matchedConstructors := matchedConstructors.insert name
   for name in matchedConstructors.toList.toArray.qsort (fun a b => a.toString < b.toString) do
     if !dependencies.contains name then
       if let some ctor ← withCurrHeartbeats (propertyConstructor? name) then
         propertyConstructors := propertyConstructors.push ctor
-  let (definitions, allCandidates) ← localDefinitions modules candidates
   let mut symbols := #[]
   for name in allCandidates.toList.toArray.qsort (fun a b => a.toString < b.toString) do
     if let some (.defnInfo declaration) := env.find? name then

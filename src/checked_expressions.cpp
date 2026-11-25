@@ -375,6 +375,8 @@ Display aggregate(const std::string& sign, const Node& domain, const Node& predi
         if (const auto* set = membershipDomain(argument(domain.at(2),0))) range = set;
     }
     std::string limits = variable + "\\in " + render(*range,names).text;
+    if (applicationOf(*range,"Finset.range",1))
+        limits = "0\\le " + variable + "<" + render(argument(*range,0),names).within(41);
     if (applicationOf(*range,"Finset.filter",4) && applicationOf(argument(*range,0),"Finset.powerset",2)) {
         const auto& condition = term(range->at(3));
         if (condition.is("l") && applicationOf(condition.at(4),"Finset.Nonempty",2)) {
@@ -824,6 +826,10 @@ Display render(const Node& input, const Names& names) {
     const bool application = raw.is("a");
     const auto count = application ? raw.children.size() - 2 : 0;
     const auto& fn = application ? term(raw.at(1)) : raw;
+    // A default tactic or value helps Lean supply an omitted argument. The
+    // mathematical parameter still has the first argument as its type.
+    if ((key == "autoParam" || key == "optParam") && count == 2)
+        return render(raw.at(2),names);
     if (application && adjacencyProjection(fn) && (count == 1 || count == 2))
         return adjacency(fn.at(3),&raw.at(2),count == 2 ? &raw.at(3) : nullptr,names);
     if (application && count == 2) {
@@ -835,7 +841,7 @@ Display render(const Node& input, const Names& names) {
     if (!raw.mathSymbol.empty()) {
         const auto& label = raw.mathSymbol;
         if (!std::all_of(label.begin(), label.end(), asciiLetter)) throw Unsupported{};
-        return call({label.size() == 1 ? label : "\\operatorname{" + label + "}"},
+        return call({functionSymbol(label)},
                     application ? explicitArgs(raw) : Args{}, names);
     }
     if (auto it = constants.find(key); it != constants.end()) {
@@ -1052,7 +1058,22 @@ Display render(const Node& input, const Names& names) {
         if (d.is("n") && d.at(1).atom.find_first_not_of('0') != std::string::npos)
             return {"\\left\\lfloor\\frac{" + arg(0).text + "}{" + arg(1).text + "}\\right\\rfloor"};
     }
+    if (key == "Top.top" && count == 2 && applicationOf(raw.at(2),"SimpleGraph.Subgraph",2)) {
+        const auto& carrier=raw.at(2);
+        const auto& top=raw.at(3);
+        if (applicationOf(top,"SimpleGraph.Subgraph.instTop",2) &&
+            identicalEncoding(carrier.at(2),top.at(2)) && identicalEncoding(carrier.at(3),top.at(3)))
+            return {"\\operatorname{full\\,subgraph}(" + render(carrier.at(3),names).text + ")"};
+        return {"\\top_{" + render(top,names).text + "}"};
+    }
     if (count >= 2 && applicationOf(raw.at(2),"SimpleGraph",1)) {
+        if (key == "symmDiff" && count == 5 && arity(2)) {
+            if (graphLatticeInstance(raw.at(3),"SimpleGraph.instMax") &&
+                applicationOf(raw.at(4),"SimpleGraph.sdiff",1))
+                return infix(arg(0),{"\\mathbin{\\triangle}",setOperatorPriority},arg(1));
+            return {"\\operatorname{symmetric\\,difference}_{" + render(raw.at(3),names).text +
+                "," + render(raw.at(4),names).text + "}(" + arg(0).text + ", " + arg(1).text + ")"};
+        }
         if (count == 4 && arity(2)) {
             if (key == "Max.max" && graphLatticeInstance(raw.at(3),"SimpleGraph.instMax"))
                 return infix(arg(0),{"\\cup",setOperatorPriority},arg(1));
@@ -1068,6 +1089,9 @@ Display render(const Node& input, const Names& names) {
                                                    "\\operatorname{edgeless\\,graph}(") + vertices + ")"};
         }
     }
+    if (key=="OrderedSub" && count==4 && head(raw.at(2))=="Nat" &&
+        head(raw.at(3))=="instLENat" && head(raw.at(4))=="instAddNat" && head(raw.at(5))!="instSubNat")
+        return {"\\text{the ordered subtraction law holds for }\\mathbin{-}_{" + render(raw.at(5),names).text + "}"};
     const auto operation = binary.find(key);
     if (count == 4 && arity(2) && raw.at(2).is("c") && (head(raw.at(2)) == "Rat" || head(raw.at(2)) == "NNRat") &&
         (key == "LT.lt" || key == "GT.gt" || key == "LE.le" || key == "GE.ge")) {
@@ -1103,6 +1127,17 @@ Display render(const Node& input, const Names& names) {
         const bool membership = key == "Membership.mem";
         auto op = membership ? Operator{"\\in",40} : operation->second;
         std::string qualified;
+        if (((key=="Sub.sub" && count>=2) ||
+             (key=="HSub.hSub" && count>=4 && head(raw.at(3))=="Nat" && head(raw.at(4))=="Nat")) &&
+            head(raw.at(2))=="Nat") {
+            const auto& instance = raw.at(key=="Sub.sub" ? 3 : 5);
+            const auto& source = applicationOf(instance,"instHSub",2) && head(instance.at(2))=="Nat" ?
+                                 instance.at(3) : instance;
+            if (!source.is("c") || head(source)!="instSubNat") {
+                qualified = "\\mathbin{-}_{" + render(source,names).text + "}";
+                op.sign = qualified.c_str();
+            }
+        }
         if (key=="HasSubset.Subset" && count>=2 &&
             (applicationOf(raw.at(2),"Finset",1) || applicationOf(raw.at(2),"Set",1)) &&
             !applicationOf(raw.at(3),"Finset.instHasSubset",1) && !applicationOf(raw.at(3),"Set.instHasSubset",1)) {
@@ -1200,6 +1235,14 @@ Display render(const Node& input, const Names& names) {
         return inSubtype(last(1),raw.at(2),raw.at(3),names);
     if ((key == "Fin" || key == "List" || key == "Multiset" || key == "SimpleGraph") && count == 1)
         return {identifier(key) + "(" + last().text + ")"};
+    if (key == "Finset.card" && count==2 && arity(1) && applicationOf(*args[0],"Finset.univ",2)) {
+        // Finset.card_univ compares the full finite set with its carrier.
+        // Printing both as the cardinality of the carrier hides that step.
+        Names inner = names;
+        const auto x = checkedBinderName(inner,"#full-set-element","v");
+        return {"\\left|\\left\\{" + x + "\\mid " + x + "\\in " +
+                render(raw.at(2),names).text + "\\right\\}\\right|"};
+    }
     if ((key == "Finset.card" || key == "Fintype.card" ||
          key == "Multiset.card") && arity(1) && count == 2)
         return {"\\left|" + arg(0).text + "\\right|"};
@@ -1208,6 +1251,9 @@ Display render(const Node& input, const Names& names) {
         return {"\\operatorname{ncard}(" + arg(0).text + ")"};
     if (key == "Nat.choose" && arity(2))
         return {"\\binom{" + arg(0).text + "}{" + arg(1).text + "}"};
+    // Parenthesize a nested factorial so it cannot be read as a double factorial.
+    if (key == "Nat.factorial" && count == 1 && arity(1))
+        return {arg(0).within(91) + "!",90};
     if (key == "List.length" && arity(1)) return {"\\operatorname{length}(" + arg(0).text + ")"};
     if ((key == "Finset.sum" || key == "Finset.prod") && arity(2))
         return aggregate(key == "Finset.sum" ? "\\sum" : "\\prod", *args[0], *args[1], names);
@@ -1278,6 +1324,8 @@ Display render(const Node& input, const Names& names) {
         return {"\\operatorname{underlying\\,set}(" + arg(0).text + ")"};
     if (key == "Set.toFinset" && arity(1))
         return {"\\operatorname{as\\,finite\\,set}(" + arg(0).text + ")"};
+    if (key == "Set.Finite.toFinset" && count == 3 && hasProofArgument(raw,"2"))
+        return {"\\operatorname{as\\,finite\\,set}(" + render(raw.at(3),names).text + ")"};
     if (key == "Finset.val" && arity(1))
         return {"\\operatorname{underlying\\,multiset}(" + arg(0).text + ")"};
     if ((key == "Set.setOf" || key == "setOf") && arity(1)) {
@@ -1331,6 +1379,24 @@ Display render(const Node& input, const Names& names) {
         return adjacency(*args[0],args.size() >= 2 ? args[1] : nullptr,arity(3) ? args[2] : nullptr,names);
     if (key == "SimpleGraph.Walk" && count == 4 && arity(3))
         return {"\\operatorname{Walk}_{" + arg(0).text + "}(" + arg(1).text + ", " + arg(2).text + ")"};
+    if (key == "SimpleGraph.Subgraph.verts" && count == 3 && arity(1))
+        return {"V(" + arg(0).text + ")"};
+    if (key == "SimpleGraph.Subgraph.coe" && count == 3 && arity(1))
+        return {"\\operatorname{graph}(" + arg(0).text + ")"};
+    if (key == "SimpleGraph.Subgraph.spanningCoe" && count == 3 && arity(1))
+        return {"\\operatorname{spanning\\,graph}(" + arg(0).text + ")"};
+    if (key == "SimpleGraph.Subgraph.Adj" && count == 5 && arity(3))
+        return adjacency(*args[0],args[1],args[2],names);
+    if (key == "SimpleGraph.Subgraph.degree" && count == 5 && arity(2))
+        return {"\\deg_{" + arg(0).text + "}(" + arg(1).text + ")"};
+    if (key == "SimpleGraph.Subgraph.IsMatching" && count == 3 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a matching}",40};
+    if (key == "SimpleGraph.Subgraph.IsPerfectMatching" && count == 3 && arity(1))
+        return {arg(0).within(41) + "\\text{ is a perfect matching}",40};
+    if (key == "SimpleGraph.IsCycles" && count == 2 && arity(1))
+        return {"\\text{every nonisolated vertex of }" + arg(0).within(41) + "\\text{ has degree two}",40};
+    if (key == "SimpleGraph.IsAlternating" && count == 3 && arity(2))
+        return {arg(0).within(41) + "\\text{ alternates with respect to }" + arg(1).within(41),40};
     if (key == "SimpleGraph.Walk.IsHamiltonian" && count == 6 && arity(1))
         return {arg(0).within(41) + "\\text{ is a Hamiltonian path}",40};
     if (key == "SimpleGraph.Walk.IsHamiltonianCycle" && count == 5 && arity(1))
@@ -1348,6 +1414,8 @@ Display render(const Node& input, const Names& names) {
                 "\\text{ in }" + arg(0).within(41),40};
     if (key == "SimpleGraph.Walk.map" && count == 8 && arity(2))
         return {"\\operatorname{image}_{" + arg(0).text + "}(" + arg(1).text + ")"};
+    if (key == "SimpleGraph.Walk.tail" && count == 5 && arity(1))
+        return {"\\operatorname{tail}(" + arg(0).text + ")"};
     if (key == "SimpleGraph.Walk.length" && count == 5 && arity(1))
         return {"\\operatorname{length}(" + arg(0).text + ")"};
     if (key == "SimpleGraph.Walk.support" && count == 5 && arity(1))
@@ -1510,6 +1578,8 @@ std::string objectDescription(const Node& type, const Names& names, bool plural)
     if (applicationOf(raw,"Equiv",2))
         return noun("a bijection from ","bijections from ") + "\\(" + bijectionEndpoint(raw.at(2),names).text +
                "\\) to \\(" + bijectionEndpoint(raw.at(3),names).text + "\\)";
+    if (applicationOf(raw,"SimpleGraph.Subgraph",2))
+        return noun("a subgraph of ","subgraphs of ") + "\\(" + render(raw.at(3),names).text + "\\)";
     if (applicationOf(raw,"SimpleGraph.Walk",4)) {
         const auto graph = render(argument(raw,2),names).text;
         const auto start = render(argument(raw,1),names).text;

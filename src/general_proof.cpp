@@ -1,6 +1,10 @@
 #include "general_proof.hpp"
+#include "nat_below.hpp"
+#include "paper_links.hpp"
 #include "positive_denominator.hpp"
 #include "checked_calculation.hpp"
+#include "record_equality.hpp"
+#include "tree_below.hpp"
 #include "chapter.hpp"
 
 #include <algorithm>
@@ -13,10 +17,12 @@ namespace {
 
 struct Context {
     Names names;
+    Names statementToProofBinders;
     std::map<std::string, std::string> assumptions;
     std::map<std::string, const Node*> hypothesisTypes;
     std::set<std::string> provedFacts;
     std::string inductionHypothesis;
+    std::string wellFoundedHypothesis;
 };
 
 const Node* chosenPredicate(const Node& expr, const std::string& proofId) {
@@ -51,6 +57,47 @@ void introduceChosenWitness(const Node& body, const Node& type, const std::strin
     out << "Fix \\(" << witness << "\\) such that \\(" << *property << "\\).\n";
 }
 
+// Data in a library instance can include a closed operation such as (a,b) ↦ a+b.
+// A captured local or an embedded proof needs its own explanation.
+bool closedInstanceData(const Node& n, const std::set<std::string>& bound = {}) {
+    if (n.is("c")) return n.children.size()<3 || n.at(2).atom!="proof";
+    if (n.is("n") || n.is("s")) return true;
+    if (n.is("v")) return bound.count(n.at(1).atom)!=0;
+    if (n.is("l")) {
+        if (!closedInstanceData(n.at(3),bound)) return false;
+        auto inner = bound;
+        inner.insert(n.at(1).atom);
+        return closedInstanceData(n.at(4),inner);
+    }
+    return n.is("a") && std::all_of(n.children.begin()+1,n.children.end(),
+        [&](const Node& argument) { return closedInstanceData(argument,bound); });
+}
+
+// Only these closed library instances and their superclass proofs may be
+// folded into a natural-number subtraction step.
+bool naturalOrderInstance(const Node& evidence) {
+    const auto& raw = term(evidence);
+    if (raw.is("c"))
+        return head(raw) == "Nat.instOrderedSub" || head(raw) == "Nat.instIsOrderedAddMonoid" ||
+               head(raw) == "Nat.instIsOrderedCancelAddMonoid";
+    static const std::map<std::string,std::vector<std::size_t>> projections{
+        {"IsLeftCancelAdd.addLeftReflectLE_of_addLeftReflectLT",{4,6}},
+        {"IsCancelAdd.toIsLeftCancelAdd",{4}}, {"IsOrderedCancelAddMonoid.toIsCancelAdd",{5}},
+        {"contravariant_lt_of_covariant_le",{5}}, {"IsOrderedAddMonoid.toAddLeftMono",{5}}
+    };
+    const auto it = projections.find(head(raw));
+    if (!raw.is("a") || it==projections.end() || raw.children.size()!=it->second.back()+1 ||
+        !raw.at(2).is("c") || head(raw.at(2))!="Nat") return false;
+    std::vector<const Node*> premises;
+    if (!proofArguments(raw,premises) || premises.size()!=it->second.size()) return false;
+    for (std::size_t i=0; i<premises.size(); ++i)
+        if (premises[i]!=&raw.at(it->second[i]) || !naturalOrderInstance(*premises[i])) return false;
+    for (std::size_t i=2; i<raw.children.size(); ++i)
+        if (std::find(premises.begin(),premises.end(),&raw.at(i))==premises.end() &&
+            !closedInstanceData(raw.at(i))) return false;
+    return true;
+}
+
 std::string attribute(const Node& node, std::size_t i) {
     return i < node.children.size() ? node.at(i).atom : "";
 }
@@ -69,6 +116,12 @@ std::string withoutLayout(std::string math) {
         }
     }
     return math;
+}
+
+bool endsWithFormula(const std::string& proof, const std::string& formula) {
+    const auto text = withoutLayout(proof);
+    const auto ending = withoutLayout(formula) + ".\n";
+    return text.size() >= ending.size() && text.compare(text.size()-ending.size(),ending.size(),ending)==0;
 }
 
 struct Rule {
@@ -306,13 +359,20 @@ std::optional<Node> logicalConclusion(const Node& raw, const std::string& name) 
         const auto op = tuple({str("c"),str(connective),str("prop"),tuple({str("0"),str("1")}),tuple({})});
         return tuple({str("a"),op,raw.at(2),raw.at(3)});
     }
+    const auto eq = tuple({str("c"),str("Eq"),str("prop"),tuple({str("1"),str("2")}),tuple({})});
+    if (name == "propext" && arity == 3) {
+        // An unannotated application of the axiom has type P = Q in Prop.
+        // The ordinary rule below still has to derive its equivalence proof.
+        std::vector<const Node*> proofs;
+        if (!proofArguments(raw,proofs) || proofs.size()!=1 || proofs.front()!=&raw.at(4)) return {};
+        return tuple({str("a"),eq,tuple({str("s"),str("0")}),raw.at(2),raw.at(3)});
+    }
     const Node* left;
     const Node* right;
     if ((name == "Eq.refl" || name == "rfl") && arity == 2) left=right=&raw.at(3);
     else if (name == "Eq.trans" && arity == 6) { left=&raw.at(3); right=&raw.at(5); }
     else if (name == "Eq.symm" && arity == 4) { left=&raw.at(4); right=&raw.at(3); }
     else return {};
-    const auto eq = tuple({str("c"),str("Eq"),str("prop"),tuple({str("1"),str("2")}),tuple({})});
     return tuple({str("a"),eq,raw.at(2),*left,*right});
 }
 
@@ -445,7 +505,7 @@ public:
         }
         for (const auto& record : input.at(1).children)
             if (record.at(2).atom == "public") {
-                library_.emplace(record.at(0).atom, &record.at(1));
+                library_.emplace(record.at(0).atom, &record);
                 signatures_.emplace(record.at(0).atom, &record.at(1));
             }
         if (input.children.size() > 6)
@@ -492,6 +552,192 @@ private:
     std::set<std::string> selected_;
     std::ostringstream prose_;
     bool fail(std::string reason) { failure = std::move(reason); return false; }
+
+    struct RecordCase {
+        Node object;
+        const Node* branch;
+        std::vector<std::size_t> data;
+    };
+
+    static std::optional<Node> applyMotive(const Node& motive, const Node& value) {
+        Node call;
+        call.array = true;
+        call.children = {motive.at(0),motive,value};
+        call.children[0].atom = "a";
+        return instantiate(motive,call);
+    }
+
+    static bool recordEqualityCase(const Node& elimination, const Node& conclusion) {
+        const auto& motive = term(elimination.at(4));
+        if (!motive.is("l") || !term(motive.at(4)).is("l")) return false;
+        Node args;
+        args.array = true;
+        args.children = {elimination.at(0),motive,elimination.at(5),elimination.at(6)};
+        const auto target = instantiate(motive,args);
+        if (!target) return false;
+        args.children.resize(2);
+        for (std::size_t i : {8u,9u}) {
+            if (!elimination.at(i).is("p")) return false;
+            args.children.push_back(elimination.at(i));
+            const auto expected = instantiate(*target,args,true,args.children.size()-1);
+            if (!expected || !sameKernelTerm(*expected,elimination.at(i).at(1))) return false;
+        }
+        const auto result = instantiate(*target,args,true);
+        return result && sameKernelTerm(*result,conclusion);
+    }
+
+    static bool recordTransportArguments(const Node& transfer, const Node& conclusion,
+                                         const record_equality::Locals& locals) {
+        const auto& motive = term(transfer.at(4));
+        const auto target = applyMotive(motive,transfer.at(6));
+        if (!target) return false;
+        Node args;
+        args.array = true;
+        args.children = {transfer.at(0),transfer.at(1)};
+        for (std::size_t i=8;i<transfer.children.size();++i) {
+            const auto* actual = record_equality::localType(transfer.at(i),locals);
+            args.children.push_back(transfer.at(i));
+            const auto expected = instantiate(*target,args,true,args.children.size()-1);
+            if (!actual || !expected || !sameKernelTerm(*expected,*actual)) return false;
+        }
+        const auto result = instantiate(*target,args,true);
+        return result && sameKernelTerm(*result,conclusion);
+    }
+
+    // The adapter certifies that the sole alternative binds the constructor
+    // fields in order. Instantiate the catalog signature to check each binder.
+    std::optional<RecordCase> openRecordCase(const Node& raw, const Node& info, const Node& spec,
+                                             const Node& type, record_equality::Locals& locals) const {
+        if (!raw.is("a") || raw.children.size()<5 || !raw.at(1).is("c") || info.children.size()!=6 ||
+            info.at(1).atom!=std::to_string(raw.children.size()-5) || info.at(2).atom!="1" ||
+            info.at(3).children.size()!=1 || info.at(4).atom!="0" ||
+            info.at(3).at(0).atom!=std::to_string(spec.at(2).children.size())) return {};
+        RecordCase result{raw,nullptr,{}};
+        auto& obj = result.object;
+        obj.children.resize(2);
+        obj.children[1].children[1].atom = spec.at(0).atom;
+        if (type.is("a"))
+            obj.children.insert(obj.children.end(),type.children.begin()+2,type.children.end());
+        const auto& motive = term(argument(raw,2));
+        if (!motive.is("l") || !sameKernelTerm(type,motive.at(3))) return {};
+        const Node* binder = &term(argument(raw,0));
+        for (std::size_t i=0; i<spec.at(2).children.size(); ++i) {
+            if (!binder->is("l")) return {};
+            const auto& role = binder->at(6);
+            Node ref;
+            ref.array = true;
+            ref.children = {binder->at(0),binder->at(1),role};
+            ref.children.front().atom = "v";
+            obj.children.push_back(std::move(ref));
+            const auto domain = instantiate(spec.at(1),obj,true,obj.children.size()-1);
+            const Node* parameter = &spec.at(1);
+            for (std::size_t n=2; n+1<obj.children.size() && parameter->is("q"); ++n) parameter=&parameter->at(4);
+            if (!domain || !parameter->is("q") || attribute(*parameter,6)!=role.atom ||
+                !sameKernelTerm(*domain,binder->at(3))) return {};
+            if (role.atom=="value" || role.atom=="prop" || role.atom=="type") result.data.push_back(i);
+            else if (role.atom!="proof") return {};
+            locals[binder->at(1).atom] = &binder->at(3);
+            binder = &binder->at(4);
+        }
+        const auto built = instantiate(spec.at(1),obj,true);
+        if (!built || !sameKernelTerm(*built,type)) return {};
+        const auto branchType = applyMotive(motive,obj);
+        if (!branchType) return {};
+        const Node* expected = &*branchType;
+        const Node* body = binder;
+        Names bound;
+        while (body->is("l") && expected->is("q")) {
+            if (!sameKernelTerm(expected->at(3),body->at(3),bound)) return {};
+            bound[expected->at(1).atom] = body->at(1).atom;
+            body = &body->at(4);
+            expected = &expected->at(4);
+        }
+        if (!body->is("p") || !sameKernelTerm(*expected,body->at(1),bound)) return {};
+        result.branch=binder;
+        return result;
+    }
+
+    bool recordEquality(const Node& expr, const Node& claim, Context ctx) {
+        const auto& raw = term(expr);
+        const auto matcher = matchers_.find(head(raw));
+        if (matcher==matchers_.end() || matcher->second->children.size()!=6 || !claim.is("q") ||
+            !raw.is("a") || raw.children.size()<5) return false;
+        const auto& info = *matcher->second;
+        const auto entry = objectConstructors_.find(info.at(5).atom);
+        if (entry==objectConstructors_.end()) return false;
+        const auto& spec = *entry->second;
+        const auto& type = claim.at(3);
+        const auto& subject = argument(raw,1);
+        if (!subject.is("v") || !ctx.names.count(subject.at(1).atom)) return false;
+        record_equality::Locals locals;
+        const auto first = openRecordCase(raw,info,spec,type,locals);
+        if (!first || first->data.empty()) return false;
+        const auto applied = applyMotive(term(argument(raw,2)),subject);
+        if (!applied || !sameKernelTerm(*applied,claim)) return false;
+        const auto& secondBinder = term(*first->branch);
+        if (!secondBinder.is("l") || !sameKernelTerm(secondBinder.at(3),type)) return false;
+        const auto& secondMatch = term(secondBinder.at(4));
+        if (!secondMatch.is("a") || head(secondMatch)!=head(raw) || secondMatch.children.size()<5 ||
+            !argument(secondMatch,1).is("v") || argument(secondMatch,1).at(1).atom!=secondBinder.at(1).atom) return false;
+        const auto second = openRecordCase(secondMatch,info,spec,type,locals);
+        if (!second || second->data!=first->data) return false;
+        const auto inner = applyMotive(term(argument(secondMatch,2)),argument(secondMatch,1));
+        if (!inner || !secondBinder.at(4).is("p") || !sameKernelTerm(*inner,secondBinder.at(4).at(1))) return false;
+
+        // Compare the complete projected equalities on the statement and on
+        // the two decomposed records. Matching field names alone is insufficient.
+        checkedBinderName(ctx.names,claim.at(1).atom,claim.at(2).atom);
+        const auto params = type.is("a") ? type.children.size()-2 : 0;
+        const auto projection = [&](const Node& expr, const std::string& name, const Node& object) {
+            if (!expr.is("a") || head(expr)!=name || expr.children.size()!=params+3 ||
+                !sameKernelTerm(argument(expr,0),object)) return false;
+            for (std::size_t i=0;i<params;++i)
+                if (!sameKernelTerm(expr.at(i+2),type.at(i+2))) return false;
+            return true;
+        };
+        Node other = subject;
+        other.children[1] = claim.at(1);
+        const Node* statement = &claim.at(4);
+        const Node* branch = second->branch;
+        std::vector<record_equality::Field> data;
+        std::vector<std::string> equations;
+        for (auto i : first->data) {
+            if (!statement->is("q") || !branch->is("l") || attribute(*statement,6)!="proof" ||
+                attribute(*branch,6)!="proof") return false;
+            const auto& before = statement->at(3);
+            const auto& after = branch->at(3);
+            const auto name = head(type)+"."+spec.at(2).at(i).atom;
+            if (!record_equality::call(before,"Eq",3) || !record_equality::call(after,"Eq",3) ||
+                !projection(before.at(3),name,subject) || !projection(before.at(4),name,other) ||
+                !projection(after.at(3),name,first->object) || !projection(after.at(4),name,second->object)) return false;
+            const auto math = formula(before,ctx);
+            if (!math) return false;
+            equations.push_back(*math);
+            data.push_back({name,&first->object.at(params+2+i),&second->object.at(params+2+i)});
+            locals[branch->at(1).atom] = &branch->at(3);
+            statement = &statement->at(4);
+            branch = &branch->at(4);
+        }
+        if (!record_equality::call(*statement,"Eq",3) || !sameKernelTerm(statement->at(2),type) ||
+            !sameKernelTerm(statement->at(3),subject) || !sameKernelTerm(statement->at(4),other) ||
+            !branch->is("p") || !record_equality::call(branch->at(1),"Eq",3) ||
+            !sameKernelTerm(branch->at(1).at(2),type) || !sameKernelTerm(branch->at(1).at(3),first->object) ||
+            !sameKernelTerm(branch->at(1).at(4),second->object) ||
+            !record_equality::transports(*branch,data,type,first->object,locals,
+                [](const Node& a,const Node& b) { return sameKernelTerm(a,b); },
+                recordEqualityCase,recordTransportArguments)) return false;
+        const auto result = formula(*statement,ctx);
+        if (!result) return false;
+        prose_ << "Compare the two records field by field. ";
+        for (std::size_t i=0; i<equations.size(); ++i)
+            prose_ << (i==0 ? "By hypothesis, " : i+1==equations.size() ? " and " : ", ") << equations[i];
+        prose_ << ". ";
+        if (data.size()!=spec.at(2).children.size())
+            prose_ << "After substitution, the remaining fields prove the same propositions. "
+                      "Any two proofs of the same proposition are equal by proof irrelevance. ";
+        prose_ << "The records therefore satisfy " << *result << ".\n";
+        return true;
+    }
 
     // The constructor fields and their types come from the checked declaration.
     // Include proof parameters before the fields, even when they have no heading.
@@ -661,8 +907,8 @@ private:
         const auto matcher = matchers_.find(head(raw));
         if (matcher == matchers_.end() || !raw.is("a") || raw.children.size() < 5) return {};
         const auto& info = *matcher->second;
-        if (info.children.size() != 6 || info.at(1).atom != std::to_string(raw.children.size()-5) || info.at(2).atom != "1" ||
-            info.at(3).children.size() != 1 || info.at(4).atom != "0") return {};
+        if (info.children.size() != 6 || info.at(1).atom != std::to_string(raw.children.size()-5) ||
+            info.at(2).atom != "1" || info.at(3).children.size() != 1 || info.at(4).atom != "0") return {};
         const auto& subject = argument(raw,1);
         const auto* type = evidenceType(subject,ctx);
         const auto& motive = term(argument(raw,2));
@@ -670,76 +916,76 @@ private:
             !sameKernelTerm(*type,motive.at(3)) || !sameKernelTerm(expected,motive.at(4))) return {};
         const auto family = head(*type);
         const auto ctor = propertyConstructors_.find(info.at(5).atom);
-        if (ctor != propertyConstructors_.end()) {
-            const auto* spec = ctor->second;
-            const Node* result = &spec->at(1);
-            while (result->is("q")) result = &result->at(4);
-            const auto& fields = spec->at(2).children;
-            if (head(*result) != family || fields.empty() ||
-                info.at(3).at(0).atom != std::to_string(fields.size())) return {};
+        if (ctor == propertyConstructors_.end()) return {};
+        const auto* spec = ctor->second;
+        const Node* result = &spec->at(1);
+        while (result->is("q")) result = &result->at(4);
+        const auto& fields = spec->at(2).children;
+        if (head(*result) != family || fields.empty() ||
+            info.at(3).at(0).atom != std::to_string(fields.size())) return {};
 
-            // Apply the structure parameters, then each branch variable, to
-            // obtain the exact type of the next field, including dependencies.
-            Node args;
-            args.array = true;
-            args.children = {raw.at(0), raw.at(1)};
-            const auto& target = term(*type);
-            if (target.is("a"))
-                args.children.insert(args.children.end(),target.children.begin()+2,target.children.end());
-            auto inner = ctx;
-            const Node* branch = &term(argument(raw,0));
-            std::vector<std::string> facts;
-            for (std::size_t i=0; i<fields.size(); ++i) {
-                if (!branch->is("l") || attribute(*branch,6) != "proof") return {};
-                Node var;
-                var.array = true;
-                var.children = {raw.at(0),branch->at(1),branch->at(6)};
-                var.children[0].atom = "v";
-                args.children.push_back(std::move(var));
-                const auto domain = instantiate(spec->at(1),args,true,args.children.size()-1);
-                if (!domain || !sameKernelTerm(*domain,branch->at(3)) || !introduce(*branch,nullptr,inner,false))
-                    return {};
-                const auto& id = branch->at(1).atom;
-                facts.push_back(inner.assumptions.at(id));
-                inner.provedFacts.insert(id);
-                branch = &branch->at(4);
-            }
-            const auto constructed = instantiate(spec->at(1),args,true);
-            const auto* conclusion = evidenceType(*branch,inner);
-            if (!constructed || !sameKernelTerm(*constructed,*type) ||
-                !conclusion || !sameKernelTerm(*conclusion,expected)) return {};
-            const auto& source = term(subject);
-            const auto claim = formula(*type,ctx);
-            if (!claim) return {};
-            if (source.is("v") && ctx.assumptions.count(source.at(1).atom)) {
-                prose_ << (ctx.provedFacts.count(source.at(1).atom) ? "Unpacking the result " : "Unpacking the hypothesis ")
-                       << *claim << " gives ";
-            } else {
-                if (!derive(subject,type,ctx,true)) return false;
-                prose_ << "Unpacking this property gives ";
-            }
-            for (std::size_t i=0; i<facts.size(); ++i)
-                prose_ << (i==0 ? "" : i+1==facts.size() ? " and " : ", ") << facts[i];
-            prose_ << ".\n";
-
-            // Two fields used verbatim as the two conjuncts need no second
-            // display. Check their identifiers, positions and the And premises.
-            const auto& body = term(*branch);
-            if (facts.size()==2 && head(body)=="And.intro" && body.children.size()==6) {
-                const auto& first = term(argument(raw,0));
-                const auto& second = term(first.at(4));
-                std::vector<const Node*> premises;
-                if (proofArguments(body,premises) && premises==std::vector<const Node*>{&body.at(4),&body.at(5)} &&
-                    body.at(4).is("v") && body.at(4).at(1).atom==first.at(1).atom &&
-                    body.at(5).is("v") && body.at(5).at(1).atom==second.at(1).atom &&
-                    sameKernelTerm(body.at(2),first.at(3)) && sameKernelTerm(body.at(3),second.at(3))) {
-                    prose_ << "This proves the conjunction.\n";
-                    return true;
-                }
-            }
-            return derive(*branch,&expected,std::move(inner),true);
+        // Apply the structure parameters, then each branch variable, to
+        // obtain the exact type of the next field, including dependencies.
+        Node args;
+        args.array = true;
+        args.children = {raw.at(0), raw.at(1)};
+        const auto& target = term(*type);
+        if (target.is("a"))
+            args.children.insert(args.children.end(),target.children.begin()+2,target.children.end());
+        auto inner = ctx;
+        const Node* branch = &term(argument(raw,0));
+        std::vector<std::string> facts;
+        for (std::size_t i=0; i<fields.size(); ++i) {
+            if (!branch->is("l") || attribute(*branch,6) != "proof") return {};
+            Node var;
+            var.array = true;
+            var.children = {raw.at(0),branch->at(1),branch->at(6)};
+            var.children[0].atom = "v";
+            args.children.push_back(std::move(var));
+            const auto domain = instantiate(spec->at(1),args,true,args.children.size()-1);
+            if (!domain || !sameKernelTerm(*domain,branch->at(3)) || !introduce(*branch,nullptr,inner,false))
+                return {};
+            const auto& id = branch->at(1).atom;
+            facts.push_back(inner.assumptions.at(id));
+            inner.provedFacts.insert(id);
+            branch = &branch->at(4);
         }
-        return {};
+        const auto constructed = instantiate(spec->at(1),args,true);
+        const auto* conclusion = evidenceType(*branch,inner);
+        if (!constructed || !sameKernelTerm(*constructed,*type) ||
+            !conclusion || !sameKernelTerm(*conclusion,expected)) return {};
+        const auto& source = term(subject);
+        const auto claim = formula(*type,ctx);
+        if (!claim) return {};
+        if (source.is("v") && ctx.assumptions.count(source.at(1).atom)) {
+            prose_ << (ctx.provedFacts.count(source.at(1).atom) ? "Unpacking the result " : "Unpacking the hypothesis ")
+                   << *claim << " gives ";
+        } else {
+            if (!derive(subject,type,ctx,true)) return false;
+            prose_ << "Unpacking this property gives ";
+        }
+        for (std::size_t i=0; i<facts.size(); ++i)
+            prose_ << (i==0 ? "" : i+1==facts.size() ? " and " : ", ") << facts[i];
+        prose_ << ".\n";
+
+        // Two fields used verbatim as the two conjuncts need no second
+        // display. Check their identifiers, positions and the And premises.
+        const auto& body = term(*branch);
+        if (facts.size()==2 && head(body)=="And.intro" && body.children.size()==6 &&
+            head(expected)=="And" && expected.children.size()==4) {
+            const auto& first = term(argument(raw,0));
+            const auto& second = term(first.at(4));
+            std::vector<const Node*> premises;
+            if (proofArguments(body,premises) && premises==std::vector<const Node*>{&body.at(4),&body.at(5)} &&
+                body.at(4).is("v") && body.at(4).at(1).atom==first.at(1).atom &&
+                body.at(5).is("v") && body.at(5).at(1).atom==second.at(1).atom &&
+                sameKernelTerm(body.at(2),first.at(3)) && sameKernelTerm(body.at(3),second.at(3)) &&
+                sameKernelTerm(body.at(2),expected.at(2)) && sameKernelTerm(body.at(3),expected.at(3))) {
+                prose_ << "This proves the conjunction.\n";
+                return true;
+            }
+        }
+        return derive(*branch,&expected,std::move(inner),true);
     }
 
     Matched witnessMatch(const std::string& name, const Node& raw, const Context& ctx) const {
@@ -761,6 +1007,23 @@ private:
         const auto key = head(*type);
         if ((key == "Subtype" || key == "Set.Elem") && info.at(3).at(0).atom == "2") return Matched::subtype;
         if (key == "Exists" || key == "And" || key == "Finset.Nonempty") return Matched::witnesses;
+        if (key == "Set.Nonempty" && type->is("a") && type->children.size()==4 &&
+            info.at(3).at(0).atom=="2") {
+            // Unfolding nonemptiness of s supplies x and a proof of x ∈ s.
+            // In particular a different set or membership relation cannot justify this case.
+            const auto& item=term(argument(raw,0));
+            const auto& field=term(item.at(4));
+            if (!field.is("l") || attribute(item,6)!="value" || attribute(field,6)!="proof" ||
+                !sameKernelTerm(item.at(3),type->at(2))) return Matched::none;
+            const auto& membership=term(field.at(3));
+            std::vector<const Node*> proofs;
+            if (head(membership)=="Membership.mem" && membership.children.size()==7 &&
+                head(membership.at(4))=="Set.instMembership" && membership.at(4).children.size()==3 &&
+                sameKernelTerm(membership.at(4).at(2),type->at(2)) &&
+                sameKernelTerm(membership.at(5),type->at(3)) && membership.at(6).is("v") &&
+                membership.at(6).at(1).atom==item.at(1).atom && proofArguments(raw,proofs) &&
+                proofs==std::vector<const Node*>{&argument(raw,1),&argument(raw,0)}) return Matched::witnesses;
+        }
         return Matched::none;
     }
 
@@ -935,10 +1198,10 @@ private:
         if (auto it = earlier_.find(name); it != earlier_.end()) return it->second;
         if (auto it = definitions_.find(name); it != definitions_.end()) return it->second.reference;
         const auto it = library_.find(name);
-        if (it == library_.end() || selected_.count(name) || !describeCheckedStatement(*it->second))
+        if (it == library_.end() || selected_.count(name) || !describeCheckedStatement(it->second->at(1)))
             return std::nullopt;
         used.insert(name);
-        return "Prerequisite~P\\ref{" + prerequisiteLabel(name) + "}";
+        return prerequisiteReference(*it->second);
     }
 
     std::optional<std::string> cardinalityBijection(const Node& app, const Context& ctx) const {
@@ -1053,6 +1316,123 @@ private:
         return formula(inverse.at(4),ctx);
     }
 
+    // A measure relation reduces to the standard strict order on the two
+    // natural-number measures. Keep the direction and both operands.
+    static bool sameDecrease(const Node& expected, const Node& actual) {
+        if (sameKernelTerm(expected,actual)) return true;
+        if (!expected.is("a") || expected.children.size()!=4 ||
+            !record_equality::call(actual,"LT.lt",4) || head(actual.at(2))!="Nat" ||
+            head(actual.at(3))!="instLTNat") return false;
+        const auto& rel = expected.at(1);
+        if (!rel.is("proj") || rel.at(1).atom!="WellFoundedRelation" || rel.at(2).atom!="0") return false;
+        const auto& inverse = term(rel.at(3));
+        if (!record_equality::call(inverse,"invImage",4) || head(inverse.at(3))!="Nat") return false;
+        const auto& order = inverse.at(5);
+        if (!record_equality::call(order,"instWellFoundedRelationOfSizeOf",2) ||
+            head(order.at(2))!="Nat" || head(order.at(3))!="instSizeOfNat") return false;
+        const auto& measure = term(inverse.at(4));
+        if (!measure.is("l")) return false;
+        const auto a=applyMotive(measure,expected.at(2)), b=applyMotive(measure,expected.at(3));
+        return a && b && sameKernelTerm(*a,actual.at(4)) && sameKernelTerm(*b,actual.at(5));
+    }
+
+    bool typedDecrease(const Node& expr, const Node& expected, const Context& ctx) const {
+        if (expr.is("p") && !sameDecrease(expected,expr.at(1))) return false;
+        const auto& raw = term(expr);
+        if (raw.is("v")) {
+            const auto* actual = evidenceType(raw,ctx);
+            return actual && sameDecrease(expected,*actual);
+        }
+        if (record_equality::call(raw,"id",2))
+            return sameDecrease(expected,raw.at(2)) && typedDecrease(raw.at(3),expected,ctx);
+        if (record_equality::call(raw,"Eq.mpr",4) || record_equality::call(raw,"Eq.mp",4)) {
+            const bool reverse = head(raw)=="Eq.mpr";
+            const auto* cert = evidenceType(raw.at(4),ctx);
+            return cert && record_equality::call(*cert,"Eq",3) && sameKernelTerm(cert->at(3),raw.at(2)) &&
+                   sameKernelTerm(cert->at(4),raw.at(3)) && sameDecrease(expected,raw.at(reverse ? 2 : 3)) &&
+                   typedDecrease(raw.at(5),raw.at(reverse ? 3 : 2),ctx);
+        }
+        const Node* signature=raw.is("a") && raw.at(1).is("v") ? evidenceType(raw.at(1),ctx) : nullptr;
+        const auto sig=signatures_.find(head(raw));
+        if (!signature && sig!=signatures_.end()) signature=sig->second;
+        if (!signature) return false;
+        const auto actual=instantiate(*signature,raw,true);
+        return actual && sameDecrease(expected,*actual);
+    }
+
+    bool recursiveInstance(const Node& call, const Context& ctx, std::string& result) {
+        const auto* signature=evidenceType(call.at(1),ctx);
+        if (!signature || call.children.size()!=4) return fail("invalid arguments to the induction hypothesis");
+        const auto domain=instantiate(*signature,call,true,3);
+        const auto conclusion=instantiate(*signature,call,true);
+        std::vector<const Node*> premises;
+        if (!domain || !conclusion || !proofArguments(call,premises) || premises!=std::vector<const Node*>{&call.at(3)} ||
+            !typedDecrease(call.at(3),*domain,ctx)) return fail("unverified decrease in the recursive call");
+        const auto smaller=formula(call.at(2),ctx), fact=formula(*conclusion,ctx);
+        if (!smaller || !fact || !derive(call.at(3),&*domain,ctx,true)) return false;
+        prose_ << "Apply the induction hypothesis to " << *smaller << " to obtain " << *fact << ".\n";
+        result=*fact;
+        return true;
+    }
+
+    bool treeInduction(const Node& raw, const Node& cert, const Node& expected, Context ctx) {
+        const auto required=[&](const Node& parent,std::size_t slot,const Node& fact) {
+            if (parent.is("p") && slot==2) return sameKernelTerm(parent.at(1),fact);
+            if (!parent.is("a") || slot<2) return false;
+            const auto name=head(parent);
+            const auto sig=signatures_.find(name);
+            if (sig!=signatures_.end()) {
+                const auto type=instantiate(*sig->second,parent,true,slot);
+                if (type) return sameKernelTerm(*type,fact);
+            }
+            if (record_equality::call(parent,"And.intro",4) && (slot==4 || slot==5))
+                return sameKernelTerm(parent.at(slot-2),fact);
+            if (!record_equality::call(fact,"Eq",3) || !sameKernelTerm(fact.at(2),parent.at(2))) return false;
+            if (record_equality::call(parent,"Eq.trans",6) && (slot==6 || slot==7))
+                return sameKernelTerm(fact.at(3),parent.at(slot-3)) && sameKernelTerm(fact.at(4),parent.at(slot-2));
+            if (record_equality::call(parent,"Eq.symm",4) && slot==5)
+                return sameKernelTerm(fact.at(3),parent.at(3)) && sameKernelTerm(fact.at(4),parent.at(4));
+            if (record_equality::call(parent,"congrArg",6) && slot==7)
+                return sameKernelTerm(fact.at(3),parent.at(4)) && sameKernelTerm(fact.at(4),parent.at(5));
+            return false;
+        };
+        const auto branches=tree_below::open(raw,cert,expected,
+            [](const Node& a,const Node& b) { return sameKernelTerm(a,b); },applyMotive,required);
+        if (!branches) return fail("unverified branch or subtree hypothesis in tree induction");
+        const auto subject=formula(raw.at(4),ctx);
+        const auto goal=formula(expected,ctx);
+        if (!subject || !goal) return fail("unrendered tree induction goal");
+        prose_ << "Use structural induction on the tree " << *subject << ".\n"
+               << "\\par\\smallskip\\noindent\\emph{Empty tree.}\\enspace\n";
+        const auto& base=term(*branches->leaf);
+        const auto& baseType=branches->leaf->at(1);
+        const auto baseGoal=formula(*branches->leafGoal,ctx);
+        if (baseGoal && (record_equality::call(base,"Eq.refl",2) || record_equality::call(base,"rfl",2)) &&
+            record_equality::call(baseType,"Eq",3) && sameKernelTerm(baseType.at(2),base.at(2)) &&
+            sameKernelTerm(baseType.at(3),base.at(3)) && sameKernelTerm(baseType.at(4),base.at(3))) {
+            prose_ << "Evaluating the defining equations gives " << *baseGoal << ".\n";
+        } else if (!derive(*branches->leaf,nullptr,ctx,true)) return false;
+        const auto label=checkedBinderName(ctx.names,branches->label->at(1).atom,"a");
+        std::vector<std::string> names, facts;
+        for (std::size_t i=0;i<2;++i) {
+            const auto tree=checkedBinderName(ctx.names,branches->children[i]->at(1).atom,i ? "r" : "l");
+            const auto fact=formula(branches->hypotheses[i],ctx);
+            if (!fact) return false;
+            names.push_back("\\("+tree+"\\)");
+            facts.push_back(*fact);
+            ctx.hypothesisTypes[branches->ids[i]]=&branches->hypotheses[i];
+            ctx.assumptions[branches->ids[i]]=*fact;
+            ctx.provedFacts.insert(branches->ids[i]);
+        }
+        prose_ << "\\par\\smallskip\\noindent\\emph{Node.}\\enspace "
+               << "For a node with label \\(" << label << "\\), let " << names[0] << " and " << names[1]
+               << " be the left and right subtrees. "
+               << "Their induction hypotheses give " << facts[0] << " and " << facts[1] << ".\n";
+        if (!derive(branches->nodeProof,nullptr,std::move(ctx),true)) return false;
+        prose_ << "These cases establish " << *goal << ".\n";
+        return true;
+    }
+
     const Node* evidenceType(const Node& value, const Context& ctx) const {
         if (value.is("p")) return &value.at(1);
         if (value.is("v")) {
@@ -1072,6 +1452,21 @@ private:
         return nullptr;
     }
 
+    // Proof terms have no mathematical value notation. An equality between
+    // them can still be stated when both inhabitants prove the same proposition.
+    std::optional<std::string> proofIdentity(const Node& expr, const Context& ctx) const {
+        const bool heterogeneous=record_equality::call(expr,"HEq",4);
+        if (!heterogeneous && !record_equality::call(expr,"Eq",3)) return {};
+        if (heterogeneous && !sameKernelTerm(expr.at(2),expr.at(4))) return {};
+        const auto* left=evidenceType(expr.at(3),ctx);
+        const auto* right=evidenceType(argument(expr,0),ctx);
+        if (!left || !right || !sameKernelTerm(*left,expr.at(2)) || !sameKernelTerm(*right,expr.at(2)))
+            return {};
+        const auto common=formula(expr.at(2),ctx);
+        if (!common) return {};
+        return "the two proofs of " + *common + " agree";
+    }
+
     bool conjunct(const Node& projection, const Context& ctx, std::string& result) {
         const auto& whole = projection.at(3);
         const auto* type = evidenceType(whole,ctx);
@@ -1085,9 +1480,60 @@ private:
         return true;
     }
 
+    // A conjunct may itself state a universally quantified implication.
+    // Lean projections have no argument-slot metadata. Obtain each premise
+    // from its actual binder, specializing dependent premises in order.
+    bool applyConjunct(const Node& raw, const Node* expected, const Context& ctx) {
+        const auto& projection=raw.at(1);
+        const auto* signature=evidenceType(projection,ctx);
+        if (!signature) return fail("unavailable conjunct type");
+        const auto conclusion=instantiate(*signature,raw,true);
+        if (!conclusion || (expected && !sameKernelTerm(*conclusion,*expected) &&
+            !sameKernelTerm(*expected,*conclusion,ctx.statementToProofBinders)))
+            return fail("unrecognized conclusion of a conjunct");
+        const auto goal=formula(*conclusion,ctx);
+        if (!goal) return fail("unrendered conclusion of a conjunct");
+        std::string fact;
+        if (!conjunct(projection,ctx,fact)) return false;
+        const Node* binder=signature;
+        std::vector<std::string> objects;
+        for (std::size_t i=2;i<raw.children.size();++i) {
+            if (!binder->is("q")) return fail("extra argument to a conjunct");
+            const auto& item=raw.at(i);
+            if (attribute(*binder,6)=="proof") {
+                const auto domain=instantiate(*signature,raw,true,i);
+                if (!domain) return fail("unavailable premise of a conjunct");
+                const auto* actual=evidenceType(item,ctx);
+                if (actual && !sameKernelTerm(*actual,*domain)) return fail("mismatched premise of a conjunct");
+                if (!derive(item,&*domain,ctx,true)) return false;
+            } else {
+                const auto object=formula(item,ctx);
+                if (!object || !witnessObligations(item,ctx)) return false;
+                objects.push_back(*object);
+            }
+            binder=&binder->at(4);
+        }
+        prose_ << "Applying this conjunct";
+        for (std::size_t i=0;i<objects.size();++i) prose_ << (i==0 ? " to " : ", ") << objects[i];
+        prose_ << " gives " << *goal << ".\n";
+        return true;
+    }
+
+    static bool appliedConjunct(const Node& raw) {
+        if (!raw.is("a") || raw.children.size()<3) return false;
+        const auto& fn=raw.at(1);
+        return fn.is("proj") && fn.at(1).atom=="And" && attribute(fn,4)=="proof";
+    }
+
     bool rewriteEvidence(const Node& expr, const Context& ctx, RewriteReasons& evidence) {
         auto& reasons = evidence.sources;
         const auto& raw = term(expr);
+        if (raw.is("a") && raw.at(1).is("v") && raw.at(1).at(1).atom==ctx.wellFoundedHypothesis) {
+            std::string fact;
+            if (!recursiveInstance(raw,ctx,fact)) return false;
+            reasons.push_back(fact);
+            return true;
+        }
         if (raw.is("proj") && attribute(raw,4) == "proof") {
             std::string reason;
             if (const auto measure = naturalMeasure(raw,ctx))
@@ -1133,7 +1579,9 @@ private:
                 reasons.push_back(*arithmetic);
             return true;
         }
-        if (raw.is("l") || raw.is("t") || name == "Exists.intro" || name == "Nonempty.intro" || name == "And.intro" ||
+        if (raw.is("l") || raw.is("t") || appliedConjunct(raw) || name == "letFun" || name == "WellFounded.fix" ||
+            nat_below::certified(raw,matchers_) || tree_below::certificate(raw,matchers_) ||
+            name == "Exists.intro" || name == "Nonempty.intro" || name == "And.intro" ||
             name == "Or.inl" || name == "Or.inr" || name == "Iff.intro") {
             prose_ << "The substitution uses the following argument.\n\\begin{proofstep}\n";
             if (!derive(expr,nullptr,ctx,true)) return false;
@@ -1166,6 +1614,23 @@ private:
                 if (!source) return fail("unavailable rewriting premise " +
                     (name.empty() ? "[" + raw.at(0).atom + "]" : name));
                 reason = *source;
+                const bool productEndpoint = name=="Finset.prod_range_succ";
+                if ((productEndpoint || name=="Finset.sum_range_succ") && raw.children.size()==6 && expr.is("p")) {
+                    const auto& equation = term(expr.at(1));
+                    const auto& index = raw.at(5);
+                    const auto endpoint = applyMotive(term(raw.at(4)),index);
+                    if (endpoint && head(equation)=="Eq" && equation.children.size()==5) {
+                        const auto& rhs = argument(equation,0);
+                        if (head(rhs)==(productEndpoint ? "HMul.hMul" : "HAdd.hAdd") &&
+                            rhs.children.size()==8 && sameKernelTerm(*endpoint,argument(rhs,0))) {
+                            const auto at = formula(index,ctx);
+                            const auto value = formula(*endpoint,ctx);
+                            if (at && value)
+                                reason += std::string(" (the final ") + (productEndpoint ? "factor" : "summand") +
+                                          " at index " + *at + " is " + *value + ")";
+                        }
+                    }
+                }
                 // A direct hypothesis licenses this lemma application. Keep
                 // the condition with its citation when grouping several rewrites.
                 std::vector<std::string> conditions;
@@ -1248,6 +1713,99 @@ private:
         return false;
     }
 
+    static void finishRewrite(std::ostream& out, RewriteReasons& evidence,
+                              const std::string& conclusion, bool preceding) {
+        auto& reasons = evidence.sources;
+        const auto group = [&](std::size_t count, const char* singular, const char* plural) {
+            if (count == 1) reasons.push_back(std::string("the ") + singular + " established above");
+            if (count > 1) reasons.push_back("the " + (count == 2 ? "two" : std::to_string(count)) +
+                                             " " + plural + " established above");
+        };
+        group(evidence.identities, "identity", "identities");
+        group(evidence.arguments, "auxiliary result", "auxiliary results");
+        out << (reasons.empty() ? "Simplifying by definition" : "Rewriting with ");
+        for (std::size_t i=0; i<reasons.size(); ++i) {
+            if (i) out << (i+1 == reasons.size() ? " and " : ", ");
+            out << reasons[i];
+        }
+        out << (preceding ? " in the preceding result gives " : " gives ") << conclusion << ".\n";
+    }
+
+    // Equivalence of two equations alone does not authorize rewriting their
+    // operands. Require congruence in a context with a fixed right-hand side.
+    static bool leftCongruence(const Node& cert, const Node& before, const Node& after) {
+        const Node* proof = &term(cert);
+        const Node* equality = cert.is("p") ? &term(cert.at(1)) : nullptr;
+        if (head(*proof)=="id" && proof->children.size()==4) {
+            equality=&term(proof->at(2));
+            proof=&term(proof->at(3));
+        }
+        // The adapter exports the checked type at the use site. This retains
+        // Lean's conversion of operation instances between the motive and goal.
+        if (!equality || head(*equality)!="Eq" || equality->children.size()!=5 ||
+            !sameKernelTerm(equality->at(3),before) || !sameKernelTerm(equality->at(4),after)) return false;
+        if (head(*proof)!="congrArg" || proof->children.size()!=8) return false;
+        const auto& motive = term(proof->at(6));
+        return motive.is("l") && head(motive.at(4))=="Eq" && term(motive.at(4)).children.size()==5 &&
+               sameKernelTerm(argument(motive.at(4),0),argument(before,0));
+    }
+
+    // A sequence of rewrites on the left of an equality is a calculation.
+    // Check the unchanged target and the closing reflexivity before printing
+    // the intermediate expressions in the order a reader would calculate them.
+    std::optional<bool> leftCalculation(const Node& proof, const Node& expected, const Context& ctx) {
+        if (earlier_.empty() || head(expected)!="Eq" || term(expected).children.size()!=5) return {};
+        const Node* current = &proof;
+        const Node* equation = &expected;
+        std::vector<std::pair<const Node*,std::string>> steps;
+        bool citesEarlier = false;
+        for (;;) {
+            const auto& app = term(*current);
+            const auto rule = head(app);
+            if ((rule!="Eq.mpr" && rule!="Eq.mp") || app.children.size()!=6) break;
+            const auto& from = app.at(rule=="Eq.mpr" ? 2 : 3);
+            const auto& to = app.at(rule=="Eq.mpr" ? 3 : 2);
+            const bool sameSource = sameKernelTerm(*equation,from) ||
+                (steps.empty() && sameKernelTerm(*equation,from,ctx.statementToProofBinders));
+            if (!sameSource || head(to)!="Eq" || term(to).children.size()!=5 ||
+                !sameKernelTerm(term(from).at(2),term(to).at(2)) ||
+                !sameKernelTerm(argument(from,0),argument(to,0)) ||
+                !leftCongruence(app.at(4),app.at(2),app.at(3))) return {};
+            auto a = checkedFormula(argument(from,1),ctx.names);
+            auto b = checkedFormula(argument(to,1),ctx.names);
+            if (!a || !b || *a==*b) return {};
+            // Replace only the right operand when printing a step. The checked
+            // equality printer supplies the necessary relation precedence.
+            auto step = term(from);
+            step.children[4] = argument(to,1);
+            const auto display = formula(step,ctx);
+            if (!display) return {};
+            steps.emplace_back(&app.at(4),*display);
+            if (!citesEarlier) {
+                const auto local = [&](auto&& self,const Node& n) -> bool {
+                    if (n.is("c")) return earlier_.count(n.at(1).atom)!=0;
+                    return std::any_of(n.children.begin(),n.children.end(),[&](const Node& child) {
+                        return child.array && self(self,child);
+                    });
+                };
+                citesEarlier = local(local,app.at(4));
+            }
+            equation = &to;
+            current = &app.at(5);
+        }
+        const auto& base = term(*current);
+        if (!citesEarlier || steps.size()<2 || (head(base)!="Eq.refl" && head(base)!="rfl") ||
+            base.children.size()!=4 || !sameKernelTerm(base.at(2),term(*equation).at(2)) ||
+            !sameKernelTerm(base.at(3),argument(*equation,0)) ||
+            !sameKernelTerm(argument(*equation,0),argument(*equation,1))) return {};
+        for (const auto& [certificate,identity] : steps) {
+            RewriteReasons evidence;
+            if (!rewriteEvidence(*certificate,ctx,evidence)) return false;
+            finishRewrite(prose_,evidence,identity,false);
+        }
+        return true;
+    }
+
     bool simplify(const Node& cert, const Node* original, const Node* originalType,
                   const std::string& goal, Context ctx, bool sameProposition = false) {
         auto oldUsed = used;
@@ -1282,22 +1840,19 @@ private:
             used = std::move(oldUsed);
             return derive(*original,originalType,ctx,true);
         }
-        if (preceding && !derive(*original, originalType, ctx, true)) return false;
-        if (preceding && originalType && showDenominatorStep(cert,*originalType,ctx,goal,&evidence)) return true;
-        auto& reasons = evidence.sources;
-        auto group = [&](std::size_t count, const std::string& singular, const std::string& plural) {
-            if (count == 1) reasons.push_back("the " + singular + " established above");
-            if (count > 1) reasons.push_back("the " + (count == 2 ? "two" : std::to_string(count)) +
-                                             " " + plural + " established above");
-        };
-        group(evidence.identities, "identity", "identities");
-        group(evidence.arguments, "auxiliary result", "auxiliary results");
-        prose_ << (reasons.empty() ? "Simplifying by definition" : "Rewriting with ");
-        for (std::size_t i=0; i<reasons.size(); ++i) {
-            if (i) prose_ << (i+1 == reasons.size() ? " and " : ", ");
-            prose_ << reasons[i];
+        bool justPrintedEquation = false;
+        if (preceding) {
+            const auto beforeOriginal = prose_.tellp();
+            if (!derive(*original,originalType,ctx,true)) return false;
+            if (originalType && head(*originalType)=="Eq") {
+                const auto originalFormula = formula(*originalType,ctx);
+                if (originalFormula && withoutLayout(*originalFormula)==withoutLayout(goal)) {
+                    justPrintedEquation = endsWithFormula(prose_.str().substr(static_cast<std::size_t>(beforeOriginal)),goal);
+                }
+            }
         }
-        prose_ << (preceding ? " in the preceding result gives " : " gives ") << goal << ".\n";
+        if (preceding && originalType && showDenominatorStep(cert,*originalType,ctx,goal,&evidence)) return true;
+        finishRewrite(prose_,evidence,justPrintedEquation ? "the same displayed equality" : goal,preceding);
         return true;
     }
 
@@ -1324,16 +1879,14 @@ private:
     // The ordinary and strong principles order the index and the two
     // branches differently. In both step lambdas the second binder is the
     // induction hypothesis, independently of the name supplied by the author.
-    bool naturalInduction(const Node& raw, const Context& ctx, const std::string& goal, bool strong) {
-        const auto subject = formula(raw.at(strong ? 3 : 5),ctx);
+    bool naturalInduction(const Node& index, const Node& motive, const Node& base,
+                          const Node& successor, const Context& ctx, const std::string& goal, bool strong) {
+        const auto subject = formula(index,ctx);
         if (!subject) return fail("unrendered induction variable");
-        const auto& base = raw.at(strong ? 4 : 3);
-        const auto& successor = raw.at(strong ? 5 : 4);
         const auto& hypothesis = term(term(successor).at(4));
         const std::string method = strong ? "strong induction" : "induction";
         prose_ << "Proceed by " << method << " on " << *subject
                << ".\n\\emph{Base case.}\n\\begin{proofstep}\n";
-        const auto& motive = term(raw.at(2));
         const auto& evidence = term(base);
         std::optional<std::string> baseGoal;
         if (motive.is("l") && head(evidence) == "Eq.refl" && evidence.children.size() == 4) {
@@ -1363,10 +1916,12 @@ private:
         bindCheckedAddition(ctx.names,binder,variable);
         if (type && type->is("q")) {
             ctx.names[type->at(1).atom] = variable;
+            ctx.statementToProofBinders[type->at(1).atom] = id;
             bindCheckedAddition(ctx.names,*type,variable);
         }
         if (role == "proof") {
-            const auto hypothesis = formula(binder.at(3), ctx);
+            auto hypothesis = formula(binder.at(3), ctx);
+            if (!hypothesis) hypothesis=proofIdentity(binder.at(3),ctx);
             if (!hypothesis) return false;
             ctx.assumptions[id] = *hypothesis;
             ctx.hypothesisTypes[id] = &binder.at(3);
@@ -1392,9 +1947,62 @@ private:
         return false;
     }
 
+    std::optional<bool> subtractNaturalSummand(const Node& expr, const Node& expected, const Context& ctx,
+                                               const std::string& goal) {
+        const auto& raw = term(expr);
+        const auto name = head(raw);
+        const bool forward = name=="eq_tsub_of_add_eq";
+        if (!forward && name!="tsub_eq_of_eq_add" && name!="tsub_eq_of_eq_add_rev") return {};
+        if (!raw.is("a") || raw.children.size()!=12 || !library_.count(name) || selected_.count(name)) return {};
+        const char* standard[] = {"Nat","Nat.instPartialOrder","Nat.instAddCommSemigroup","instSubNat"};
+        for (std::size_t i=0; i<4; ++i)
+            if (!raw.at(i+2).is("c") || head(raw.at(i+2))!=standard[i]) return {};
+        std::vector<const Node*> arguments;
+        if (!proofArguments(raw,arguments) || arguments!=std::vector<const Node*>{&raw.at(6),&raw.at(10),&raw.at(11)} ||
+            !naturalOrderInstance(raw.at(6)) || !naturalOrderInstance(raw.at(10))) return {};
+
+        const auto& result = expr.is("p") ? expr.at(1) : expected;
+        if (&result!=&expected && !sameKernelTerm(expected,result) &&
+            !sameKernelTerm(expected,result,ctx.statementToProofBinders)) return {};
+        const auto* premise = evidenceType(raw.at(11),ctx);
+        if (!premise || !denominator::call(*premise,"Eq",3) || !denominator::call(result,"Eq",3) ||
+            head(premise->at(2))!="Nat" || head(result.at(2))!="Nat") return {};
+        const auto& sum = premise->at(forward ? 3 : 4);
+        const auto& total = premise->at(forward ? 4 : 3);
+        const auto& difference = result.at(forward ? 4 : 3);
+        const auto& remainder = result.at(forward ? 3 : 4);
+        if (!denominator::call(sum,"HAdd.hAdd",6) || !denominator::call(difference,"HSub.hSub",6) ||
+            !denominator::hierarchy(difference.at(5),"Nat",{"instHSub"},"instSubNat")) return {};
+        if (!denominator::hierarchy(sum.at(5),"Nat",{"instHAdd"},"instAddNat") &&
+            !denominator::hierarchy(sum.at(5),"Nat",{"instHAdd","AddCommMagma.toAdd","AddCommSemigroup.toAddCommMagma"},
+                                    "Nat.instAddCommSemigroup")) return {};
+        const auto& removed = difference.at(7);
+        const bool left = name=="tsub_eq_of_eq_add_rev";
+        if (!sameKernelTerm(total,difference.at(6)) || !sameKernelTerm(sum.at(left ? 6 : 7),removed) ||
+            !sameKernelTerm(sum.at(left ? 7 : 6),remainder) || !sameKernelTerm(total,raw.at(forward ? 8 : 7)) ||
+            !sameKernelTerm(removed,raw.at(forward ? 9 : 8)) || !sameKernelTerm(remainder,raw.at(forward ? 7 : 9))) return {};
+        const auto amount = formula(removed,ctx);
+        const auto source = citation(name);
+        if (!amount || !source) return {};
+
+        // Validate the same two instance proofs as the detailed edition.
+        // Their internal citations belong only to that detailed rendering.
+        std::ostringstream details;
+        details.swap(prose_);
+        std::set<std::string> earlierUses;
+        earlierUses.swap(used);
+        const bool checked = derive(raw.at(6),nullptr,ctx,true) && derive(raw.at(10),nullptr,ctx,true);
+        earlierUses.swap(used);
+        details.swap(prose_);
+        if (!checked || !derive(raw.at(11),premise,ctx,true)) return false;
+        prose_ << "Subtracting " << *amount << " from both sides gives " << goal << " by " << *source << ".\n";
+        return true;
+    }
+
     bool deriveStep(const Node& expr, const Node* expected, Context ctx, bool narrateBinders) {
         const auto& raw = term(expr);
         if (!expected && expr.is("p")) expected = &expr.at(1);
+        if (appliedConjunct(raw)) return applyConjunct(raw,expected,ctx);
         if (raw.is("proj") && attribute(raw,4) == "proof") {
             if (const auto measure = naturalMeasure(raw,ctx)) {
                 prose_ << "A descending chain would make the natural-number measure " << *measure
@@ -1410,7 +2018,8 @@ private:
         }
         if (auto reduced = betaContract(raw))
             return derive(*reduced, expected, std::move(ctx), narrateBinders);
-        if (head(raw) == "letFun" && raw.is("a") && raw.children.size() >= 4) {
+        if (head(raw) == "letFun" && raw.is("a")) {
+            if (raw.children.size() != 6) return fail("unrecognized application of a local binding");
             const auto& continuation = term(argument(raw,0));
             if (!continuation.is("l")) return fail("unrecognized local binding");
             Node binding;
@@ -1422,7 +2031,10 @@ private:
             return derive(binding, expected, std::move(ctx), narrateBinders);
         }
         if (raw.is("l")) {
-            if (!introduce(raw, expected, ctx, narrateBinders)) return false;
+            // A proof of a defined predicate can introduce a fresh argument
+            // after all the binders printed in the statement are exhausted.
+            const bool newArgument = !expected || !expected->is("q");
+            if (!introduce(raw, expected, ctx, narrateBinders || newArgument)) return false;
             if (attribute(raw,6)=="proof")
                 introduceChosenWitness(raw.at(4),raw.at(3),raw.at(1).atom,ctx,prose_);
             const auto* rest = expected && expected->is("q") ? &expected->at(4) : nullptr;
@@ -1468,19 +2080,62 @@ private:
         if (!raw.is("a") && !raw.is("c")) return false;
         const auto& fn = raw.is("a") ? raw.at(1) : raw;
         const auto name = head(raw);
+        if (raw.is("a") && fn.is("v") && fn.at(1).atom==ctx.wellFoundedHypothesis) {
+            std::string fact;
+            return recursiveInstance(raw,ctx,fact);
+        }
         if (name == "Nonempty.intro" && (!raw.is("a") || raw.children.size() != 4))
             return fail("missing nonemptiness witness");
+        if (nat_below::certified(raw,matchers_) && expected) {
+            auto same = [&](const Node& a,const Node& b) {
+                return sameKernelTerm(a,b) || sameKernelTerm(b,a,ctx.statementToProofBinders);
+            };
+            auto apply = [&](const Node& motive,const Node& value) {
+                Node app;
+                app.array = true;
+                app.children = {raw.at(0),motive,value};
+                return instantiate(motive,app);
+            };
+            auto checkProof = [&](const Node& proof) {
+                const auto& use=term(proof);
+                const auto signature=signatures_.find(head(use));
+                if (signature==signatures_.end()) return true; // The ordinary derivation checks local proofs.
+                const auto actual=instantiate(*signature->second,use,true);
+                return actual && same(*actual,proof.at(1));
+            };
+            const auto branches=nat_below::branches(raw,*expected,same,apply,checkProof);
+            const auto goal=formula(*expected,ctx);
+            if (!branches || !goal) return fail("unsupported course-of-values induction branch");
+            return naturalInduction(raw.at(3),raw.at(2),*branches->base,branches->successor,ctx,*goal,false);
+        }
+        if (const auto* cases=tree_below::certificate(raw,matchers_); cases && expected)
+            return treeInduction(raw,*cases,expr.is("p") ? expr.at(1) : *expected,std::move(ctx));
         if (name == "Lean.opaqueId" && raw.is("a") && raw.children.size() == 4 &&
             attribute(fn,2) == "proof")
             return derive(raw.at(3),&raw.at(2),std::move(ctx),narrateBinders);
         if (expected) {
             if (auto branch = directMatcherBranch(raw,*expected))
                 return derive(*branch,expected,std::move(ctx),narrateBinders);
+            if (expr.is("p") && matchers_.count(name) &&
+                (sameKernelTerm(*expected,expr.at(1)) ||
+                 sameKernelTerm(*expected,expr.at(1),ctx.statementToProofBinders)) &&
+                recordEquality(expr,expr.at(1),ctx)) return true;
         }
         if (helpers_.count(name)) return useHelper(name,raw,[&](const Node& proof) {
             return derive(proof,expected,ctx,narrateBinders);
         });
         std::optional<Node> inferredType;
+        if (!expected && name=="WellFounded.fix" && (raw.children.size()==7 || raw.children.size()==8)) {
+            const auto& motive=term(raw.at(3));
+            if (motive.is("l")) {
+                if (raw.children.size()==8) inferredType=applyMotive(motive,raw.at(7));
+                else {
+                    inferredType=motive;
+                    inferredType->children[0].atom="q";
+                }
+                if (inferredType) expected=&*inferredType;
+            }
+        }
         if (!expected && (name == "Eq.mp" || name == "Eq.mpr") && raw.children.size() == 6)
             expected = &raw.at(name == "Eq.mp" ? 3 : 2);
         if (!expected && (name == "False.elim" || name == "id") && raw.children.size() == 4)
@@ -1505,6 +2160,7 @@ private:
             if (inferredType) expected = &*inferredType;
         }
         auto goal = expected ? formula(*expected,ctx) : std::nullopt;
+        if (!goal && expected) goal=proofIdentity(*expected,ctx);
         if (!goal && (name == "HEq.refl" || name == "HEq.rfl") && raw.children.size() == 4) {
             std::vector<const Node*> premises;
             if (!proofArguments(raw,premises)) return false;
@@ -1516,6 +2172,18 @@ private:
                 goal = *val + " heterogeneously equal to itself";
         }
         if (!goal) return fail("unrendered conclusion of " + name);
+        if (compact_ && name=="id" && raw.children.size()==4) {
+            std::vector<const Node*> arguments;
+            if (proofArguments(raw,arguments) && arguments.size()==1 && arguments.front()==&raw.at(3)) {
+                const auto start = prose_.tellp();
+                if (!derive(raw.at(3),&raw.at(2),ctx,true)) return false;
+                if (!endsWithFormula(prose_.str().substr(static_cast<std::size_t>(start)),*goal))
+                    prose_ << "By the preceding argument, we obtain " << *goal << ".\n";
+                return true;
+            }
+        }
+        if (compact_ && expected)
+            if (auto subtracted=subtractNaturalSummand(expr,*expected,ctx,*goal)) return *subtracted;
         if (compact_ && citeReversedEquality(raw,ctx,*goal)) return true;
         if (auto map=cardinalityBijection(raw,ctx); map && !earlier_.count(name)) {
             if (auto source=citation(name)) {
@@ -1548,17 +2216,52 @@ private:
         const bool transport = (name == "Eq.mp" || name == "Eq.mpr") && raw.children.size() == 6;
         const auto* originalType = transport ? &raw.at(name == "Eq.mp" ? 2 : 3) : nullptr;
         if (compact_ && transport) {
+            if (expected)
+                if (auto calculation=leftCalculation(raw,*expected,ctx)) return *calculation;
             const auto displayed = sameKernelTerm(raw.at(2),raw.at(3)) ? formula(*originalType,ctx) : std::nullopt;
             const bool unchanged = displayed && withoutLayout(*displayed)==withoutLayout(*goal);
             return simplify(argument(raw,1), &argument(raw,0), originalType, *goal, ctx, unchanged);
         }
         std::string reason;
         bool branches = false;
-        if (name == "WellFounded.fix" && raw.children.size() == 8) {
+        if (name == "WellFounded.fix" && (raw.children.size() == 8 || raw.children.size() == 7)) {
             // Its step is ∀ x, (∀ y, R y x → C y) → C x.
             const auto& step = term(raw.at(6));
             if (!step.is("l") || !term(step.at(4)).is("l") || attribute(term(step.at(4)),6) != "proof")
                 return fail("unrecognized well-founded induction step");
+            if (raw.children.size()==7) {
+                const auto& motive=term(raw.at(3));
+                const auto& recur=term(step.at(4));
+                const auto& smaller=recur.at(3);
+                const Node* pointwise=expr.is("p") ? &expr.at(1) : expected;
+                const auto goalAt=[&](const Node& binder,const Node& claim) {
+                    if (motive.is("l"))
+                        return sameKernelTerm(motive.at(3),raw.at(2)) &&
+                               sameKernelTerm(motive.at(4),claim,{{motive.at(1).atom,binder.at(1).atom}});
+                    return (motive.is("v") || motive.is("c")) && claim.is("a") && claim.children.size()==3 &&
+                           sameKernelTerm(claim.at(1),motive) && claim.at(2).is("v") &&
+                           claim.at(2).at(1).atom==binder.at(1).atom;
+                };
+                if (!pointwise || !pointwise->is("q") || (expected!=pointwise && expected &&
+                    !sameKernelTerm(*expected,*pointwise,ctx.statementToProofBinders)) ||
+                    !sameKernelTerm(pointwise->at(3),raw.at(2)) ||
+                    !sameKernelTerm(step.at(3),raw.at(2)) || !smaller.is("q") || !smaller.at(4).is("q") ||
+                    !sameKernelTerm(smaller.at(3),raw.at(2)) || !goalAt(*pointwise,pointwise->at(4)))
+                    return fail("unverified pointwise conclusion of well-founded recursion");
+                const auto& decrease=smaller.at(4).at(3);
+                if (!decrease.is("a") || decrease.children.size()!=4 || !sameKernelTerm(decrease.at(1),raw.at(4)) ||
+                    !decrease.at(2).is("v") || decrease.at(2).at(1).atom!=smaller.at(1).atom ||
+                    !decrease.at(3).is("v") || decrease.at(3).at(1).atom!=step.at(1).atom ||
+                    !goalAt(smaller,smaller.at(4).at(4)) || !recur.at(4).is("p") ||
+                    !goalAt(step,recur.at(4).at(1)))
+                    return fail("unverified smaller-case hypothesis of well-founded recursion");
+                const auto* wellFounded=evidenceType(raw.at(5),ctx);
+                if (!wellFounded || !record_equality::call(*wellFounded,"WellFounded",2) ||
+                    !sameKernelTerm(wellFounded->at(2),raw.at(2)) || !sameKernelTerm(wellFounded->at(3),raw.at(4)))
+                    return fail("missing well-foundedness of the recursion relation");
+                ctx.wellFoundedHypothesis=recur.at(1).atom;
+                ctx.inductionHypothesis=ctx.wellFoundedHypothesis;
+            }
             if (!derive(raw.at(5),nullptr,ctx,true)) return false;
             prose_ << "Proceed by well-founded induction. For an arbitrary element we may assume "
                    << "the claim for each strictly smaller element.\n\\begin{proofstep}\n";
@@ -1600,8 +2303,8 @@ private:
         } else if (const auto eq=definitions_.find(name); eq!=definitions_.end()) {
             reason = "By " + eq->second.reference;
         } else if (library_.count(name) && !selected_.count(name)) {
-            if (!describeCheckedStatement(*library_.at(name))) return fail("unrendered prerequisite " + name);
-            reason = "By Prerequisite~P\\ref{" + prerequisiteLabel(name) + "}" + specialization(name,raw,ctx);
+            if (!describeCheckedStatement(library_.at(name)->at(1))) return fail("unrendered prerequisite " + name);
+            reason = "By " + prerequisiteReference(*library_.at(name)) + specialization(name,raw,ctx);
             used.insert(name);
         } else if (fn.is("v") && ctx.assumptions.count(fn.at(1).atom)) {
             reason = fn.at(1).atom == ctx.inductionHypothesis ? "Applying the induction hypothesis" :
@@ -1613,7 +2316,9 @@ private:
             if (earlier == earlier_.end() && raw.children.size() == 6 && (strongNat || name == "Nat.recAux")) {
                 const auto& step = term(raw.at(strongNat ? 5 : 4));
                 if (step.is("l") && term(step.at(4)).is("l") && attribute(term(step.at(4)),6) == "proof")
-                    return naturalInduction(raw,ctx,*goal,strongNat);
+                    return naturalInduction(raw.at(strongNat ? 3 : 5),term(raw.at(2)),
+                                            raw.at(strongNat ? 4 : 3),raw.at(strongNat ? 5 : 4),
+                                            ctx,*goal,strongNat);
             }
             if (name == "Finset.strongDownwardInductionOn" && raw.children.size() >= 8) {
                 const auto set = formula(raw.at(5),ctx);
@@ -1662,9 +2367,15 @@ private:
                 if (!condition) return false;
                 prose_ << "Distinguish whether " << *condition << " holds.\n";
             }
+            const bool twoBounds = name=="le_antisymm" && library_.count(name) && raw.children.size()==8 &&
+                premises==std::vector<const Node*>{&raw.at(6),&raw.at(7)} &&
+                !term(raw.at(6)).is("v") && !term(raw.at(7)).is("v");
             for (const auto* premise : premises) {
                 const auto& child = *premise;
                 const auto& value = term(child);
+                if (twoBounds)
+                    prose_ << "\\par\\smallskip\\noindent\\emph{" << (premise==premises.front() ? "Upper" : "Lower")
+                           << " bound.}\\enspace\n";
                 if (earlier != earlier_.end() && value.is("v") &&
                     ctx.assumptions.count(value.at(1).atom)) continue;
                 const bool subproof = term(child).is("l");
@@ -1684,6 +2395,7 @@ private:
                 } else if (!derive(child, required, ctx, true)) return false;
                 if (subproof || natCase) prose_ << "\\end{proofstep}\n";
             }
+            if (twoBounds) prose_ << "\\par\\smallskip\\noindent ";
         }
         if (!compact_ && transport && originalType)
             showDenominatorStep(argument(raw,1),*originalType,ctx,*goal,nullptr);

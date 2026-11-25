@@ -60,7 +60,7 @@ def verify_alternate(workspace, env, lake, compiler):
     for stem, selection, exit_code in variants:
         run(workspace, env, lake, "env", "lean", "--run", "Adapter.lean", f"{stem}.json",
             "proofs.Development,proofs.Automation", selection)
-        run(workspace, env, compiler, f"{stem}.json", f"{stem}.tex", expected=exit_code)
+        run(workspace, env, compiler, f"{stem}.json", f"{stem}.tex", "--outline", expected=exit_code)
         text = (workspace / f"{stem}.tex").read_text(encoding="utf-8")
         check((PENDING in text) == (stem == "original"), f"Unexpected completion for {stem}")
         check(("A separately checked proof" in text) == (stem == "alternate"),

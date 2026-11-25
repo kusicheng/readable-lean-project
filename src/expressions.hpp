@@ -29,6 +29,7 @@ std::string head(const Node& node);
 const Node& argument(const Node& node, std::size_t fromEnd);
 bool proofArguments(const Node& application, std::vector<const Node*>& proofs);
 std::string withSuperscript(std::string base, const std::string& exponent);
+std::string functionSymbol(const std::string& label);
 
 enum class Kind { unsupported, nat, var, numeral, function, add, mul, power, equal,
                   le, lt, divides, exists, conjunction, iff };

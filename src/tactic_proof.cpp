@@ -1,4 +1,5 @@
 #include "tactic_proof.hpp"
+#include "paper_links.hpp"
 #include "arithmetic_proof.hpp"
 #include "chapter.hpp"
 
@@ -290,7 +291,7 @@ private:
             item.reference = prior->second;
         else if (library_.count(name) && !selected_.count(name) &&
                  describeCheckedStatement(*library_.at(name))) {
-            item.reference = "Prerequisite~P\\ref{" + prerequisiteLabel(name) + "}";
+            item.reference = numberedReference("Prerequisite~P",prerequisiteLabel(name));
             item.external.insert(name);
         } else return std::nullopt;
         return item;

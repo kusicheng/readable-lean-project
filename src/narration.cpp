@@ -1,4 +1,5 @@
 #include "narration.hpp"
+#include "paper_links.hpp"
 #include "general_proof.hpp"
 #include "tactic_proof.hpp"
 #include "proof_cost.hpp"
@@ -156,6 +157,7 @@ std::string prerequisiteTitle(const std::string& name) {
         {"Finset.cast_card", "Cardinality as a sum of ones"},
         {"Finset.mem_univ", "Membership in the full set"},
         {"Finset.card_eq_sum_ones", "Cardinality as a sum of ones"},
+        {"Finset.card_univ", "Counting all elements of a finite type"},
         {"Finset.prod_comm", "Interchanging two finite products"},
         {"Finset.sum_comm", "Interchanging two finite sums"},
         {"Finset.prod_congr", "Equality of products with equal factors"},
@@ -235,7 +237,7 @@ bool matchPremises(const std::vector<Parameter>& parameters, std::size_t at, con
 
 std::string theoremReference(std::size_t ordinal, const std::string& role) {
     const auto label = role == "lemma" ? "Lemma" : role == "corollary" ? "Corollary" : "Theorem";
-    return std::string(label) + "~\\ref{theorem:" + std::to_string(ordinal) + "}";
+    return numberedReference(std::string(label) + "~","theorem:" + std::to_string(ordinal));
 }
 
 // Reserve a line of its own for a substantial formula at the end of a
@@ -593,11 +595,11 @@ private:
                     if (parameter.type.kind == Kind::nat)
                         arguments.emplace(parameter.id, math(raw.at(i + 2)));
                 }
-                return cite(claim, scope, conclusion, "\\emph{" + entry.title + "}", *premises,
+                return cite(claim, scope, conclusion, paperLink(prerequisiteLabel(name),"\\emph{" + entry.title + "}"), *premises,
                             instantiatedConclusion(*entry.type, arguments));
             }
             return cite(claim, scope, conclusion,
-                        "Prerequisite~P" + std::to_string(entry.ordinal), *premises);
+                        numberedReference("Prerequisite~P",prerequisiteLabel(name)), *premises);
         }
         return pending(name.empty() ? "unsupported checked term" : name);
     }
@@ -663,8 +665,8 @@ private:
         };
         for (auto i = start; i < end; ++i) {
             const auto& reason = steps[i].reason;
-            const bool named = reason.rfind("Lemma~",0) == 0 || reason.rfind("Theorem~",0) == 0 ||
-                reason.rfind("Corollary~",0) == 0 || reason.rfind("\\emph{",0) == 0;
+            const bool named = reason.rfind("\\paperlink{theorem:",0) == 0 ||
+                (reason.rfind("\\paperlink{premise:",0) == 0 && reason.find("}{\\emph{") != std::string::npos);
             if (named) {
                 if (reason.find(" using ") != std::string::npos) {
                     flush();
@@ -736,10 +738,11 @@ private:
             if (documentTheorems_.count(name) || found == prerequisites_.end() ||
                 !found->second.publicName || !found->second.signature.supported()) return {};
             signature = &found->second.signature;
-            reason = compact_ ? "\\emph{" + found->second.title + "}" :
-                "Prerequisite~P\\ref{" + prerequisiteLabel(name) + "}";
+            const auto key = prerequisiteLabel(name);
+            reason = compact_ ? paperLink(key,"\\emph{" + found->second.title + "}") :
+                numberedReference("Prerequisite~P",key);
             if (compact_ && (name == "Nat.add_le_add_left" || name == "Nat.add_le_add_right"))
-                reason = "monotonicity of addition";
+                reason = paperLink(key,"monotonicity of addition");
             evidence.rules.push_back(&found->second);
         }
         const auto arguments = raw.is("a") ? raw.children.size() - 2 : 0;
@@ -1187,6 +1190,10 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
         const auto& name = record.at(0).atom;
         auto title = prerequisiteTitle(name);
         if (paper && title == "Natural-number lemma") title = escapeLatex(declarationTitle(name));
+        if (paper && record.children.size()>3) {
+            const auto conventional = documentedTitle(record.at(3).atom);
+            if (!conventional.empty()) title = escapeLatex(conventional);
+        }
         if (chapter) {
             const auto override = chapter->prerequisiteTitles.find(name);
             if (override != chapter->prerequisiteTitles.end()) title = escapeLatex(override->second);
@@ -1296,16 +1303,22 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
 
     const std::string proofText = body.str();
     output << "\\documentclass{article}\n"
-           << "\\usepackage{amsmath,amssymb,amsthm}\n"
-           << "\\newtheorem{theorem}{Theorem}\n";
+           << "\\usepackage{amsmath,amssymb,amsthm}\n" << documentLinks;
     if (paper)
-        output << "\\newtheorem{lemma}[theorem]{Lemma}\n\\newtheorem{corollary}[theorem]{Corollary}\n"
-               << "\\newcounter{paperpremise}\n"
+        output << "\\newtheoremstyle{paperresult}{8pt}{5pt}{\\normalfont\\raggedright}{}"
+                  "{\\bfseries}{.}{\\newline}{}\n\\theoremstyle{paperresult}\n";
+    // amsthm defers the heading until it chooses a page. Attach the PDF
+    // destination to the printed name so it moves with that heading.
+    output << "\\newtheorem{theorem}{\\paperresultname{Theorem}}\n\\newcounter{paperpremise}\n";
+    if (paper)
+        output << "\\newtheorem{lemma}[theorem]{\\paperresultname{Lemma}}\n"
+               << "\\newtheorem{corollary}[theorem]{\\paperresultname{Corollary}}\n"
                << "\\newcounter{definingequation}\n"
                << "\\newenvironment{proofstep}{\\par\\smallskip"
                   "\\ifdim\\leftskip<3em\\relax\\advance\\leftskip by 1em\\relax\\fi"
                   "\\noindent\\ignorespaces}{\\par\\smallskip}\n"
                << "\\setlength{\\textwidth}{6.5in}\n\\setlength{\\oddsidemargin}{0in}\n"
+               << "\\AddToHook{env/proof/begin}{\\raggedright}\n"
                << "\\setlength{\\emergencystretch}{\\linewidth}\n"
                << "\\title{" << escapeLatex(chapter->title) << "}\n\\author{}\n\\date{}\n";
     output << "\\begin{document}\n";
@@ -1354,9 +1367,10 @@ Result writeDocument(const Node& input, std::ostream& output, std::ostream& diag
             }
         }
         for (const auto* prerequisite : used) {
-            output << "\\item[P" << prerequisite->ordinal << ".] ";
-            if (paper) output << "\\refstepcounter{paperpremise}\\label{"
-                              << prerequisiteLabel(prerequisite->name) << "}";
+            const auto key = prerequisiteLabel(prerequisite->name);
+            output << "\\item[\\paperlineanchor{" << key << "}"
+                   << paperLink(key,"P" + std::to_string(prerequisite->ordinal) + ".")
+                   << "] \\refstepcounter{paperpremise}\\label{" << key << "}";
             output << "\\textbf{" << prerequisite->title << ".} ";
             if (prerequisite->signature.supported()) output << describe(prerequisite->signature);
             else output << *describeCheckedStatement(*prerequisite->type);

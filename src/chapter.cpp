@@ -1,5 +1,8 @@
 #include "chapter.hpp"
 #include "expressions.hpp"
+#include "incidence_titles.hpp"
+#include "paper_links.hpp"
+#include "statement_titles.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -11,6 +14,10 @@
 #include <stdexcept>
 
 namespace proof {
+using paper_titles::finiteMembership;
+using paper_titles::titleApplication;
+using paper_titles::titleVariable;
+
 namespace {
 
 Node read(const std::filesystem::path& path) {
@@ -95,7 +102,7 @@ bool containsConstant(const Node& expr, const std::string& symbol) {
 
 // A source author can supply a conventional mathematical title in the first
 // sentence of a docstring. Keep the proof text and all statements generated.
-static std::string documentedTitle(const std::string& doc) {
+std::string documentedTitle(const std::string& doc) {
     const auto first = doc.find_first_not_of(" \t\r\n");
     if (first == std::string::npos) return {};
     const auto paragraph = doc.find("\n\n",first);
@@ -145,14 +152,6 @@ static std::string documentedTitle(const std::string& doc) {
     }
     if (title.size()>100) return {};
     return title + direction;
-}
-
-static bool titleApplication(const Node& n, const char* name, std::size_t arity) {
-    return n.is("a") && n.children.size()==arity+2 && head(n)==name;
-}
-
-static bool titleVariable(const Node& n, const std::string& id) {
-    return n.is("v") && n.at(1).atom==id;
 }
 
 // Different formulations may share the same documented theorem name.
@@ -209,10 +208,6 @@ static std::optional<FiberMeasure> fiberMeasure(const Node& quantity, const std:
         if (weight.empty()) return {};
     }
     return FiberMeasure{argument(filter,0),map,weight};
-}
-
-static bool finiteMembership(const Node& n) {
-    return titleApplication(n,"Membership.mem",5) && titleApplication(n.at(4),"Finset.instMembership",1);
 }
 
 static std::string fiberSetting(const Node& statement, const Node& witness, const FiberMeasure& fiber) {
@@ -366,12 +361,18 @@ static std::string hamiltonianTitle(const Node& statement, const Node& claim) {
     return {};
 }
 
-static std::string resultTitle(const Node& record) {
+static std::string resultTitle(const Node& record, bool sourcePaper) {
     const auto& name = record.at(0).atom;
     const auto leaf = name.substr(name.find_last_of('.')+1);
     // The hypotheses are printed in the statement. Names that encode them as
     // repeated "of ..." clauses do not need to reproduce them in the heading.
     const auto summary = leaf.substr(0,leaf.find("_of_"));
+    const auto sourceTitle = [&] {
+        // Source identifiers also name anonymous examples, internal aliases
+        // and arbitrary student labels. The numbered statement stands alone
+        // when its mathematics does not supply a useful optional caption.
+        return sourcePaper ? std::string{} : declarationTitle(summary);
+    };
     if (summary.size()>5 && summary.compare(summary.size()-5,5,"_cond")==0 && summary.size()<leaf.size()) {
         const auto condition = declarationTitle(summary.substr(0,summary.size()-5)) + " condition";
         const auto operation = leaf.substr(summary.size()+4);
@@ -381,7 +382,19 @@ static std::string resultTitle(const Node& record) {
     }
     const Node* conclusion = &record.at(1);
     while (conclusion->is("q")) conclusion = &conclusion->at(4);
+    if (const auto title = paper_titles::parityTitle(record.at(1),*conclusion); !title.empty()) return title;
+    if (titleApplication(*conclusion,"Function.Surjective",3) &&
+        titleApplication(argument(*conclusion,0),"SimpleGraph.Subgraph.IsMatching.toEdge",4))
+        return "Every matching edge is the edge assigned to some vertex";
+    if (titleApplication(*conclusion,"Eq",3)) {
+        if (const auto title = paper_titles::uniquenessTitle(record.at(1),*conclusion); !title.empty()) return title;
+        if (const auto title = paper_titles::sequenceTitle(*conclusion); !title.empty()) return title;
+        if (paper_titles::sameTitleTerm(argument(*conclusion,1),argument(*conclusion,0)))
+            return "Reflexivity of equality";
+    }
     if (const auto title = hamiltonianTitle(record.at(1),*conclusion); !title.empty()) return title;
+    if (const auto bounds = paper_titles::incidenceBounds(record.at(1),*conclusion); !bounds.empty()) return "Double counting" + bounds;
+    if (const auto sparse = paper_titles::sparseFiberTitle(record.at(1),*conclusion); !sparse.empty()) return sparse;
     const auto comparison = head(*conclusion);
     const bool weak = comparison == "LE.le", strict = comparison == "LT.lt", equal = comparison == "Eq";
     if ((weak || strict || equal) && conclusion->is("a") && conclusion->children.size() >= 4) {
@@ -399,8 +412,6 @@ static std::string resultTitle(const Node& record) {
             return "A cardinality bound from a left-total relation";
         if (sizes && weak && leaf.find("rightTotal") != std::string::npos)
             return "A cardinality bound from a right-total relation";
-        if (sizes && weak && leaf.find("subsingleton") != std::string::npos)
-            return "A cardinality bound from fibers of size at most one";
         const bool weighted = left == right && (left == "HSMul.hSMul" || left == "HMul.hMul") &&
             containsConstant(a,"Finset.card") && containsConstant(b,"Finset.card");
         if (weighted) return equal ? "An equality of weighted cardinalities" :
@@ -411,6 +422,7 @@ static std::string resultTitle(const Node& record) {
             return "The number of subsets of a prescribed size";
     }
     if (head(*conclusion) == "Exists") {
+        if (const auto title = paper_titles::congruentPairTitle(*conclusion); !title.empty()) return title;
         const auto& predicate = term(argument(*conclusion,0));
         if (predicate.is("l")) {
             const Node* condition = &predicate.at(4);
@@ -428,10 +440,10 @@ static std::string resultTitle(const Node& record) {
                 if (left != right) {
                     const auto& quantity = argument(*condition,left ? 1 : 0);
                     const auto fiber = fiberMeasure(quantity,id);
-                    if (!fiber && leaf.find("fiber")==std::string::npos) return declarationTitle(summary);
+                    if (!fiber && leaf.find("fiber")==std::string::npos) return sourceTitle();
                     const bool sum = fiber ? !fiber->weight.empty() : containsConstant(quantity,"Finset.sum");
                     if (!sum && !containsConstant(quantity,"Finset.card") &&
-                        !containsConstant(quantity,"Fintype.card")) return declarationTitle(summary);
+                        !containsConstant(quantity,"Fintype.card")) return sourceTitle();
                     std::string title = "A fiber ";
                     title += sum ? "with weight " : "with size ";
                     if (relation == "LT.lt") title += left ? "below" : "above";
@@ -445,7 +457,7 @@ static std::string resultTitle(const Node& record) {
             }
         }
     }
-    return declarationTitle(summary);
+    return sourceTitle();
 }
 
 Chapter readChapter(const std::filesystem::path& path) {
@@ -610,9 +622,29 @@ std::string prerequisiteLabel(const std::string& name) {
     return key;
 }
 
+std::string prerequisiteReference(const Node& entry) {
+    const auto key = prerequisiteLabel(entry.at(0).atom);
+    const auto numbered = numberedReference("Prerequisite~P",key);
+    if (entry.children.size() < 4) return numbered;
+    auto title = documentedTitle(entry.at(3).atom);
+    if (title.empty()) return numbered;
+    if (title.compare(0,4,"The ")==0) title[0] = 't';
+    return paperLink(key,"\\emph{" + escapeLatex(title) + "}") + " (" + numbered + ")";
+}
+
 // Automatically sized TeX delimiters form unbreakable boxes. Use ordinary
 // delimiters in long inline formulas so TeX can wrap at their operators.
 std::string wrapPaperMath(std::string text) {
+    // Keep amsthm's end-of-proof mark on the final text line. A blank
+    // paragraph before the environment ends otherwise strands it on its own.
+    for (std::size_t end=0; (end=text.find("\\end{proof}",end))!=std::string::npos; ) {
+        const auto last=text.find_last_not_of(" \t\r\n",end-1);
+        if (last!=std::string::npos) {
+            text.replace(last+1,end-last-1,"\n");
+            end=last+2;
+        }
+        end+=sizeof("\\end{proof}")-1;
+    }
     // The checked formula printer uses this atom only for the standard
     // rational reciprocal. Look in prerequisites as well as proof bodies.
     std::string conventions;
@@ -621,6 +653,10 @@ std::string wrapPaperMath(std::string text) {
     if (text.find("\\operatorname{prefix}_{") != std::string::npos)
         conventions += "\nThe prefix \\(\\operatorname{prefix}_{p}(v)\\) follows the walk \\(p\\) through "
                        "its first visit to \\(v\\). In \\(q \\mathbin{\\Vert} r\\), we follow \\(q\\) and then \\(r\\).\n\n";
+    if (text.find("\\operatorname{tail}(") != std::string::npos &&
+        text.find("\\operatorname{Walk}_{") != std::string::npos)
+        conventions += "\nFor a walk \\(p\\) with at least one edge, \\(\\operatorname{tail}(p)\\) "
+                       "is the walk after its first edge. A walk of length zero is its own tail.\n\n";
     if (text.find("\\operatorname{incl}_{") != std::string::npos)
         conventions += "\nThe inclusion \\(\\operatorname{incl}_{G,H}\\) of graphs on the same vertex set "
                        "fixes each vertex and carries each edge of \\(G\\) to the same edge in \\(H\\).\n\n";
@@ -672,6 +708,58 @@ static bool hamiltonianSingletonConvention(const Node& equation) {
            titleApplication(one.at(4),"instOfNatNat",1);
 }
 
+// The adapter checks the decision procedure's own branch equation and the
+// constructor's injectivity theorem. Tie that evidence to this exact public
+// alias before explaining its computation in place of a private helper name.
+static std::optional<std::pair<std::string,std::string>> recordEqualityTest(const Node& entry,
+                                                                             const Node& checked) {
+    if (entry.children.size()<4 || checked.children.size()<=9) return {};
+    const auto& certificate = entry.at(3);
+    if (!certificate.array || certificate.children.size()!=7 || certificate.at(0).atom!="record-equality-test" ||
+        entry.at(1).children.size()!=1 || entry.at(2).children.size()!=1 ||
+        entry.at(2).at(0).atom!=certificate.at(1).atom) return {};
+    const auto& type = certificate.at(2).atom;
+    const auto& ctor = certificate.at(3).atom;
+    const auto& field = certificate.at(4).atom;
+    if (certificate.at(5).atom!=ctor+".injEq") return {};
+    const Node* eq = &entry.at(1).at(0);
+    while (eq->is("q")) eq = &eq->at(4);
+    if (!titleApplication(*eq,"Eq",3) || !titleApplication(eq->at(2),"DecidableEq",1) ||
+        head(argument(eq->at(2),0))!=type || head(eq->at(3))!=entry.at(0).atom) return {};
+    const auto& alias = eq->at(4);
+    const auto privateName = head(alias);
+    if (privateName.compare(0,9,"_private.")!=0 || certificate.at(6).atom!=privateName+".eq_1" ||
+        alias.is("a")!=eq->at(3).is("a")) return {};
+    if (alias.is("a") && (alias.children.size()!=eq->at(3).children.size() ||
+        !std::equal(alias.children.begin()+2,alias.children.end(),eq->at(3).children.begin()+2,
+                    paper_titles::sameTitleTerm))) return {};
+    for (const auto& constructor : checked.at(9).children) {
+        if (constructor.at(0).atom!=ctor || constructor.children.size()<4 || constructor.at(3).atom!="object") continue;
+        std::vector<const Node*> binders;
+        const Node* result = &constructor.at(1);
+        while (result->is("q")) { binders.push_back(result); result=&result->at(4); }
+        const auto& fields = constructor.at(2).children;
+        if (head(*result)!=type || fields.empty() || fields.size()>binders.size()) return {};
+        const Node* data = nullptr;
+        for (std::size_t i=0; i<fields.size(); ++i) {
+            const auto* binder = binders[binders.size()-fields.size()+i];
+            if (binder->children.size()<=6 || fields[i].atom!=binder->at(2).atom) return {};
+            if (binder->at(6).atom=="proof") continue;
+            if (data || fields[i].atom!=field) return {};
+            data = binder;
+        }
+        if (!data) return {};
+        auto subject = declarationTitle(field);
+        if (!subject.empty()) subject[0]=static_cast<char>(std::tolower(static_cast<unsigned char>(subject[0])));
+        const bool lists = titleApplication(data->at(3),"List",1) && field=="toList";
+        const auto comparison = lists ? std::string("Compare the underlying lists.") :
+            "Compare the values of the \\emph{" + escapeLatex(subject) + "} field.";
+        return std::make_pair("Equality test (" + escapeLatex(declarationTitle(type)) + ")",
+            comparison + " Two records are equal exactly when these values agree.");
+    }
+    return {};
+}
+
 std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, const Chapter& chapter,
                                   DefinitionRules& rules) {
     if (checked.children.size() < 5) return 0;
@@ -699,12 +787,14 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
     std::size_t ordinal = 0;
     output << "\\section*{Definitions}\n";
     for (const auto& name : order) {
-        const auto alias = chapter.symbols.find(name);
-        const auto title = escapeLatex(declarationTitle(name));
-        output << "\\paragraph{" << title;
-        if (alias != chapter.symbols.end()) output << " (\\(" << alias->second << "\\))";
-        output << ".} ";
         const auto& entry = *definitions.at(name);
+        const auto decision = recordEqualityTest(entry,checked);
+        const auto alias = chapter.symbols.find(name);
+        const auto title = decision ? decision->first : escapeLatex(declarationTitle(name));
+        output << "\\paragraph{" << title;
+        if (alias != chapter.symbols.end() && (!chapter.automaticLayout || alias->second != name.substr(name.find_last_of('.')+1)))
+            output << " (\\(" << alias->second << "\\))";
+        output << ".} ";
         const auto& equations = entry.at(1).children;
         const auto* names = entry.children.size()>2 ? &entry.at(2).children : nullptr;
         if (names && names->size()!=equations.size())
@@ -716,14 +806,15 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
         bool missing = false;
         for (std::size_t i=0; i<equations.size(); ++i) {
             const auto& equation = equations[i];
-            const auto line = describeCheckedStatement(equation);
+            const auto line = decision ? std::optional<std::string>(decision->second) : describeCheckedStatement(equation);
             if (!line) { missing = true; continue; }
             const auto [it,inserted] = seen.emplace(*line,ordinal+1);
             if (inserted) {
                 if (numbered) {
                     ++ordinal;
-                    output << "\\par\\noindent\\refstepcounter{definingequation}\\label{defeq:"
-                           << ordinal << "}\\textup{(D" << ordinal << ")} ";
+                    const auto key = "defeq:" + std::to_string(ordinal);
+                    output << "\\par\\noindent\\refstepcounter{definingequation}\\label{" << key
+                           << "}\\paperlineanchor{" << key << "}\\textup{(" << paperLink(key,"D" + std::to_string(ordinal)) << ")} ";
                 }
                 output << *line << '\n';
                 if (name == "SimpleGraph.IsHamiltonian" && hamiltonianSingletonConvention(equation))
@@ -731,7 +822,7 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
             }
             if (numbered && !(*names)[i].atom.empty())
                 rules.emplace((*names)[i].atom,DefiningEquation{&equation,
-                    "defining equation~D\\ref{defeq:" + std::to_string(it->second) + "}"});
+                    numberedReference("defining equation~D","defeq:" + std::to_string(it->second))});
         }
         if (missing || seen.empty()) {
             ++incomplete;
@@ -825,6 +916,7 @@ Chapter automaticPaper(const Node& checked, const std::string& title) {
         throw std::runtime_error("A paper title must contain text");
     Chapter chapter;
     chapter.paper = true;
+    chapter.automaticLayout = true;
     chapter.title = title;
     // Give familiar single-sorted arithmetic the same specialization path as a
     // configured paper. Wider signatures retain their checked generic notation.
@@ -897,7 +989,13 @@ Chapter automaticPaper(const Node& checked, const std::string& title) {
         if (chapter.sections.empty() || chapter.sections.back().sourceHeadings != path)
             chapter.sections.push_back({path.empty() ? "Results" : path.back(),{},{},{},path});
         auto theoremTitle = titles[name];
-        if (!theoremTitle.empty() && titleCounts.at(theoremTitle)>1) theoremTitle += sumForm(record->at(1));
+        if (!theoremTitle.empty()) {
+            const Node* conclusion = &record->at(1);
+            while (conclusion->is("q")) conclusion = &conclusion->at(4);
+            const auto bounds = paper_titles::incidenceBounds(record->at(1),*conclusion);
+            if (!bounds.empty()) theoremTitle += bounds;
+            else if (titleCounts.at(theoremTitle)>1) theoremTitle += sumForm(record->at(1));
+        }
         chapter.sections.back().theorems.push_back({name, {}, {}, theoremTitle});
     }
     if (chapter.sections.size() == 1) {
@@ -938,7 +1036,7 @@ void preparePaper(Chapter& chapter, const Node& checked) {
     for (const auto& record : checked.at(0).children) {
         proofs.emplace(record.at(0).atom, &record.at(2));
         signatures.emplace(record.at(0).atom, &record.at(1));
-        titles.emplace(record.at(0).atom,resultTitle(record));
+        titles.emplace(record.at(0).atom,resultTitle(record,chapter.automaticLayout));
     }
     const auto helpers = proofHelpers(checked);
     for (const auto& item : proofs) {
@@ -959,8 +1057,8 @@ void preparePaper(Chapter& chapter, const Node& checked) {
     // Substitution, symmetry and chaining can turn earlier lemmas into a
     // corollary without introducing any independent mathematical premise.
     const std::set<std::string> composition{"Eq.trans", "Eq.symm", "congrArg", "congrFun",
-        "congr", "Eq.mp", "Eq.mpr", "Iff.mp", "Iff.mpr", "Iff.symm", "Iff.trans",
-        "Eq.refl", "rfl", "id", "And.left", "And.right"};
+        "congr", "Eq.mp", "Eq.mpr", "Iff.mp", "Iff.mpr", "Iff.symm", "Iff.trans", "Iff.intro",
+        "Eq.refl", "rfl", "id", "And.left", "And.right", "And.intro"};
     const auto follows = [&](auto&& self, const Node& expr, bool& citesEarlier) -> bool {
         const auto& raw = term(expr);
         if (raw.is("l")) return self(self, raw.at(4), citesEarlier);

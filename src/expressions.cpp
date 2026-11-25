@@ -29,6 +29,16 @@ std::string withSuperscript(std::string base, const std::string& exponent) {
     if (base.find('^') != std::string::npos) base = "{" + base + "}";
     return base + "^{" + exponent + "}";
 }
+std::string functionSymbol(const std::string& label) {
+    if (label.size()==1) return label;
+    std::string words;
+    for (std::size_t i=0; i<label.size(); ++i) {
+        if (i && label[i-1]>='a' && label[i-1]<='z' && label[i]>='A' && label[i]<='Z') words += "\\,";
+        words += label[i];
+    }
+    return "\\operatorname{" + words + "}";
+}
+
 namespace {
 
 class Parser {
@@ -219,8 +229,7 @@ std::string format(const Math& expression, const Names& names, int enclosing) {
     case Kind::var: return names.at(expression.value);
     case Kind::numeral: return expression.value;
     case Kind::function: {
-        rendered = expression.hint.size() == 1 ? expression.hint :
-                   "\\operatorname{" + expression.hint + "}";
+        rendered = functionSymbol(expression.hint);
         if (parts.empty()) return rendered;
         rendered += "(";
         for (std::size_t i = 0; i < parts.size(); ++i) {

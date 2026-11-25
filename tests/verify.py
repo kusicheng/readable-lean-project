@@ -53,10 +53,10 @@ def experiment(workspace, env, lake, generator, policy_checks):
     executable = build(workspace, env, lake, generator)
     run(workspace, env, lake, "env", "lean", "--run", "Adapter.lean", "structured.json",
         "proofs.Development,proofs.Reserved", *DEVELOPMENT, *RESERVED)
-    run(workspace, env, executable, "structured.json", "structured.tex")
+    run(workspace, env, executable, "structured.json", "structured.tex", "--outline")
     run(workspace, env, lake, "env", "lean", "--run", "Adapter.lean", "automation.json",
         "proofs.Automation", AUTOMATION)
-    run(workspace, env, executable, "automation.json", "automation.tex", expected=1)
+    run(workspace, env, executable, "automation.json", "automation.tex", "--outline", expected=1)
 
     structured = (workspace / "structured.tex").read_bytes().decode("ascii")
     automation = (workspace / "automation.tex").read_bytes().decode("ascii")
@@ -77,7 +77,7 @@ def experiment(workspace, env, lake, generator, policy_checks):
     if policy_checks:
         for threshold in (0, 1000):
             run(workspace, env, executable, "structured.json", f"threshold-{threshold}.tex",
-                "--threshold", str(threshold))
+                "--outline", "--threshold", str(threshold))
         low = (workspace / "threshold-0.tex").read_text(encoding="ascii")
         high = (workspace / "threshold-1000.tex").read_text(encoding="ascii")
         earlier_references = [line for line in structured.splitlines() if r"\ref{theorem:" in line]

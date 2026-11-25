@@ -50,6 +50,7 @@ struct Chapter {
     std::map<std::string, std::string> prerequisiteTitles;
     std::vector<std::pair<std::string, std::string>> glossary;
     std::vector<Section> sections;
+    bool automaticLayout = false;
 };
 
 Chapter readChapter(const std::filesystem::path& path);
@@ -62,6 +63,8 @@ std::size_t writePaperDefinitions(std::ostream& output, const Node& checked, con
                                   DefinitionRules& rules);
 std::string declarationTitle(const std::string& name);
 std::string prerequisiteLabel(const std::string& name);
+std::string documentedTitle(const std::string& doc);
+std::string prerequisiteReference(const Node& libraryEntry);
 std::string wrapPaperMath(std::string text);
 bool containsConstant(const Node& expression, const std::string& symbol);
 void applyChapterSymbols(Node& checked, const Chapter& chapter);

@@ -12,6 +12,9 @@ import tempfile
 
 from verify import ROOT, PENDING, build, check, run
 from verify_chapter import executable
+from verify_property_patterns import verify_property_patterns
+from verify_record_ext import verify_record_ext
+from verify_nat_below import verify_nat_below
 
 
 MODULES = ("Counting580", "Incidence580", "Optimization580", "FirstMoment580", "Intersecting580")
@@ -74,6 +77,24 @@ def verify_invalid_symbols(workspace, env, compiler):
         run(workspace, env, compiler, "counting580.json", "invalid-symbol.tex",
             "--chapter", filename, expected=2)
         check(not (workspace / "invalid-symbol.tex").exists(), "Invalid symbol produced a paper")
+
+
+def verify_source_headings(workspace, env, lake, compiler):
+    data = workspace / "relations.json"
+    run(workspace, env, lake, "env", "lean", "--run", "Adapter.lean", data, ROOT / "tests/fixtures/RelationHeadings.lean")
+    article = workspace / "relations.tex"
+    run(workspace, env, compiler, data, article)
+    text = article.read_text(encoding="utf-8")
+    headings = re.findall(r"\\begin\{(lemma|theorem|corollary)\}(?:\[\{(.*?)\}\])?\\label\{theorem:\d+\}", text)
+    right = "Uniqueness of the second coordinate for a fixed first coordinate"
+    left = "Uniqueness of the first coordinate for a fixed second coordinate"
+    check(headings == [("lemma", right), ("theorem", left), *[("theorem","")]*4, ("corollary", right)],
+          "The default paper must distinguish coordinate uniqueness and omit captions for unrelated premises")
+    check(r"Lemma~\ref{theorem:1}" in text and PENDING not in text and "Denote the result" not in text,
+          "The corollary must cite its earlier lemma in the default article")
+    explicit = workspace / "relations-explicit.tex"
+    run(workspace, env, compiler, data, explicit, "--paper", "Mathematical proofs")
+    check(article.read_bytes() == explicit.read_bytes(), "The default command must use the article renderer")
 
 
 def verify_source_and_budget(workspace, env, lake, compiler):
@@ -188,6 +209,38 @@ def verify_repeated_addition(project, workspace, env, lake, compiler):
               "Two additive structures on one carrier must stay distinguishable inside the proof")
 
 
+def verify_natural_subtraction(project, workspace, env, lake, compiler):
+    data = workspace / "natural-subtraction.json"
+    with data.open("wb") as export:
+        subprocess.run([lake, "env", "lean", "--run", ROOT / "Adapter.lean", "-",
+                        ROOT / "tests/fixtures/NaturalSubtraction.lean"],
+                       cwd=project, env=env, check=True, stdout=export)
+    output = workspace / "natural-subtraction.tex"
+    args = ("--paper", "Natural subtraction", "--proof-budget")
+    for budget in ("0", "1000000"):
+        run(workspace, env, compiler, data, output, *args, budget)
+        article = output.read_text(encoding="utf-8")
+        proofs = [s.split(r"\end{proof}", 1)[0] for s in article.split(r"\begin{proof}")[1:]]
+        summaries = ["from both sides gives" in proof for proof in proofs]
+        check(summaries == [budget == "0"] * 3 + [False, False],
+              "Only the compact proofs with the usual natural-number instances may combine the subtraction step")
+        check("Use the hypothesis" in proofs[3] and r"\mathbin{-}_{s}" in proofs[4],
+              "A supplied law and a chosen subtraction must remain visible")
+    damaged = json.loads(data.read_bytes())
+    def remove_order_law(node):
+        if not isinstance(node, list) or not node:
+            return False
+        if node[0] == "p" and node[2][:2] == ["c", "Nat.instIsOrderedCancelAddMonoid"]:
+            node[2] = ["u", "unavailable order law"]
+            return True
+        return any(remove_order_law(item) for item in node)
+    check(remove_order_law(damaged[0][0][2]), "Missing nested order evidence in test input")
+    data.write_text(json.dumps(damaged), encoding="utf-8")
+    run(workspace, env, compiler, data, output, *args, "0", expected=1)
+    first = output.read_text(encoding="utf-8").split(r"\begin{proof}", 1)[1].split(r"\end{proof}", 1)[0]
+    check(PENDING in first and "Subtracting " not in first, "A missing order proof must leave a gap")
+
+
 def verify_grading_submissions(project, workspace, env, lake, compiler):
     statements = []
     for label, theorem in (("a", "submissionOne"), ("b", "submissionTwo")):
@@ -287,6 +340,9 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
           "Antichain notation must preserve its actual relation and distinguish locally bound names")
     verify_reciprocals(project, workspace, env, lake, compiler)
     verify_repeated_addition(project, workspace, env, lake, compiler)
+    verify_record_ext(project, workspace, env, lake, compiler)
+    verify_nat_below(project, workspace, env, lake, compiler)
+    verify_natural_subtraction(project, workspace, env, lake, compiler)
     verify_grading_submissions(project, workspace, env, lake, compiler)
     source = ROOT / "tests/fixtures/Arithmetic.lean"
     data = workspace / "mathlib-arithmetic.json"
@@ -339,6 +395,9 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         ("Combinatorics/Derangements/Finite", "mathlib-derangements", "Counting derangements", 9),
         ("Combinatorics/SetFamily/LYM", "mathlib-lym", "The LYM inequality and Sperner's theorem", 15),
         ("Combinatorics/SimpleGraph/Hamiltonian", "mathlib-hamiltonian", "Hamiltonian paths and cycles", 17),
+        ("Combinatorics/SimpleGraph/Matching", "mathlib-matching", "Matchings in graphs", 46),
+        ("Combinatorics/Enumerative/Bell", "mathlib-bell", "Product and factorial formulas for refined Bell numbers", 11),
+        ("Combinatorics/Enumerative/DyckWord", "mathlib-dyck-words", "Dyck words and binary trees", 44),
     ]:
         source = project / f"Mathlib/{module}.lean"
         if not source.is_file():
@@ -352,9 +411,18 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         check(len(records) == count and output.read_bytes() == (ROOT / "papers" / output.name).read_bytes(),
               f"{stem} differs from the direct compilation of the entire Mathlib 4.19 file")
         article = output.read_text(encoding="utf-8")
+        if stem == "mathlib-bell":
+            check("Recurrence for one additional block" in article and "final factor at index" in article and
+                  "Factorial quotient for uniform Bell numbers" in article and
+                  "induction hypothesis" in article and PENDING not in article,
+                  "The Bell paper must show its predecessor induction, last factor and factorial quotient")
+        if stem == "mathlib-dyck-words":
+            check("Compare the underlying lists" in article and "the two records field by field" in article and
+                  "Some defining equations could not be rendered" not in article and PENDING not in article,
+                  "The Dyck paper must justify record equality and finish both recursive proofs")
         if stem == "mathlib-pigeonhole":
             fiber_sum = "Finset.sum_fiberwise_of_maps_to".encode().hex()
-            check(r"\ref{premise:" + fiber_sum + r"} (using \(\forall" in article,
+            check(r"\ref{premise:" + fiber_sum + r"}} (using \(\forall" in article,
                   "The fiber-sum citation must identify the hypothesis that maps into the target")
             titles = re.findall(r"\\begin\{(?:lemma|theorem|corollary)\}\[\{(.*?)\}\]", article)
             check(len(set(titles)) == len(titles) == 29 and "nonpositive weight" in titles[2]
@@ -374,12 +442,23 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         if stem == "mathlib-hamiltonian":
             headings = re.findall(r"\\begin\{(?:lemma|theorem|corollary)\}\[\{(.*?)\}\]", article)
             check(len(set(headings)) == count and PENDING not in article and
+                  r"\begin{corollary}[{A vertex-coverage criterion for a Hamiltonian path}]\label{theorem:5}" in article and
                   r"\paragraph{Hamiltonian paths.}" in article and r"\paragraph{Hamiltonian graphs.}" in article,
                   "The paper must distinguish all 17 graph results and both Hamiltonian definitions")
+            path_length = article.split(r"\label{theorem:7}", 1)[1].split(r"\end{proof}", 1)[0]
+            coverage = article.split(r"\label{theorem:4}", 1)[1].split(r"\end{proof}", 1)[0]
+            check(r"Fix \(x\)" in coverage and r"\emph{Upper bound.}" in coverage and
+                  r"\emph{Lower bound.}" in coverage and r"Subtracting \(1\) from both sides" in path_length,
+                  "The two visit bounds and the final subtraction must be identifiable in the proof")
+            check(re.search(r"\\operatorname\{visits\}\(p,.*? = \\sum_.*?\(1\)", path_length) and
+                  r"\{v\mid v\in \alpha" in path_length and
+                  r"\operatorname{length}(p) + 1 = \operatorname{length}(\operatorname{vertex\,sequence}(p))" in path_length,
+                  "Counting vertices must show the counts becoming ones and distinguish the full set from its type")
             length = article.split(r"\label{theorem:13}", 1)[1].split(r"\end{proof}", 1)[0]
             check(r"Choose the witness \(a\)." in length and r"\alpha\text{ is nonempty}" in length and
-                  r"\ref{theorem:7}" in length,
-                  "The cycle length proof must identify the starting vertex and use the path length result")
+                  r"\ref{theorem:7}" in length and r"\operatorname{tail}(p)" in length and
+                  re.search(r"\\operatorname\{tail\}\(p\)\) \+ 1 = .*? - 1 \+ 1", length),
+                  "The cycle length proof must show the tail length substitution and justify natural subtraction")
             damaged = json.loads(data.read_bytes())
             def remove_element(node):
                 if not isinstance(node, list) or not node:
@@ -398,9 +477,39 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
             check(PENDING in broken.split(r"\label{theorem:13}", 1)[1].split(r"\end{proof}", 1)[0],
                   "A missing nonemptiness witness must leave a visible gap in the cycle length proof")
         if stem == "mathlib-double-counting":
+            titles = re.findall(r"\\begin\{(?:lemma|theorem|corollary)\}\[\{(.*?)\}\]", article)
+            check(len(set(titles)) == count and "strict lower bound on row degrees" in titles[11] and
+                  "strict upper bound on column degrees" in titles[12] and
+                  "strict lower bound on column degrees" in titles[13] and "strict upper bound on row degrees" in titles[14] and
+                  "natural-number lower bound on row degrees" in titles[15] and "natural-number lower bound on column degrees" in titles[16] and
+                  titles[18] == "Bounding nonempty rows by columns of degree at most one" and
+                  titles[19] == "Bounding nonempty columns by rows of degree at most one",
+                  "Strictness, direction and row or column assumptions must distinguish the incidence bounds")
             check(article.count(r"\section{Bipartite relations}") == 1 and
                   r"\subsection{Bounds in ordered semirings}" in article and
                   r"\section{Finite types}" in article, "Lost the nested mathematical section structure")
+        if stem == "mathlib-matching":
+            parity = article.split(r"\label{theorem:18}", 1)[1].split(r"\end{proof}", 1)[0]
+            check(PENDING not in article and r"Choose the witness \(\left|E(" in parity and
+                  r"\deg_{M}" in parity and r"\sum_" in parity and r"\ref{theorem:17}" in parity and
+                  "SimpleGraph.sum_degrees_eq_twice_card_edges".encode().hex() in parity,
+                  "The matching parity proof must identify the edge-count witness and establish the degree sum")
+            damaged = json.loads(data.read_bytes())
+            def drop_equivalence(node):
+                if not isinstance(node, list) or not node:
+                    return False
+                if node[0] == "a" and node[1][:2] == ["c", "propext"]:
+                    node[-1] = ["u", "missing equivalence"]
+                    return True
+                return any(drop_equivalence(child) for child in node)
+            parity_result = next(row for row in damaged[0] if row[0].endswith("IsMatching.even_card"))
+            check(drop_equivalence(parity_result[2]), "Missing propositional extensionality in matching proof")
+            damaged_file = workspace / "matching-missing-equivalence.json"
+            damaged_file.write_text(json.dumps(damaged), encoding="utf-8")
+            damaged_tex = workspace / "matching-missing-equivalence.tex"
+            run(workspace, env, compiler, damaged_file, damaged_tex, "--paper", title, expected=1)
+            parity = damaged_tex.read_text(encoding="utf-8").split(r"\label{theorem:18}", 1)[1].split(r"\end{proof}", 1)[0]
+            check(PENDING in parity, "Removing the equivalence must prevent a complete parity argument")
         if stem == "mathlib-powerset":
             check(r"\{a\} \cup \left(t \setminus \{a\}\right)" in article,
                   "Insertion must display the set difference inside the union")
@@ -425,6 +534,24 @@ def verify_mathlib_arithmetic(project, workspace, env, lake, compiler):
         if stem == "mathlib-derangements":
             check("^{'}^{" not in article and r"\emph{Base case.}" in article and
                   "induction hypothesis" in article, "Expected typesettable powers and the induction argument")
+
+
+    for module, stem, title, names in [
+        ("Combinatorics/Enumerative/Bell", "uniform-bell",
+         "A recurrence and a factorial quotient for uniform Bell numbers",
+         ["Nat.uniformBell_succ_left", "Nat.uniformBell_eq_div"]),
+        ("Combinatorics/SimpleGraph/Matching", "matching-parity", "Parity of matchings",
+         ["SimpleGraph.Subgraph.isMatching_iff_forall_degree", "SimpleGraph.Subgraph.IsMatching.even_card"]),
+    ]:
+        source = project / f"Mathlib/{module}.lean"
+        if not source.is_file():
+            continue
+        data = workspace / f"{stem}.json"
+        run(project, env, lake, "env", "lean", "--run", ROOT / "Adapter.lean", data, source, *names)
+        out = workspace / f"{stem}.tex"
+        run(workspace, env, compiler, data, out, "--paper", title)
+        check(out.read_bytes() == (ROOT / "papers" / out.name).read_bytes(),
+              f"The two-proof {stem} paper must match direct compilation of the original declarations")
 
 
 def main():
@@ -462,6 +589,8 @@ def main():
             verify_paper(workspace, env, lake, compiler, tex_command, module, stem)
         verify_source_and_budget(workspace, env, lake, compiler)
         if run_name == "first":
+            verify_source_headings(workspace, env, lake, compiler)
+            verify_property_patterns(workspace, env, lake, compiler)
             verify_invalid_symbols(workspace, env, compiler)
             if args.mathlib_project:
                 verify_mathlib_arithmetic(args.mathlib_project.resolve(), workspace, env, lake, compiler)

@@ -12,7 +12,7 @@ From the repository root, build the compiler and translate the included divisibi
 cmake -S . -B build/cli -G Ninja
 cmake --build build/cli
 lake env lean --run Adapter.lean build/cli/checked.json proofs/Development.lean
-./build/cli/lean-to-latex build/cli/checked.json build/cli/divisibility.tex --paper "Divisibility"
+./build/cli/lean-to-latex build/cli/checked.json build/cli/divisibility.tex
 ```
 
 The compiler writes `build/cli/divisibility.tex` and reports `3/3 proofs complete`.

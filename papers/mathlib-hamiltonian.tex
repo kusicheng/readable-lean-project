@@ -1,0 +1,561 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheoremstyle{paperresult}{8pt}{5pt}{\normalfont\raggedright}{}{\bfseries}{.}{\newline}{}
+\theoremstyle{paperresult}
+\newtheorem{theorem}{\paperresultname{Theorem}}
+\newcounter{paperpremise}
+\newtheorem{lemma}[theorem]{\paperresultname{Lemma}}
+\newtheorem{corollary}[theorem]{\paperresultname{Corollary}}
+\newcounter{definingequation}
+\newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\AddToHook{env/proof/begin}{\raggedright}
+\setlength{\emergencystretch}{\linewidth}
+\title{Hamiltonian paths and cycles}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+The prefix \(\operatorname{prefix}_{p}(v)\) follows the walk \(p\) through its first visit to \(v\). In \(q \mathbin{\Vert} r\), we follow \(q\) and then \(r\).
+
+
+For a walk \(p\) with at least one edge, \(\operatorname{tail}(p)\) is the walk after its first edge. A walk of length zero is its own tail.
+
+
+The inclusion \(\operatorname{incl}_{G,H}\) of graphs on the same vertex set fixes each vertex and carries each edge of \(G\) to the same edge in \(H\).
+
+\section*{Definitions}
+\paragraph{Hamiltonian paths.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\paperlineanchor{defeq:1}\textup{(\paperlink{defeq:1}{D1})} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Then \(p\text{ is a Hamiltonian path} \iff (\forall a_{1}\, :\, \alpha,\; p\text{ visits }a_{1}\text{ exactly once})\).
+
+\paragraph{Hamiltonian graphs.} \par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Fix a finite enumeration of \(\alpha\). Let \(G\) be a simple graph on \(\alpha\). Then \(G\text{ is a Hamiltonian graph} \iff (|\alpha| \ne 1 \implies (\exists a_{1}\, :\, \alpha,\; \exists p\, :\, \operatorname{Walk}_{G}(a_{1},\allowbreak{} a_{1}),\; p\text{ is a Hamiltonian cycle}))\).
+In particular, every graph on a single vertex is Hamiltonian by this convention.
+
+\subsection*{Prerequisites}
+\begin{description}
+\item[\paperlineanchor{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}\paperlink{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}{P1.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}\textbf{Cardinality as a sum of ones.} Let \(\iota\) be a type. Let \(s\) be a finite subset of \(\iota\). Then \(\left|s\right| = \sum_{x\in s}\left(1\right)\).
+\item[\paperlineanchor{premise:46696e7365742e636172645f756e6976}\paperlink{premise:46696e7365742e636172645f756e6976}{P2.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f756e6976}\textbf{Counting all elements of a finite type.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Then \(\left|\left\{v\mid v\in \alpha\right\}\right| = \left|\alpha\right|\).
+\item[\paperlineanchor{premise:46696e7365742e65715f756e69765f6966665f666f72616c6c}\paperlink{premise:46696e7365742e65715f756e69765f6966665f666f72616c6c}{P3.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e65715f756e69765f6966665f666f72616c6c}\textbf{Equals whole space if and only if forall.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(s\) be a finite subset of \(\alpha\). Then \(s = \alpha \iff \left(\forall x\, :\, \alpha,\; x \in s\right)\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f636f6e6772}\paperlink{premise:46696e7365742e73756d5f636f6e6772}{P4.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e6772}\textbf{Equality of sums with equal summands.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\sum_{i\in s_{1}}\left(f(i)\right) = \sum_{i\in s_{2}}\left(g(i)\right)\).
+\item[\paperlineanchor{premise:46696e747970652e636172645f65715f7a65726f}\paperlink{premise:46696e747970652e636172645f65715f7a65726f}{P5.}] \refstepcounter{paperpremise}\label{premise:46696e747970652e636172645f65715f7a65726f}\textbf{Cardinality equals zero.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Assume \(\alpha\text{ is empty}\). Then \(\left|\alpha\right| = 0\).
+\item[\paperlineanchor{premise:46696e747970652e636172645f706f735f696666}\paperlink{premise:46696e747970652e636172645f706f735f696666}{P6.}] \refstepcounter{paperpremise}\label{premise:46696e747970652e636172645f706f735f696666}\textbf{Cardinality positivity if and only if.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Then \(0 < \left|\alpha\right| \iff \alpha\text{ is nonempty}\).
+\item[\paperlineanchor{premise:46696e747970652e6f6e655f6c745f63617264}\paperlink{premise:46696e747970652e6f6e655f6c745f63617264}{P7.}] \refstepcounter{paperpremise}\label{premise:46696e747970652e6f6e655f6c745f63617264}\textbf{One less than cardinality.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(h\) be a proof of \(\operatorname{Nontrivial}\left(\alpha\right)\). Then \(1 < \left|\alpha\right|\).
+\item[\paperlineanchor{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}\paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{P8.}] \refstepcounter{paperpremise}\label{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}\textbf{Injective.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(f\text{ is bijective}\). Then \(f\text{ is injective}\).
+\item[\paperlineanchor{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}\paperlink{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}{P9.}] \refstepcounter{paperpremise}\label{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}\textbf{Surjective.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(f\text{ is bijective}\). Then \(f\text{ is surjective}\).
+\item[\paperlineanchor{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}\paperlink{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}{P10.}] \refstepcounter{paperpremise}\label{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}\textbf{Forall.} Let \(\alpha\) be a sort. Let \(\beta\) be a sort. Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(f\text{ is surjective}\). Let \(p\) be a function of type \(\beta \to \mathsf{Prop}\). Then \((\forall y\, :\, \beta,\; p(y)) \iff (\forall x\, :\, \alpha,\; p(f(x)))\).
+\item[\paperlineanchor{premise:46756e6374696f6e2e62696a6563746976655f6964}\paperlink{premise:46756e6374696f6e2e62696a6563746976655f6964}{P11.}] \refstepcounter{paperpremise}\label{premise:46756e6374696f6e2e62696a6563746976655f6964}\textbf{Bijective id.} Let \(\alpha\) be a sort. Then \(\operatorname{id}\text{ is bijective}\).
+\item[\paperlineanchor{premise:4973456d7074792e6578697374735f696666}\paperlink{premise:4973456d7074792e6578697374735f696666}{P12.}] \refstepcounter{paperpremise}\label{premise:4973456d7074792e6578697374735f696666}\textbf{Exists if and only if.} Let \(\alpha\) be a sort. Assume \(\alpha\text{ is empty}\). Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Then \(\left(\exists a\, :\, \alpha,\; p\left(a\right)\right) \iff \mathrm{False}\).
+\item[\paperlineanchor{premise:4c542e6c742e6e6527}\paperlink{premise:4c542e6c742e6e6527}{P13.}] \refstepcounter{paperpremise}\label{premise:4c542e6c742e6e6527}\textbf{Ne'.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a < b\). Then \(b \ne a\).
+\item[\paperlineanchor{premise:4c6973742e636f756e745f636f6e735f6f665f6e65}\paperlink{premise:4c6973742e636f756e745f636f6e735f6f665f6e65}{P14.}] \refstepcounter{paperpremise}\label{premise:4c6973742e636f756e745f636f6e735f6f665f6e65}\textbf{Count cons of differs from.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{BEq}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Lawful\,BEq}\left(\alpha\right)\). Let \(b\) and \(a\) be elements of \(\alpha\). Assume \(b \ne a\). Let \(l\) be a list of elements of \(\alpha\). Then \(\operatorname{count}\left(a, \langle b\rangle \mathbin{\Vert} l\right) = \operatorname{count}\left(a, l\right)\).
+\item[\paperlineanchor{premise:4c6973742e636f756e745f636f6e735f73656c66}\paperlink{premise:4c6973742e636f756e745f636f6e735f73656c66}{P15.}] \refstepcounter{paperpremise}\label{premise:4c6973742e636f756e745f636f6e735f73656c66}\textbf{Count cons self.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{BEq}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Lawful\,BEq}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Let \(l\) be a list of elements of \(\alpha\). Then \(\operatorname{count}(a,\allowbreak{} \langle a\rangle \mathbin{\Vert} l) = \operatorname{count}(a,\allowbreak{} l) + 1\).
+\item[\paperlineanchor{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}\paperlink{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}{P16.}] \refstepcounter{paperpremise}\label{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}\textbf{Count map of injective.} Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\alpha\) is decidable. Assume equality on \(\beta\) is decidable. Let \(l\) be a list of elements of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(f\text{ is injective}\). Let \(x\) be an element of \(\alpha\). Then \(\operatorname{count}(f(x),\allowbreak{} \langle f(x_{1}) \mid x_{1}\in l\rangle) = \operatorname{count}(x,\allowbreak{} l)\).
+\item[\paperlineanchor{premise:4c6973742e636f756e745f706f735f696666}\paperlink{premise:4c6973742e636f756e745f706f735f696666}{P17.}] \refstepcounter{paperpremise}\label{premise:4c6973742e636f756e745f706f735f696666}\textbf{Count positivity if and only if.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{BEq}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Lawful\,BEq}\left(\alpha\right)\). Let \(a\) be an element of \(\alpha\). Let \(l\) be a list of elements of \(\alpha\). Then \(0 < \operatorname{count}\left(a, l\right) \iff a \in l\).
+\item[\paperlineanchor{premise:4c6973742e6d656d5f6f665f6d656d5f7461696c}\paperlink{premise:4c6973742e6d656d5f6f665f6d656d5f7461696c}{P18.}] \refstepcounter{paperpremise}\label{premise:4c6973742e6d656d5f6f665f6d656d5f7461696c}\textbf{Membership of membership tail.} Let \(\alpha\) be a type. Let \(a\) be an element of \(\alpha\). Let \(l\) be a list of elements of \(\alpha\). Assume \(a \in \operatorname{List\mathord{:}tail}\left(l\right)\). Then \(a \in l\).
+\item[\paperlineanchor{premise:4c6973742e6d656d5f746f46696e736574}\paperlink{premise:4c6973742e6d656d5f746f46696e736574}{P19.}] \refstepcounter{paperpremise}\label{premise:4c6973742e6d656d5f746f46696e736574}\textbf{Membership to finset.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(l\) be a list of elements of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(a \in \operatorname{to\,Finset}\left(l\right) \iff a \in l\).
+\item[\paperlineanchor{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}\paperlink{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}{P20.}] \refstepcounter{paperpremise}\label{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}\textbf{Without repetitions if and only if count at most one.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(l\) be a list of elements of \(\alpha\). Then \(l\text{ has no repeated elements} \iff (\forall a\, :\, \alpha,\; \operatorname{count}(a,\allowbreak{} l) \le 1)\).
+\item[\paperlineanchor{premise:4c6973742e73756d5f746f46696e7365745f636f756e745f65715f6c656e677468}\paperlink{premise:4c6973742e73756d5f746f46696e7365745f636f756e745f65715f6c656e677468}{P21.}] \refstepcounter{paperpremise}\label{premise:4c6973742e73756d5f746f46696e7365745f636f756e745f65715f6c656e677468}\textbf{Sum to finset count equals length.} Let \(\iota\) be a type. Assume equality on \(\iota\) is decidable. Let \(l\) be a list of elements of \(\iota\). Then \(\sum_{a\in \operatorname{to\,Finset}(l)}(\operatorname{count}(a,\allowbreak{} l)) = \operatorname{length}(l)\).
+\item[\paperlineanchor{premise:4e61742e696e73744e655a65726f53756363}\paperlink{premise:4e61742e696e73744e655a65726f53756363}{P22.}] \refstepcounter{paperpremise}\label{premise:4e61742e696e73744e655a65726f53756363}\textbf{Inst differs from zero successor.} Let \(n\) be a natural number. Then \(\operatorname{Ne\,Zero}\left(n + 1\right)\).
+\item[\paperlineanchor{premise:4e61742e7375625f6164645f63616e63656c}\paperlink{premise:4e61742e7375625f6164645f63616e63656c}{P23.}] \refstepcounter{paperpremise}\label{premise:4e61742e7375625f6164645f63616e63656c}\textbf{Difference sum cancel.} Let \(n\) and \(m\) be natural numbers. Assume \(m \le n\). Then \(n - m + m = n\).
+\item[\paperlineanchor{premise:4e61742e737563635f6c65}\paperlink{premise:4e61742e737563635f6c65}{P24.}] \refstepcounter{paperpremise}\label{premise:4e61742e737563635f6c65}\textbf{Successor at most.} Let \(n\) and \(m\) be natural numbers. Then \(n + 1 \le m \iff n < m\).
+\item[\paperlineanchor{premise:4e61742e7a65726f5f6c745f6f6e65}\paperlink{premise:4e61742e7a65726f5f6c745f6f6e65}{P25.}] \refstepcounter{paperpremise}\label{premise:4e61742e7a65726f5f6c745f6f6e65}\textbf{Zero less than one.} \(0 < 1\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e486f6d2e6d61705f61646a}\paperlink{premise:53696d706c6547726170682e486f6d2e6d61705f61646a}{P26.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e486f6d2e6d61705f61646a}\textbf{Map adj.} Let \(V\) and \(W\) be types. Let \(G\) be a simple graph on \(V\). Let \(G^{'}\) be a simple graph on \(W\). Let \(f\) be a graph homomorphism from \(G\) to \(G^{'}\). Let \(v\) and \(w\) be elements of \(V\). Assume \(v \sim_{G} w\). Then \(f(v) \sim_{G^{'}} f(w)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e526561636861626c652e7265666c}\paperlink{premise:53696d706c6547726170682e526561636861626c652e7265666c}{P27.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e526561636861626c652e7265666c}\textbf{Refl.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) be an element of \(V\). Then \(u\text{ can reach }u\text{ in }G\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}\paperlink{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}{P28.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}\textbf{Differs from nil.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) be an element of \(V\). Let \(p\) be a closed walk in \(G\) based at \(u\). Assume \(\operatorname{Is\,Circuit}\left(p\right)\). Then \(p \ne \operatorname{nil}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}\paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}{P29.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}\textbf{Map.} Let \(V\) and \(V^{'}\) be types. Let \(G\) be a simple graph on \(V\). Let \(G^{'}\) be a simple graph on \(V^{'}\). Let \(f\) be a graph homomorphism from \(G\) to \(G^{'}\). Let \(u\) be an element of \(V\). Let \(p\) be a closed walk in \(G\) based at \(u\). Assume \(\operatorname{coe}\left(f\right)\text{ is injective}\). Assume \(p\text{ is a cycle}\). Then \(\operatorname{image}_{f}(p)\text{ is a cycle}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}\paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{P30.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}\textbf{Not nil.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(v\) be an element of \(V\). Let \(p\) be a closed walk in \(G\) based at \(v\). Assume \(p\text{ is a cycle}\). Then \(\neg \operatorname{Nil}\left(p\right)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}\paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}{P31.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}\textbf{To is circuit.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) be an element of \(V\). Let \(p\) be a closed walk in \(G\) based at \(u\). Assume \(p\text{ is a cycle}\). Then \(\operatorname{Is\,Circuit}\left(p\right)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}\paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{P32.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}\textbf{Is hamiltonian tail.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(\operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}\paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{P33.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}\textbf{To is cycle.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(p\text{ is a cycle}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e4973506174682e6d6b27}\paperlink{premise:53696d706c6547726170682e57616c6b2e4973506174682e6d6b27}{P34.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e4973506174682e6d6b27}\textbf{Mk'.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Assume \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements}\). Then \(p\text{ has no repeated vertices}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e4973506174682e737570706f72745f6e6f647570}\paperlink{premise:53696d706c6547726170682e57616c6b2e4973506174682e737570706f72745f6e6f647570}{P35.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e4973506174682e737570706f72745f6e6f647570}\textbf{Support without repetitions.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Assume \(p\text{ has no repeated vertices}\). Then \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements}\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e636f6e735f737570706f72745f7461696c}\paperlink{premise:53696d706c6547726170682e57616c6b2e636f6e735f737570706f72745f7461696c}{P36.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e636f6e735f737570706f72745f7461696c}\textbf{Cons support tail.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(x\) and \(y\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(x\) to \(y\). Assume \(\neg \operatorname{Nil}\left(p\right)\). Then \(\langle x\rangle \mathbin{\Vert} \operatorname{vertex\,sequence}(\operatorname{tail}(p)) = \operatorname{vertex\,sequence}(p)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}\paperlink{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}{P37.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}\textbf{Get vert zero.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(w\) be a walk in \(G\) from \(u\) to \(v\). Then \(\operatorname{get\,Vert}\left(w, 0\right) = u\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f737570706f7274}\paperlink{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f737570706f7274}{P38.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f737570706f7274}\textbf{Length support.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Then \(\operatorname{length}(\operatorname{vertex\,sequence}(p)) = \operatorname{length}(p) + 1\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f7461696c5f6164645f6f6e65}\paperlink{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f7461696c5f6164645f6f6e65}{P39.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f7461696c5f6164645f6f6e65}\textbf{Length tail sum one.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(x\) and \(y\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(x\) to \(y\). Assume \(\neg \operatorname{Nil}\left(p\right)\). Then \(\operatorname{length}(\operatorname{tail}(p)) + 1 = \operatorname{length}(p)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e726561636861626c65}\paperlink{premise:53696d706c6547726170682e57616c6b2e726561636861626c65}{P40.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e726561636861626c65}\textbf{Reachable.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Then \(u\text{ can reach }v\text{ in }G\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}\paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}{P41.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}\textbf{Support copy.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\), \(v\), \(u^{'}\), and \(v^{'}\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Let \(\mathit{hu}\) be a proof of \(u = u^{'}\). Let \(\mathit{hv}\) be a proof of \(v = v^{'}\). Then \(\operatorname{vertex\,sequence}(\operatorname{copy}\left(p\right)) = \operatorname{vertex\,sequence}(p)\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e737570706f72745f65715f636f6e73}\paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f65715f636f6e73}{P42.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e737570706f72745f65715f636f6e73}\textbf{Support equals cons.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Then \(\operatorname{vertex\,sequence}(p) = \langle u\rangle \mathbin{\Vert} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}\paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}{P43.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}\textbf{Support map.} Let \(V\) and \(V^{'}\) be types. Let \(G\) be a simple graph on \(V\). Let \(G^{'}\) be a simple graph on \(V^{'}\). Let \(f\) be a graph homomorphism from \(G\) to \(G^{'}\). Let \(u\) and \(v\) be elements of \(V\). Let \(p\) be a walk in \(G\) from \(u\) to \(v\). Then \(\operatorname{vertex\,sequence}(\operatorname{image}_{f}(p)) = \langle \operatorname{coe}(f)(x) \mid x\in \operatorname{vertex\,sequence}(p)\rangle\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}\paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}{P44.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}\textbf{Support tail.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(v\) be an element of \(V\). Let \(p\) be a closed walk in \(G\) based at \(v\). Assume \(\neg \operatorname{Nil}\left(p\right)\). Then \(\operatorname{vertex\,sequence}(\operatorname{tail}(p)) = \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))\).
+\item[\paperlineanchor{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}\paperlink{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}{P45.}] \refstepcounter{paperpremise}\label{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}\textbf{Tail cons equals.} Let \(V\) be a type. Let \(G\) be a simple graph on \(V\). Let \(u\), \(v\), and \(w\) be elements of \(V\). Let \(h\) be a proof of \(u \sim_{G} v\). Let \(p\) be a walk in \(G\) from \(v\) to \(w\). Then \(\operatorname{tail}(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p)) = \operatorname{copy}(p)\).
+\item[\paperlineanchor{premise:616e645f636f6e67725f72696768745f696666}\paperlink{premise:616e645f636f6e67725f72696768745f696666}{P46.}] \refstepcounter{paperpremise}\label{premise:616e645f636f6e67725f72696768745f696666}\textbf{And congruence right if and only if.} Let \(a\), \(b\), and \(c\) be propositions. Then \(\left(a \land b \iff a \land c\right) \iff a \implies \left(b \iff c\right)\).
+\item[\paperlineanchor{premise:65715f66616c7365}\paperlink{premise:65715f66616c7365}{P47.}] \refstepcounter{paperpremise}\label{premise:65715f66616c7365}\textbf{Equals false.} Let \(p\) be a proposition. Assume \(\neg p\). Then \(p = \mathrm{False}\).
+\item[\paperlineanchor{premise:65715f6f665f686571}\paperlink{premise:65715f6f665f686571}{P48.}] \refstepcounter{paperpremise}\label{premise:65715f6f665f686571}\textbf{Equals of heq.} Let \(\alpha\) be a sort. Let \(a\) and \(a^{'}\) be elements of \(\alpha\). Assume \(\left(a\, :\, \alpha\right)\text{ is heterogeneously equal to }\left(a^{'}\, :\, \alpha\right)\). Then \(a = a^{'}\).
+\item[\paperlineanchor{premise:65715f6f725f6e65}\paperlink{premise:65715f6f725f6e65}{P49.}] \refstepcounter{paperpremise}\label{premise:65715f6f725f6e65}\textbf{Equals or differs from.} Let \(\alpha\) be a sort. Let \(x\) and \(y\) be elements of \(\alpha\). Then \(x = y \lor x \ne y\).
+\item[\paperlineanchor{premise:65715f73656c66}\paperlink{premise:65715f73656c66}{P50.}] \refstepcounter{paperpremise}\label{premise:65715f73656c66}\textbf{Equals self.} Let \(\alpha\) be a sort. Let \(a\) be an element of \(\alpha\). Then \(\left(a = a\right) = \mathrm{True}\).
+\item[\paperlineanchor{premise:65715f74727565}\paperlink{premise:65715f74727565}{P51.}] \refstepcounter{paperpremise}\label{premise:65715f74727565}\textbf{Equals true.} Let \(p\) be a proposition. Assume \(p\). Then \(p = \mathrm{True}\).
+\item[\paperlineanchor{premise:65715f747375625f6f665f6164645f6571}\paperlink{premise:65715f747375625f6f665f6164645f6571}{P52.}] \refstepcounter{paperpremise}\label{premise:65715f747375625f6f665f6164645f6571}\textbf{Equals tsub of sum equals.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{Add\,Comm\,Semigroup}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{Sub}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Ordered\,Sub}\left(\alpha\right)\). Let \(a\), \(b\), and \(c\) be elements of \(\alpha\). Let \(\mathit{inst}_{4}\) be a proof of \(\operatorname{Add\,Left\,Reflect\,LE}\left(\alpha\right)\). Assume \(a + c = b\). Then \(a = b - c\).
+\item[\paperlineanchor{premise:666f72616c6c5f636f6e6772}\paperlink{premise:666f72616c6c5f636f6e6772}{P53.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e6772}\textbf{Forall congruence.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) = q\left(a\right)\). Then \((\forall a\, :\, \alpha,\; p(a)) = (\forall a\, :\, \alpha,\; q(a))\).
+\item[\paperlineanchor{premise:6966665f73656c66}\paperlink{premise:6966665f73656c66}{P54.}] \refstepcounter{paperpremise}\label{premise:6966665f73656c66}\textbf{If and only if self.} Let \(p\) be a proposition. Then \(\left(p \iff p\right) = \mathrm{True}\).
+\item[\paperlineanchor{premise:696d706c6965735f636f6e67725f637478}\paperlink{premise:696d706c6965735f636f6e67725f637478}{P55.}] \refstepcounter{paperpremise}\label{premise:696d706c6965735f636f6e67725f637478}\textbf{Implies congruence ctx.} Let \(p_{1}\), \(p_{2}\), \(q_{1}\), and \(q_{2}\) be propositions. Assume \(p_{1} = p_{2}\). Assume \(p_{2} \implies q_{1} = q_{2}\). Then \(\left(p_{1} \implies q_{1}\right) = \left(p_{2} \implies q_{2}\right)\).
+\item[\paperlineanchor{premise:696d706c6965735f74727565}\paperlink{premise:696d706c6965735f74727565}{P56.}] \refstepcounter{paperpremise}\label{premise:696d706c6965735f74727565}\textbf{Implies true.} Let \(\alpha\) be a sort. Then \(\left(\forall a\, :\, \alpha,\; \mathrm{True}\right) = \mathrm{True}\).
+\item[\paperlineanchor{premise:696e73744c617766756c424571}\paperlink{premise:696e73744c617766756c424571}{P57.}] \refstepcounter{paperpremise}\label{premise:696e73744c617766756c424571}\textbf{Inst lawful beq.} Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Then \(\operatorname{Lawful\,BEq}\left(\alpha\right)\).
+\item[\paperlineanchor{premise:6c655f616e746973796d6d}\paperlink{premise:6c655f616e746973796d6d}{P58.}] \refstepcounter{paperpremise}\label{premise:6c655f616e746973796d6d}\textbf{At most antisymm.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le a\). Then \(a = b\).
+\item[\paperlineanchor{premise:6c655f6f665f6571}\paperlink{premise:6c655f6f665f6571}{P59.}] \refstepcounter{paperpremise}\label{premise:6c655f6f665f6571}\textbf{At most of equals.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a = b\). Then \(a \le b\).
+\item[\paperlineanchor{premise:6e6f745f66616c73655f65715f74727565}\paperlink{premise:6e6f745f66616c73655f65715f74727565}{P60.}] \refstepcounter{paperpremise}\label{premise:6e6f745f66616c73655f65715f74727565}\textbf{Not false equals true.} \(\left(\neg \mathrm{False}\right) = \mathrm{True}\).
+\item[\paperlineanchor{premise:6e6f745f6973456d7074795f696666}\paperlink{premise:6e6f745f6973456d7074795f696666}{P61.}] \refstepcounter{paperpremise}\label{premise:6e6f745f6973456d7074795f696666}\textbf{Not is empty if and only if.} Let \(\alpha\) be a sort. Then \(\neg \left(\alpha\text{ is empty}\right) \iff \alpha\text{ is nonempty}\).
+\item[\paperlineanchor{premise:7a65726f5f6e655f6f6e65}\paperlink{premise:7a65726f5f6e655f6f6e65}{P62.}] \refstepcounter{paperpremise}\label{premise:7a65726f5f6e655f6f6e65}\textbf{Zero differs from one.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{One}\left(\alpha\right)\). Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Ne\,Zero}\left(1\right)\). Then \(0 \ne 1\).
+\end{description}
+
+\section{Walks}
+\begin{theorem}[{When the image walk is a Hamiltonian path}]\label{theorem:1}
+Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\alpha\) is decidable. Assume equality on \(\beta\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Let \(H\) be a simple graph on \(\beta\). Let \(f\) be a graph homomorphism from \(G\) to \(H\). Assume \(\operatorname{coe}\left(f\right)\text{ is bijective}\). Assume \(p\text{ is a Hamiltonian path}\). Then \(\operatorname{image}_{f}(p)\text{ is a Hamiltonian path}\).
+\end{theorem}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(a_{1}\) in \(\beta\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}}, we obtain \(\operatorname{vertex\,sequence}(\operatorname{image}_{f}(p)) = \langle \operatorname{coe}(f)(x) \mid x\in \operatorname{vertex\,sequence}(p)\rangle\).
+Applying the same function to equal arguments, we obtain \((\operatorname{image}_{f}(p)\text{ visits }a_{1}\text{ exactly once}) = (\operatorname{count}(a_{1},\allowbreak{} \langle \operatorname{coe}(f)(x) \mid x\in \operatorname{vertex\,sequence}(p)\rangle) = 1)\).
+\end{proofstep}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\alpha\).
+Use the hypothesis \(\operatorname{coe}\left(f\right)\text{ is bijective}\).
+By \paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}}, we obtain \(\operatorname{coe}\left(f\right)\text{ is injective}\).
+By \paperlink{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}{Prerequisite~P\ref{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}} with \(l = \operatorname{vertex\,sequence}(p)\) and \(\operatorname{coe}\left(f\right)\) in place of its parameter \(f\), we obtain \(\operatorname{count}(f(x),\allowbreak{} \langle \operatorname{coe}(f)(x_{1}) \mid x_{1}\in \operatorname{vertex\,sequence}(p)\rangle) = \operatorname{visits}(p,\allowbreak{} x)\).
+Applying the hypothesis \(p\text{ is a Hamiltonian path}\), we obtain \(p\text{ visits }x\text{ exactly once}\).
+Chaining the equalities, we obtain \(\operatorname{count}(f(x),\allowbreak{} \langle \operatorname{coe}(f)(x_{1}) \mid x_{1}\in \operatorname{vertex\,sequence}(p)\rangle) = 1\).
+Applying the same function to equal arguments, we obtain \((\operatorname{count}(f(x),\allowbreak{} \langle \operatorname{coe}(f)(x_{1}) \mid x_{1}\in \operatorname{vertex\,sequence}(p)\rangle) = 1) = (1 = 1)\).
+By \paperlink{premise:65715f73656c66}{Prerequisite~P\ref{premise:65715f73656c66}} with \(\mathbb{N}\) as its type parameter \(\alpha\) and \(1\) in place of its parameter \(a\), we obtain \(\left(1 = 1\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \((\operatorname{count}(f(x),\allowbreak{} \langle \operatorname{coe}(f)(x_{1}) \mid x_{1}\in \operatorname{vertex\,sequence}(p)\rangle) = 1) = \mathrm{True}\).
+\end{proofstep}
+Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}{Prerequisite~P\ref{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}}, \paperlink{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}} (using \(\operatorname{coe}\left(f\right)\text{ is bijective}\)), \paperlink{premise:696d706c6965735f74727565}{Prerequisite~P\ref{premise:696d706c6965735f74727565}} and the two identities established above gives \(\operatorname{image}_{f}(p)\text{ is a Hamiltonian path}\).
+\end{proof}
+
+\begin{lemma}[{Vertices visited by a Hamiltonian path}]\label{theorem:2}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Assume \(p\text{ is a Hamiltonian path}\). Let \(c\) be an element of \(\alpha\). Then \(p\text{ visits }c\).
+\end{lemma}
+
+\begin{proof}
+Rewriting with \paperlink{premise:4c6973742e636f756e745f706f735f696666}{Prerequisite~P\ref{premise:4c6973742e636f756e745f706f735f696666}}, \paperlink{premise:696e73744c617766756c424571}{Prerequisite~P\ref{premise:696e73744c617766756c424571}}, \(p\text{ is a Hamiltonian path}\) and \paperlink{premise:4e61742e7a65726f5f6c745f6f6e65}{Prerequisite~P\ref{premise:4e61742e7a65726f5f6c745f6f6e65}} gives \(p\text{ visits }c\).
+\end{proof}
+
+\begin{theorem}[{Absence of repeated vertices in a Hamiltonian path}]\label{theorem:3}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Assume \(p\text{ is a Hamiltonian path}\). Then \(p\text{ has no repeated vertices}\).
+\end{theorem}
+
+\begin{proof}
+By \paperlink{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}{Prerequisite~P\ref{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}}, we obtain \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements} \iff (\forall a_{1}\, :\, \alpha,\; \operatorname{visits}(p,\allowbreak{} a_{1}) \le 1)\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(x\) in \(\alpha\).
+Applying the hypothesis \(p\text{ is a Hamiltonian path}\), we obtain \(p\text{ visits }x\text{ exactly once}\).
+By \paperlink{premise:6c655f6f665f6571}{Prerequisite~P\ref{premise:6c655f6f665f6571}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\operatorname{visits}(p, x) \le 1\).
+\end{proofstep}
+By the reverse implication, we obtain \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e4973506174682e6d6b27}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e4973506174682e6d6b27}}, we obtain \(p\text{ has no repeated vertices}\).
+\end{proof}
+
+\begin{lemma}[{A sufficient condition for a path to be Hamiltonian}]\label{theorem:4}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Assume \(p\text{ has no repeated vertices}\). Assume \(\forall w\, :\, \alpha,\; p\text{ visits }w\). Then \(p\text{ is a Hamiltonian path}\).
+\end{lemma}
+
+\begin{proof}
+Fix \(x\) in \(\alpha\).
+\par\smallskip\noindent\emph{Upper bound.}\enspace
+By \paperlink{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}{Prerequisite~P\ref{premise:4c6973742e6e6f6475705f6966665f636f756e745f6c655f6f6e65}}, we obtain \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements} \iff (\forall a_{1}\, :\, \alpha,\; \operatorname{visits}(p,\allowbreak{} a_{1}) \le 1)\).
+Use the hypothesis \(p\text{ has no repeated vertices}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e4973506174682e737570706f72745f6e6f647570}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e4973506174682e737570706f72745f6e6f647570}}, we obtain \(\operatorname{vertex\,sequence}(p)\text{ has no repeated elements}\).
+By the forward implication, we obtain \(\operatorname{visits}(p, x) \le 1\).
+\par\smallskip\noindent\emph{Lower bound.}\enspace
+By \paperlink{premise:696e73744c617766756c424571}{Prerequisite~P\ref{premise:696e73744c617766756c424571}}, we obtain \(\operatorname{Lawful\,BEq}\left(\alpha\right)\).
+By \paperlink{premise:4c6973742e636f756e745f706f735f696666}{Prerequisite~P\ref{premise:4c6973742e636f756e745f706f735f696666}}, we obtain \(0 < \operatorname{visits}(p, x) \iff p\text{ visits }x\).
+Applying the hypothesis \(\forall w\, :\, \alpha,\; p\text{ visits }w\), we obtain \(p\text{ visits }x\).
+By the reverse implication, we obtain \(0 < \operatorname{visits}(p, x)\).
+\par\smallskip\noindent By \paperlink{premise:6c655f616e746973796d6d}{Prerequisite~P\ref{premise:6c655f616e746973796d6d}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(p\text{ visits }x\text{ exactly once}\).
+\end{proof}
+
+\begin{corollary}[{A vertex-coverage criterion for a Hamiltonian path}]\label{theorem:5}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Assume \(p\text{ has no repeated vertices}\). Then
+\begin{center}
+\(\displaystyle p\text{ is a Hamiltonian path} \iff \left(\forall w\, :\, \alpha,\; p\text{ visits }w\right).\)
+\end{center}
+\end{corollary}
+
+\begin{proof}
+Consider the following case.
+\begin{proofstep}
+Assume \(p\text{ is a Hamiltonian path}\).
+By \paperlink{theorem:2}{Lemma~\ref{theorem:2}}, we obtain \(\forall w\, :\, \alpha,\; p\text{ visits }w\).
+\end{proofstep}
+By \paperlink{theorem:4}{Lemma~\ref{theorem:4}}, we obtain \(\left(\forall w\, :\, \alpha,\; p\text{ visits }w\right) \implies p\text{ is a Hamiltonian path}\).
+Together the two implications give the equivalence. Hence \(p\text{ is a Hamiltonian path} \iff \left(\forall w\, :\, \alpha,\; p\text{ visits }w\right)\).
+\end{proof}
+
+\begin{lemma}[{The vertex set of a Hamiltonian path}]\label{theorem:6}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Fix a finite enumeration of \(\alpha\). Assume \(p\text{ is a Hamiltonian path}\). Then \(\operatorname{to\,Finset}\left(\operatorname{vertex\,sequence}(p)\right) = \alpha\).
+\end{lemma}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\alpha\).
+By \paperlink{premise:4c6973742e6d656d5f746f46696e736574}{Prerequisite~P\ref{premise:4c6973742e6d656d5f746f46696e736574}}, we obtain \(x \in \operatorname{to\,Finset}\left(\operatorname{vertex\,sequence}(p)\right) \iff p\text{ visits }x\).
+By propositional extensionality, we obtain \((x \in \operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))) = (p\text{ visits }x)\).
+By \paperlink{theorem:2}{Lemma~\ref{theorem:2}} with \(c = x\), we obtain \(p\text{ visits }x\).
+By \paperlink{premise:65715f74727565}{Prerequisite~P\ref{premise:65715f74727565}}, we obtain \(\left(p\text{ visits }x\right) = \mathrm{True}\).
+Chaining the equalities, we obtain \(\left(x \in \operatorname{to\,Finset}\left(\operatorname{vertex\,sequence}(p)\right)\right) = \mathrm{True}\).
+\end{proofstep}
+Rewriting with \paperlink{premise:46696e7365742e65715f756e69765f6966665f666f72616c6c}{Prerequisite~P\ref{premise:46696e7365742e65715f756e69765f6966665f666f72616c6c}}, \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, \paperlink{premise:696d706c6965735f74727565}{Prerequisite~P\ref{premise:696d706c6965735f74727565}} and the identity established above gives \(\operatorname{to\,Finset}\left(\operatorname{vertex\,sequence}(p)\right) = \alpha\).
+\end{proof}
+
+\begin{lemma}[{Length of a Hamiltonian path}]\label{theorem:7}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a walk in \(G\) from \(a\) to \(b\). Fix a finite enumeration of \(\alpha\). Assume \(p\text{ is a Hamiltonian path}\). Then \(\operatorname{length}(p) = \left|\alpha\right| - 1\).
+\end{lemma}
+
+\begin{proof}
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f737570706f7274}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f737570706f7274}} gives \(\operatorname{length}(p) + 1 = \operatorname{length}(\operatorname{vertex\,sequence}(p))\).
+Rewriting with \paperlink{premise:4c6973742e73756d5f746f46696e7365745f636f756e745f65715f6c656e677468}{Prerequisite~P\ref{premise:4c6973742e73756d5f746f46696e7365745f636f756e745f65715f6c656e677468}} gives \(\operatorname{length}(\operatorname{vertex\,sequence}(p)) = \sum_{a_{1}\in \operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))}(\operatorname{visits}(p,\allowbreak{} a_{1}))\).
+The substitution uses the following argument.
+\begin{proofstep}
+Fix \(x\) in \(\alpha\).
+Assume \(x \in \operatorname{to\,Finset}\left(\operatorname{vertex\,sequence}(p)\right)\).
+Applying the hypothesis \(p\text{ is a Hamiltonian path}\), we obtain \(p\text{ visits }x\text{ exactly once}\).
+\end{proofstep}
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}} and the identity established above gives \(\sum_{a_{1}\in \operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))}(\operatorname{visits}(p,\allowbreak{} a_{1})) = \sum_{x\in \operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))}(1)\).
+Rewriting with \paperlink{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}{Prerequisite~P\ref{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}} gives \(\sum_{x\in \operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))}(1) = |\operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))|\).
+Rewriting with \paperlink{theorem:6}{Lemma~\ref{theorem:6}} (using \(p\text{ is a Hamiltonian path}\)) gives \(|\operatorname{to\,Finset}(\operatorname{vertex\,sequence}(p))| = |\{v\mid v\in \alpha\}|\).
+Rewriting with \paperlink{premise:46696e7365742e636172645f756e6976}{Prerequisite~P\ref{premise:46696e7365742e636172645f756e6976}} gives \(\left|\left\{v\mid v\in \alpha\right\}\right| = \left|\alpha\right|\).
+Subtracting \(1\) from both sides gives \(\operatorname{length}(p) = \left|\alpha\right| - 1\) by \paperlink{premise:65715f747375625f6f665f6164645f6571}{Prerequisite~P\ref{premise:65715f747375625f6f665f6164645f6571}}.
+\end{proof}
+
+\begin{lemma}[{The cycle property of a Hamiltonian cycle}]\label{theorem:8}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(p\text{ is a cycle}\).
+\end{lemma}
+
+\begin{proof}
+Use the hypothesis \(p\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}}, we obtain \(p\text{ is a cycle}\).
+\end{proof}
+
+\begin{lemma}[{When the image walk is a Hamiltonian cycle}]\label{theorem:9}
+Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\alpha\) is decidable. Assume equality on \(\beta\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Let \(H\) be a simple graph on \(\beta\). Let \(f\) be a graph homomorphism from \(G\) to \(H\). Assume \(\operatorname{coe}\left(f\right)\text{ is bijective}\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(\operatorname{image}_{f}(p)\text{ is a Hamiltonian cycle}\).
+\end{lemma}
+
+\begin{proof}
+Use the hypothesis \(\operatorname{coe}\left(f\right)\text{ is bijective}\).
+By \paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}}, we obtain \(\operatorname{coe}\left(f\right)\text{ is injective}\).
+By \paperlink{theorem:8}{Lemma~\ref{theorem:8}}, we obtain \(p\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}}, we obtain \(\operatorname{image}_{f}(p)\text{ is a cycle}\).
+\par\smallskip\noindent\emph{To is cycle.}\enspace
+Use the previously proved fact \(\operatorname{image}_{f}(p)\text{ is a cycle}\).
+\par\smallskip\noindent\emph{Is hamiltonian tail.}\enspace
+Fix \(x\) in \(\alpha\).
+By definition, we obtain \(a = a\).
+By definition, we obtain \(a = a\).
+By reflexivity, we obtain \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\).
+Consider the possible forms of \(p\).
+\emph{Nil case.}
+\begin{proofstep}
+Fix \(u\) in \(\alpha\).
+Assume \(a = u\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(a = a\).
+Assume \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{nil}\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\operatorname{nil}\text{ is a Hamiltonian cycle}\).
+Use the hypothesis \(\operatorname{coe}\left(f\right)\text{ is bijective}\).
+By \paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}}, we obtain \(\operatorname{coe}\left(f\right)\text{ is injective}\).
+By \paperlink{theorem:8}{Lemma~\ref{theorem:8}}, we obtain \(\operatorname{nil}\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}}, we obtain \(\operatorname{image}_{f}(\operatorname{nil})\text{ is a cycle}\).
+Use the hypothesis \(\operatorname{nil}\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}}, we obtain \(\operatorname{nil}\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}}, we obtain \(\operatorname{Is\,Circuit}\left(\operatorname{nil}\right)\).
+By definition, we obtain \(\operatorname{nil} = \operatorname{nil}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}}, we obtain \(\mathrm{False}\).
+Use the hypothesis \(\operatorname{nil}\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}}, we obtain \(\operatorname{nil}\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e746f497343697263756974}}, we obtain \(\operatorname{Is\,Circuit}\left(\operatorname{nil}\right)\).
+By definition, we obtain \(\operatorname{nil} = \operatorname{nil}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e4973436972637569742e6e655f6e696c}}, we obtain \(\mathrm{False}\).
+By definition, we obtain \(x_{1} \mapsto y \mapsto x_{1} = y\).
+Consider the possible forms of \(\mathrm{False}\).
+This proves \(\operatorname{tail}(\operatorname{image}_{f}(\operatorname{nil}))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+Using \paperlink{premise:65715f6f665f686571}{Prerequisite~P\ref{premise:65715f6f665f686571}} with \(\operatorname{Walk}_{G}(a, a)\) as its type parameter \(\alpha\) in reverse under \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{nil}\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\) gives \(\operatorname{nil} = p\).
+Use the hypothesis \(p\text{ is a Hamiltonian cycle}\).
+Substituting equals, we obtain \(\operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+Use the hypothesis \(a = u\).
+Substituting equals, we obtain \(a = u \implies (p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{nil}\, :\, \operatorname{Walk}_{G}(u,\allowbreak{} u)) \implies \operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+\emph{Cons case.}
+\begin{proofstep}
+Fix \(u\) in \(\alpha\).
+Fix \(v\) in \(\alpha\).
+Fix \(w\) in \(\alpha\).
+Assume \(u \sim_{G} v\).
+Fix \(p_{1}\) in \(\operatorname{Walk}_{G}(v, w)\).
+Assume \(a = u\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(a \sim_{G} v\).
+Assume \(a = w\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(p_{2}\) in \(\operatorname{Walk}_{G}(v, a)\).
+Assume \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{2})\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}\left(p_{2}\right)\text{ is a Hamiltonian cycle}\).
+Use the hypothesis \(\operatorname{coe}\left(f\right)\text{ is bijective}\).
+By \paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}}, we obtain \(\operatorname{coe}\left(f\right)\text{ is injective}\).
+By \paperlink{theorem:8}{Lemma~\ref{theorem:8}}, we obtain \(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}\left(p_{2}\right)\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6d6170}}, we obtain \(\operatorname{image}_{f}(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{2}))\text{ is a cycle}\).
+Use the hypothesis \(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}\left(p_{2}\right)\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}}, we obtain \(\operatorname{tail}(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{2}))\text{ visits }x\text{ exactly once}\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}} (using \(a \sim_{G} v\)) in the preceding result gives \(\operatorname{copy}\left(p_{2}\right)\text{ visits }x\text{ exactly once}\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}} in the preceding result gives \(p_{2}\text{ visits }x\text{ exactly once}\).
+Rewriting with \paperlink{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}{Prerequisite~P\ref{premise:4c6973742e636f756e745f6d61705f6f665f696e6a656374697665}} and \paperlink{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e696e6a656374697665}} (using \(\operatorname{coe}\left(f\right)\text{ is bijective}\)) in the preceding result gives \(\operatorname{count}(f(x),\allowbreak{} \langle \operatorname{coe}(f)(x_{1}) \mid x_{1}\in \operatorname{vertex\,sequence}(p_{2})\rangle) = 1\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e7461696c5f636f6e735f6571}}, \paperlink{premise:53696d706c6547726170682e486f6d2e6d61705f61646a}{Prerequisite~P\ref{premise:53696d706c6547726170682e486f6d2e6d61705f61646a}} (using \(a \sim_{G} v\)), \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f636f7079}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e676574566572745f7a65726f}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f6d6170}} in the preceding result gives \(\operatorname{tail}(\operatorname{image}_{f}(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{2})))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+Using \paperlink{premise:65715f6f665f686571}{Prerequisite~P\ref{premise:65715f6f665f686571}} with \(\operatorname{Walk}_{G}(a, a)\) as its type parameter \(\alpha\) in reverse under \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{2})\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\) gives \(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}\left(p_{2}\right) = p\).
+Use the hypothesis \(p\text{ is a Hamiltonian cycle}\).
+Substituting equals, we obtain \(\operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+Use the hypothesis \(a = w\).
+Substituting equals, we obtain \((p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{1})\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} w)) \implies \operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+Use the hypothesis \(a = u\).
+Use the hypothesis \(u \sim_{G} v\).
+Substituting equals, we obtain \(a = w \implies (p\, :\, \operatorname{Walk}_{G}(a,\allowbreak{} a))\text{ is heterogeneously equal to }(\operatorname{Simple\,Graph\mathord{:}Walk\mathord{:}cons}(p_{1})\, :\, \operatorname{Walk}_{G}(u,\allowbreak{} w)) \implies \operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+\end{proofstep}
+This proves \(\operatorname{tail}(\operatorname{image}_{f}(p))\text{ visits }f(x)\text{ exactly once}\).
+Rewriting with \paperlink{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}{Prerequisite~P\ref{premise:46756e6374696f6e2e5375726a6563746976652e666f72616c6c}} and \paperlink{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}{Prerequisite~P\ref{premise:46756e6374696f6e2e42696a6563746976652e7375726a656374697665}} (using \(\operatorname{coe}\left(f\right)\text{ is bijective}\)) in the preceding result gives \(\operatorname{tail}(\operatorname{image}_{f}(p))\text{ is a Hamiltonian path}\).
+These properties establish \(\operatorname{image}_{f}(p)\text{ is a Hamiltonian cycle}\).
+\end{proof}
+
+\begin{lemma}[{Characterizing Hamiltonian cycles by their tails}]\label{theorem:10}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Then
+\begin{center}
+\(\displaystyle p\text{ is a Hamiltonian cycle} \iff p\text{ is a cycle} \land \operatorname{tail}(p)\text{ is a Hamiltonian path}.\)
+\end{center}
+\end{lemma}
+
+\begin{proof}
+Consider the following case.
+\begin{proofstep}
+Assume \(p\text{ is a Hamiltonian cycle}\).
+Unpacking the hypothesis \(p\text{ is a Hamiltonian cycle}\) gives \(p\text{ is a cycle}\) and \(\operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+This proves the conjunction.
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(p\text{ is a cycle} \land \operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+Use the hypothesis \(p\text{ is a cycle} \land \operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+Take the witnesses from the preceding result.
+\begin{proofstep}
+Assume \(p\text{ is a cycle}\).
+Assume \(\operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+\par\smallskip\noindent\emph{To is cycle.}\enspace
+Use the hypothesis \(p\text{ is a cycle}\).
+\par\smallskip\noindent\emph{Is hamiltonian tail.}\enspace
+Use the hypothesis \(\operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+These properties establish \(p\text{ is a Hamiltonian cycle}\).
+\end{proofstep}
+Using the witnesses and their properties, we obtain \(p\text{ is a Hamiltonian cycle}\).
+\end{proofstep}
+Together the two implications give the equivalence. Hence \(p\text{ is a Hamiltonian cycle} \iff p\text{ is a cycle} \land \operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+\end{proof}
+
+\begin{theorem}[{Characterizing Hamiltonian cycles by vertex counts}]\label{theorem:11}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Then
+\begin{center}
+\(\displaystyle p\text{ is a Hamiltonian cycle} \iff p\text{ is a cycle} \land (\forall a_{1}\, :\, \alpha,\; \operatorname{count}(a_{1},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1).\)
+\end{center}
+\end{theorem}
+
+\begin{proof}
+The substitution uses the following argument.
+\begin{proofstep}
+Assume \(p\text{ is a cycle}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Fix \(a_{2}\) in \(\alpha\).
+Rewriting with \paperlink{premise:65715f66616c7365}{Prerequisite~P\ref{premise:65715f66616c7365}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}} (using \(p\text{ is a cycle}\)) and \paperlink{premise:6e6f745f66616c73655f65715f74727565}{Prerequisite~P\ref{premise:6e6f745f66616c73655f65715f74727565}} gives \(\neg \operatorname{Nil}\left(p\right)\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}}, we obtain \(\operatorname{vertex\,sequence}(\operatorname{tail}(p)) = \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))\).
+Applying the same function to equal arguments, we obtain \((\operatorname{tail}(p)\text{ visits }a_{2}\text{ exactly once}) = (\operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)\).
+\end{proofstep}
+By \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, we obtain \((\forall a_{2}\, :\, \alpha,\; \operatorname{tail}(p)\text{ visits }a_{2}\text{ exactly once}) = (\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)\).
+Applying the same function to equal arguments, we obtain \(((\forall a_{2}\, :\, \alpha,\; \operatorname{tail}(p)\text{ visits }a_{2}\text{ exactly once}) \iff (\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)) = ((\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1) \iff (\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1))\).
+By \paperlink{premise:6966665f73656c66}{Prerequisite~P\ref{premise:6966665f73656c66}} with \(\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1\) in place of its parameter \(p\), we obtain \(((\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1) \iff (\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)) = \mathrm{True}\).
+Chaining the equalities, we obtain \(((\forall a_{2}\, :\, \alpha,\; \operatorname{tail}(p)\text{ visits }a_{2}\text{ exactly once}) \iff (\forall a_{2}\, :\, \alpha,\; \operatorname{count}(a_{2},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)) = \mathrm{True}\).
+\end{proofstep}
+Rewriting with \paperlink{theorem:10}{Lemma~\ref{theorem:10}}, \paperlink{premise:616e645f636f6e67725f72696768745f696666}{Prerequisite~P\ref{premise:616e645f636f6e67725f72696768745f696666}}, \paperlink{premise:696d706c6965735f636f6e67725f637478}{Prerequisite~P\ref{premise:696d706c6965735f636f6e67725f637478}}, \paperlink{premise:696d706c6965735f74727565}{Prerequisite~P\ref{premise:696d706c6965735f74727565}} and the identity established above gives \(p\text{ is a Hamiltonian cycle} \iff p\text{ is a cycle} \land (\forall a_{1}\, :\, \alpha,\; \operatorname{count}(a_{1},\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 1)\).
+\end{proof}
+
+\begin{lemma}[{Vertices visited by a Hamiltonian cycle}]\label{theorem:12}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Let \(b\) be an element of \(\alpha\). Then \(p\text{ visits }b\).
+\end{lemma}
+
+\begin{proof}
+Use the hypothesis \(p\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}}, we obtain \(\operatorname{tail}(p)\text{ is a Hamiltonian path}\).
+By \paperlink{theorem:2}{Lemma~\ref{theorem:2}} with \(c = b\), we obtain \(\operatorname{tail}(p)\text{ visits }b\).
+Use the hypothesis \(p\text{ is a Hamiltonian cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}}, we obtain \(p\text{ is a cycle}\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}}, we obtain \(\neg \operatorname{Nil}\left(p\right)\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}}, we obtain \(\operatorname{vertex\,sequence}(\operatorname{tail}(p)) = \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))\).
+Substituting equals, we obtain \(b \in \operatorname{List\mathord{:}tail}\left(\operatorname{vertex\,sequence}(p)\right)\).
+By \paperlink{premise:4c6973742e6d656d5f6f665f6d656d5f7461696c}{Prerequisite~P\ref{premise:4c6973742e6d656d5f6f665f6d656d5f7461696c}}, we obtain \(p\text{ visits }b\).
+\end{proof}
+
+\begin{theorem}[{Length of a Hamiltonian cycle}]\label{theorem:13}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Fix a finite enumeration of \(\alpha\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(\operatorname{length}(p) = \left|\alpha\right|\).
+\end{theorem}
+
+\begin{proof}
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f7461696c5f6164645f6f6e65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e6c656e6774685f7461696c5f6164645f6f6e65}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}} (using \(p\text{ is a Hamiltonian cycle}\)) gives \(\operatorname{length}(p) = \operatorname{length}(\operatorname{tail}(p)) + 1\).
+Rewriting with \paperlink{theorem:7}{Lemma~\ref{theorem:7}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}} (using \(p\text{ is a Hamiltonian cycle}\)) gives \(\operatorname{length}(\operatorname{tail}(p)) + 1 = \left|\alpha\right| - 1 + 1\).
+The substitution uses the following argument.
+\begin{proofstep}
+Choose the witness \(a\).
+This element witnesses nonemptiness. Hence \(\alpha\text{ is nonempty}\).
+\end{proofstep}
+Rewriting with \paperlink{premise:4e61742e7375625f6164645f63616e63656c}{Prerequisite~P\ref{premise:4e61742e7375625f6164645f63616e63656c}}, \paperlink{premise:4e61742e737563635f6c65}{Prerequisite~P\ref{premise:4e61742e737563635f6c65}}, \paperlink{premise:46696e747970652e636172645f706f735f696666}{Prerequisite~P\ref{premise:46696e747970652e636172645f706f735f696666}} and the auxiliary result established above gives \(\left|\alpha\right| - 1 + 1 = \left|\alpha\right|\).
+\end{proof}
+
+\begin{theorem}[{Visits to the starting vertex of a Hamiltonian cycle}]\label{theorem:14}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) be an element of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Then \(p\text{ visits }a\text{ exactly twice}\).
+\end{theorem}
+
+\begin{proof}
+By definition, we obtain \(1 + 1 = 2\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}} (using \(p\text{ is a Hamiltonian cycle}\)) in the preceding result gives \(\operatorname{visits}(\operatorname{tail}(p), a) + 1 = 2\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f7461696c}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}} (using \(p\text{ is a Hamiltonian cycle}\)) in the preceding result gives \(\operatorname{count}(a,\allowbreak{} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) + 1 = 2\).
+Rewriting with \paperlink{premise:4c6973742e636f756e745f636f6e735f73656c66}{Prerequisite~P\ref{premise:4c6973742e636f756e745f636f6e735f73656c66}} and \paperlink{premise:696e73744c617766756c424571}{Prerequisite~P\ref{premise:696e73744c617766756c424571}} in the preceding result gives \(\operatorname{count}(a,\allowbreak{} \langle a\rangle \mathbin{\Vert} \operatorname{List\mathord{:}tail}(\operatorname{vertex\,sequence}(p))) = 2\).
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e737570706f72745f65715f636f6e73}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e737570706f72745f65715f636f6e73}} in the preceding result gives \(p\text{ visits }a\text{ exactly twice}\).
+\end{proof}
+
+\begin{theorem}[{Visits to a specified vertex of a Hamiltonian cycle}]\label{theorem:15}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Let \(a\) and \(b\) be elements of \(\alpha\). Let \(p\) be a closed walk in \(G\) based at \(a\). Assume \(p\text{ is a Hamiltonian cycle}\). Assume \(a \ne b\). Then \(p\text{ visits }b\text{ exactly once}\).
+\end{theorem}
+
+\begin{proof}
+Rewriting with \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e697348616d696c746f6e69616e5f7461696c}} (using \(p\text{ is a Hamiltonian cycle}\)), \paperlink{premise:4c6973742e636f756e745f636f6e735f6f665f6e65}{Prerequisite~P\ref{premise:4c6973742e636f756e745f636f6e735f6f665f6e65}} (using \(a \ne b\)), \paperlink{premise:696e73744c617766756c424571}{Prerequisite~P\ref{premise:696e73744c617766756c424571}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e636f6e735f737570706f72745f7461696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e636f6e735f737570706f72745f7461696c}}, \paperlink{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e49734379636c652e6e6f745f6e696c}} and \paperlink{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e497348616d696c746f6e69616e4379636c652e746f49734379636c65}} (using \(p\text{ is a Hamiltonian cycle}\)) gives \(p\text{ visits }b\text{ exactly once}\).
+\end{proof}
+
+\section{Simple graphs}
+\begin{theorem}[{Hamiltonicity under edge inclusion}]\label{theorem:16}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Fix a finite enumeration of \(\alpha\). Let \(H\) be a simple graph on \(\alpha\). Assume \(G \subseteq H\). Assume \(G\text{ is a Hamiltonian graph}\). Then \(H\text{ is a Hamiltonian graph}\).
+\end{theorem}
+
+\begin{proof}
+Assume \(\left|\alpha\right| \ne 1\).
+Use the hypothesis \(\left|\alpha\right| \ne 1\).
+Applying the hypothesis \(G\text{ is a Hamiltonian graph}\), we obtain \(\exists a\, :\, \alpha,\; \exists p\, :\, \operatorname{Walk}_{G}(a, a),\; p\text{ is a Hamiltonian cycle}\).
+Take the witnesses from the preceding result.
+\begin{proofstep}
+Fix \(w\) in \(\alpha\).
+Fix \(p\) in \(\operatorname{Walk}_{G}(w, w)\).
+Assume \(p\text{ is a Hamiltonian cycle}\).
+Choose the witness \(\operatorname{incl}_{G,H}(w)\).
+Choose the witness \(\operatorname{image}_{\operatorname{incl}_{G,H}}(p)\).
+By \paperlink{premise:46756e6374696f6e2e62696a6563746976655f6964}{Prerequisite~P\ref{premise:46756e6374696f6e2e62696a6563746976655f6964}}, we obtain \(\operatorname{id}\text{ is bijective}\).
+By \paperlink{theorem:9}{Lemma~\ref{theorem:9}} with \(f = \operatorname{incl}_{G,H}\), we obtain \(\operatorname{image}_{\operatorname{incl}_{G,H}}(p)\text{ is a Hamiltonian cycle}\).
+This witness proves existence. Hence \(\exists p_{1}\, :\, \operatorname{Walk}_{H}(\operatorname{incl}_{G,H}(w),\allowbreak{} \operatorname{incl}_{G,H}(w)),\; p_{1}\text{ is a Hamiltonian cycle}\).
+This witness proves existence. Hence \(\exists a\, :\, \alpha,\; \exists p_{1}\, :\, \operatorname{Walk}_{H}(a,\allowbreak{} a),\; p_{1}\text{ is a Hamiltonian cycle}\).
+\end{proofstep}
+Using the witnesses and their properties, we obtain \(\exists a\, :\, \alpha,\; \exists p\, :\, \operatorname{Walk}_{H}(a, a),\; p\text{ is a Hamiltonian cycle}\).
+\end{proof}
+
+\begin{theorem}[{Connectivity of a Hamiltonian graph}]\label{theorem:17}
+Let \(\alpha\) be a type. Assume equality on \(\alpha\) is decidable. Let \(G\) be a simple graph on \(\alpha\). Fix a finite enumeration of \(\alpha\). Assume \(G\text{ is a Hamiltonian graph}\). Then \(G\text{ is connected}\).
+\end{theorem}
+
+\begin{proof}
+\par\smallskip\noindent\emph{Preconnected.}\enspace
+Fix \(a\) in \(\alpha\).
+Fix \(b\) in \(\alpha\).
+By \paperlink{premise:65715f6f725f6e65}{Prerequisite~P\ref{premise:65715f6f725f6e65}} with \(x = a\) and \(y = b\), we obtain \(a = b \lor a \ne b\).
+Consider the following case.
+\begin{proofstep}
+Assume \(a = b\).
+By \paperlink{premise:53696d706c6547726170682e526561636861626c652e7265666c}{Prerequisite~P\ref{premise:53696d706c6547726170682e526561636861626c652e7265666c}} with \(u = a\), we obtain \(a\text{ can reach }a\text{ in }G\).
+Use the hypothesis \(a = b\).
+Substituting equals, we obtain \(a\text{ can reach }b\text{ in }G\).
+\end{proofstep}
+Consider the following case.
+\begin{proofstep}
+Assume \(a \ne b\).
+\par\smallskip\noindent\emph{Exists pair differs from.}\enspace
+Choose the witness \(a\).
+Choose the witness \(b\).
+Use the hypothesis \(a \ne b\).
+This witness proves existence. Hence \(\exists y\, :\, \alpha,\; a \ne y\).
+This witness proves existence. Hence \(\exists x\, :\, \alpha,\; \exists y\, :\, \alpha,\; x \ne y\).
+These properties establish \(\operatorname{Nontrivial}\left(\alpha\right)\).
+Use the previously proved fact \(\operatorname{Nontrivial}\left(\alpha\right)\).
+By \paperlink{premise:46696e747970652e6f6e655f6c745f63617264}{Prerequisite~P\ref{premise:46696e747970652e6f6e655f6c745f63617264}}, we obtain \(1 < \left|\alpha\right|\).
+By \paperlink{premise:4c542e6c742e6e6527}{Prerequisite~P\ref{premise:4c542e6c742e6e6527}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|\alpha\right| \ne 1\).
+Applying the hypothesis \(G\text{ is a Hamiltonian graph}\), we obtain \(\exists a_{1}\, :\, \alpha,\; \exists p\, :\, \operatorname{Walk}_{G}(a_{1},\allowbreak{} a_{1}),\; p\text{ is a Hamiltonian cycle}\).
+Consider the following case.
+\begin{proofstep}
+Fix \(w\) in \(\alpha\).
+Assume \(\exists p\, :\, \operatorname{Walk}_{G}(w, w),\; p\text{ is a Hamiltonian cycle}\).
+Use the hypothesis \(\exists p\, :\, \operatorname{Walk}_{G}(w, w),\; p\text{ is a Hamiltonian cycle}\).
+Consider the following case.
+\begin{proofstep}
+Fix \(p\) in \(\operatorname{Walk}_{G}(w, w)\).
+Assume \(p\text{ is a Hamiltonian cycle}\).
+By \paperlink{theorem:12}{Lemma~\ref{theorem:12}} with \(a\) in place of its parameter \(b\), we obtain \(p\text{ visits }a\).
+By \paperlink{theorem:12}{Lemma~\ref{theorem:12}}, we obtain \(p\text{ visits }b\).
+By \paperlink{premise:53696d706c6547726170682e57616c6b2e726561636861626c65}{Prerequisite~P\ref{premise:53696d706c6547726170682e57616c6b2e726561636861626c65}} with \(\operatorname{reverse}\left(\operatorname{prefix}_{p}(a)\right) \mathbin{\Vert} \operatorname{prefix}_{p}(b)\) in place of its parameter \(p\), we obtain \(a\text{ can reach }b\text{ in }G\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(a\text{ can reach }b\text{ in }G\).
+\end{proofstep}
+Using the existential hypothesis, we obtain \(a\text{ can reach }b\text{ in }G\).
+\end{proofstep}
+The two alternatives exhaust the cases. Hence \(a\text{ can reach }b\text{ in }G\).
+\par\smallskip\noindent\emph{Nonempty.}\enspace
+By \paperlink{premise:6e6f745f6973456d7074795f696666}{Prerequisite~P\ref{premise:6e6f745f6973456d7074795f696666}}, we obtain \(\neg \left(\alpha\text{ is empty}\right) \iff \alpha\text{ is nonempty}\).
+For the required implication, argue as follows.
+\begin{proofstep}
+Assume \(\alpha\text{ is empty}\).
+Rewriting with \paperlink{premise:46696e747970652e636172645f65715f7a65726f}{Prerequisite~P\ref{premise:46696e747970652e636172645f65715f7a65726f}} (using \(\alpha\text{ is empty}\)), \paperlink{premise:65715f66616c7365}{Prerequisite~P\ref{premise:65715f66616c7365}}, \paperlink{premise:7a65726f5f6e655f6f6e65}{Prerequisite~P\ref{premise:7a65726f5f6e655f6f6e65}}, \paperlink{premise:4e61742e696e73744e655a65726f53756363}{Prerequisite~P\ref{premise:4e61742e696e73744e655a65726f53756363}} and \paperlink{premise:6e6f745f66616c73655f65715f74727565}{Prerequisite~P\ref{premise:6e6f745f66616c73655f65715f74727565}} gives \(\left|\alpha\right| \ne 1\).
+Applying the hypothesis \(G\text{ is a Hamiltonian graph}\), we obtain \(\exists a\, :\, \alpha,\; \exists p\, :\, \operatorname{Walk}_{G}(a, a),\; p\text{ is a Hamiltonian cycle}\).
+Rewriting with \paperlink{premise:4973456d7074792e6578697374735f696666}{Prerequisite~P\ref{premise:4973456d7074792e6578697374735f696666}} (using \(\alpha\text{ is empty}\)) in the preceding result gives \(\mathrm{False}\).
+The contradiction rules out this case. Hence \(\mathrm{False}\).
+\end{proofstep}
+By the forward implication, we obtain \(\alpha\text{ is nonempty}\).
+These properties establish \(G\text{ is connected}\).
+\end{proof}
+
+\end{document}

@@ -10,11 +10,12 @@
 
 namespace {
 constexpr char usage[] =
-    "Usage: lean-to-latex INPUT.json OUTPUT.tex [--chapter FILE | --paper TITLE]\n"
+    "Usage: lean-to-latex INPUT.json OUTPUT.tex [--chapter FILE | --paper TITLE | --outline]\n"
     "       lean-to-latex --list-chapter FILE\n"
     "       lean-to-latex --help\n"
     "\n"
-    "  --paper TITLE        Create an article from the checked declarations.\n"
+    "  --paper TITLE        Set the article title (default: Mathematical proofs).\n"
+    "  --outline            Reproduce the original numbered-step outline.\n"
     "  --chapter FILE       Use the sections and selections in a JSON layout.\n"
     "  --list-chapter FILE  Print the declarations selected by a layout.\n"
     "  --threshold N        Set the display threshold for a formula (default 5).\n"
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
                 for (const auto& theorem : section.theorems) std::cout << theorem.request() << '\n';
             return 0;
         }
-        if (argc < 3 || argc % 2 == 0) {
+        if (argc < 3) {
             std::cerr << usage;
             return 2;
         }
@@ -45,11 +46,17 @@ int main(int argc, char* argv[]) {
         std::optional<std::size_t> proofBudget;
         std::optional<proof::ProofWeights> proofWeights;
         bool thresholdSpecified = false;
-        for (int i = 3; i < argc; i += 2) {
+        bool outline = false;
+        for (int i = 3; i < argc; ++i) {
             const std::string option = argv[i];
+            if (option == "--outline" && !outline && !chapter && !paperTitle) {
+                outline = true;
+                continue;
+            }
+            if (i + 1 >= argc) throw std::runtime_error("Missing argument or conflicting option: " + option);
+            const std::string value = argv[++i];
             if ((option == "--threshold" && !thresholdSpecified) ||
                 (option == "--proof-budget" && !proofBudget)) {
-                const std::string value = argv[i + 1];
                 std::size_t n;
                 const auto parsed = std::from_chars(value.data(), value.data() + value.size(), n);
                 if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size())
@@ -57,11 +64,11 @@ int main(int argc, char* argv[]) {
                 if (option == "--threshold") { threshold = n; thresholdSpecified = true; }
                 else proofBudget = n;
             } else if (option == "--proof-weights" && !proofWeights) {
-                proofWeights = proof::parseProofWeights(argv[i+1]);
-            } else if (option == "--chapter" && !chapter && !paperTitle) {
-                chapter = proof::readChapter(argv[i + 1]);
-            } else if (option == "--paper" && !chapter && !paperTitle) {
-                paperTitle = argv[i + 1];
+                proofWeights = proof::parseProofWeights(value);
+            } else if (option == "--chapter" && !outline && !chapter && !paperTitle) {
+                chapter = proof::readChapter(value);
+            } else if (option == "--paper" && !outline && !chapter && !paperTitle) {
+                paperTitle = value;
             } else {
                 throw std::runtime_error("Unknown or repeated option " + option);
             }
@@ -69,7 +76,7 @@ int main(int argc, char* argv[]) {
         std::ifstream input(argv[1], std::ios::binary);
         if (!input) throw std::runtime_error("Cannot read the adapter input");
         auto checked = proof::readJson(input);
-        if (paperTitle) chapter = proof::automaticPaper(checked, *paperTitle);
+        if (!chapter && !outline) chapter = proof::automaticPaper(checked, paperTitle.value_or("Mathematical proofs"));
         if (proofBudget || proofWeights) {
             if (!chapter || !chapter->paper) throw std::runtime_error("Proof detail controls require a paper");
             if (proofBudget) chapter->proofBudget = *proofBudget;

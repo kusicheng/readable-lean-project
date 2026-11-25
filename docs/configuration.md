@@ -35,7 +35,9 @@ To export a built module, replace the filename with its module name, such as `pr
 | 1 | The compiler wrote a document with a visible gap in a proof or definition. Read standard error to locate it. |
 | 2 | An input, option or I/O error prevented normal compilation. |
 
-In paper mode, later use can make a result a lemma. Specializations or substitutions of earlier results can become corollaries. The three roles share a counter. A citation names the earlier result and its role. Named library prerequisites are stated at the front of the paper.
+The compiler produces an article by default. Use `--paper TITLE` to give it a title. Results used to prove later statements can become lemmas. A direct consequence of earlier results can become a corollary. All three roles share a counter. Each citation names the earlier result and links to it. Named library prerequisites appear at the front of the paper.
+
+An automatic article uses a mathematical caption when it recognizes the statement or finds a conventional title in the source documentation. Otherwise the result opens with its number and checked statement. An explicit chapter layout can supply titles. Use `--outline` to reproduce the numbered steps in the original feasibility examples.
 
 ## Control the amount of detail
 
@@ -92,3 +94,5 @@ python3 -B tests/verify_papers.py --mathlib-project /path/to/mathlib4
 ~~~
 
 The first command checks the frozen number-theory examples. The second checks the pilot chapter and its references. The third builds the local paper editions in two fresh directories. The last also checks original Mathlib files and arithmetic examples with a prebuilt Mathlib 4.19 checkout. Use `--lake PATH` and `--generator NAME` to select local build tools. The chapter and paper tests accept `--tectonic PATH` and `--only-cached`. The paper test also accepts repeatable `--font-dir PATH` arguments for local fonts. [Prototype verifier](../tests/verify.py) · [Chapter verifier](../tests/verify_chapter.py) · [Paper verifier](../tests/verify_papers.py)
+
+To test navigation in the published PDFs, run `python3 tests/verify_pdf_navigation.py` with `pypdfium2` installed. It checks the clickable area of each numbered citation and the location of the printed heading it opens. [PDF navigation test](../tests/verify_pdf_navigation.py)

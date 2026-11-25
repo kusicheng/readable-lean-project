@@ -1,13 +1,48 @@
 \documentclass{article}
 \usepackage{amsmath,amssymb,amsthm}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheoremstyle{paperresult}{8pt}{5pt}{\normalfont\raggedright}{}{\bfseries}{.}{\newline}{}
+\theoremstyle{paperresult}
+\newtheorem{theorem}{\paperresultname{Theorem}}
 \newcounter{paperpremise}
+\newtheorem{lemma}[theorem]{\paperresultname{Lemma}}
+\newtheorem{corollary}[theorem]{\paperresultname{Corollary}}
 \newcounter{definingequation}
 \newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0in}
+\AddToHook{env/proof/begin}{\raggedright}
 \setlength{\emergencystretch}{\linewidth}
 \title{Pigeonhole principles}
 \author{}
@@ -16,32 +51,32 @@
 \maketitle
 \subsection*{Prerequisites}
 \begin{description}
-\item[P1.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636173745f63617264}\textbf{Cardinality as a sum of ones.} Let \(\alpha\) and \(R\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Non\,Assoc\,Semiring}\left(R\right)\). Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{cast}_{R}\left(\left|s\right|\right) = \sum_{x\in s}\left(1\right)\).
-\item[P2.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}\textbf{Exists at most of sum at most.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(s\ne\varnothing\). Assume \(\sum_{i\in s}\left(f\left(i\right)\right) \le \sum_{i\in s}\left(g\left(i\right)\right)\). Then \(\exists i\, :\, \iota,\; i \in s \land f\left(i\right) \le g\left(i\right)\).
-\item[P3.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}\textbf{Exists less than of sum less than.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(\sum_{i\in s}\left(f\left(i\right)\right) < \sum_{i\in s}\left(g\left(i\right)\right)\). Then \(\exists i\, :\, \iota,\; i \in s \land f\left(i\right) < g\left(i\right)\).
-\item[P4.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f756e6976}\textbf{Membership in the full set.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be an element of \(\alpha\). Then \(x \in \alpha\).
-\item[P5.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \left|s\right| \mathbin{\bullet} b\).
-\item[P6.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}\textbf{Summing over the fibers of a map.} Let \(\iota\), \(\kappa\), and \(M\) be types. Equip \(M\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\iota\). Let \(t\) be a finite subset of \(\kappa\). Assume equality on \(\kappa\) is decidable. Let \(g\) be a function of type \(\iota \to \kappa\). Assume \(\forall i\, :\, \iota,\; i \in s \implies g\left(i\right) \in t\). Let \(f\) be a function of type \(\iota \to M\). Then \(\sum_{j\in t}(\sum_{i\in \{i\in s \mid g(i) = j\}}(f(i))) = \sum_{i\in s}(f(i))\).
-\item[P7.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}\textbf{Sum at most sum fiberwise of sum fiber nonpositive.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(\iota^{'}\) be a type. Assume equality on \(\iota^{'}\) is decidable. Let \(t\) be a finite subset of \(\iota^{'}\). Let \(g\) be a function of type \(\iota \to \iota^{'}\). Let \(f\) be a function of type \(\iota \to N\). Assume \(\forall y\, :\, \iota^{'},\; y \notin t \implies \sum_{x\in \{x\in s \mid g(x) = y\}}(f(x)) \le 0\). Then \(\sum_{x\in s}(f(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid g(x) = y\}}(f(x)))\).
-\item[P8.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6e6f6e6e6567}\textbf{Sum nonnegative.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(f\) be a function of type \(\iota \to N\). Let \(s\) be a finite subset of \(\iota\). Assume \(\forall i\, :\, \iota,\; i \in s \implies 0 \le f\left(i\right)\). Then \(0 \le \sum_{i\in s}\left(f\left(i\right)\right)\).
-\item[P9.] \refstepcounter{paperpremise}\label{premise:46696e7365742e756e69765f6e6f6e656d707479}\textbf{Whole space nonempty.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Assume \(\alpha\text{ is nonempty}\). Then \(\alpha\ne\varnothing\).
-\item[P10.] \refstepcounter{paperpremise}\label{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(\alpha\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Add\,Comm\,Monoid}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(\alpha\right)\). Assume \(\text{translation preserves and reflects order on }\alpha\). Then \(\text{translation preserves order on }\alpha\).
-\item[P11.] \refstepcounter{paperpremise}\label{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Then \(\text{translation preserves order on }R\).
-\item[P12.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{To is ordered cancel sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\text{translation preserves and reflects order on }R\).
-\item[P13.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\textbf{To is ordered ring.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-\item[P14.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}\textbf{To zero leone class.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Zero\,LEOne\,Class}\left(R\right)\).
-\item[P15.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449735374726963744f72646572656452696e67}\textbf{Strict order on the natural numbers.} \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-\item[P16.] \refstepcounter{paperpremise}\label{premise:4e61742e6d6f645f6c74}\textbf{Mod less than.} Let \(x\) and \(y\) be natural numbers. Assume \(y > 0\). Then \(x \bmod y < y\).
-\item[P17.] \refstepcounter{paperpremise}\label{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}\textbf{Is ordered sum cancel monoid.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves and reflects order on }\alpha\). Then \(\text{translation preserves and reflects order on }\alpha^{\mathrm{op}}\).
-\item[P18.] \refstepcounter{paperpremise}\label{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}\textbf{Exists less than map equals of maps to.} Let \(\alpha\) and \(\beta\) be types. Equip \(\alpha\) with a linear order. Let \(s\) be a subset of \(\alpha\). Let \(t\) be a subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(s\text{ is infinite}\). Assume \(\operatorname{Maps\,To}\left(f, s, t\right)\). Assume \(\operatorname{Finite}\left(t\right)\). Then \(\exists x\, :\, \alpha,\; x \in s \land (\exists y\, :\, \alpha,\; y \in s \land (x < y \land f(x) = f(y)))\).
-\item[P19.] \refstepcounter{paperpremise}\label{premise:5365742e66696e6974655f6c745f6e6174}\textbf{Finite less than nat.} Let \(n\) be a natural number. Then \(\operatorname{Finite}\left(\{i\in \mathbb{N} \mid i < n\}\right)\).
-\item[P20.] \refstepcounter{paperpremise}\label{premise:66756e657874}\textbf{Function extensionality.} Let \(\alpha\) be a sort. Let \(\beta\) be a function of type \(\alpha \to \mathsf{Sort}\). Let \(f\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Let \(g\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Assume \(\forall x\, :\, \alpha,\; f\left(x\right) = g\left(x\right)\). Then \(f = g\).
-\item[P21.] \refstepcounter{paperpremise}\label{premise:7a65726f5f6c655f6f6e65}\textbf{Zero at most one.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{One}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{LE}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Then \(0 \le 1\).
+\item[\paperlineanchor{premise:46696e7365742e636173745f63617264}\paperlink{premise:46696e7365742e636173745f63617264}{P1.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636173745f63617264}\textbf{Cardinality as a sum of ones.} Let \(\alpha\) and \(R\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Non\,Assoc\,Semiring}\left(R\right)\). Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{cast}_{R}\left(\left|s\right|\right) = \sum_{x\in s}\left(1\right)\).
+\item[\paperlineanchor{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}\paperlink{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}{P2.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}\textbf{Exists at most of sum at most.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(s\ne\varnothing\). Assume \(\sum_{i\in s}\left(f\left(i\right)\right) \le \sum_{i\in s}\left(g\left(i\right)\right)\). Then \(\exists i\, :\, \iota,\; i \in s \land f\left(i\right) \le g\left(i\right)\).
+\item[\paperlineanchor{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}\paperlink{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}{P3.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}\textbf{Exists less than of sum less than.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(\sum_{i\in s}\left(f\left(i\right)\right) < \sum_{i\in s}\left(g\left(i\right)\right)\). Then \(\exists i\, :\, \iota,\; i \in s \land f\left(i\right) < g\left(i\right)\).
+\item[\paperlineanchor{premise:46696e7365742e6d656d5f756e6976}\paperlink{premise:46696e7365742e6d656d5f756e6976}{P4.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f756e6976}\textbf{Membership in the full set.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be an element of \(\alpha\). Then \(x \in \alpha\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f636f6e7374}\paperlink{premise:46696e7365742e73756d5f636f6e7374}{P5.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \sum_{k=1}^{\left|s\right|}\left(b\right)\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}\paperlink{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}{P6.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}\textbf{Summing over the fibers of a map.} Let \(\iota\), \(\kappa\), and \(M\) be types. Equip \(M\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\iota\). Let \(t\) be a finite subset of \(\kappa\). Assume equality on \(\kappa\) is decidable. Let \(g\) be a function of type \(\iota \to \kappa\). Assume \(\forall i\, :\, \iota,\; i \in s \implies g\left(i\right) \in t\). Let \(f\) be a function of type \(\iota \to M\). Then \(\sum_{j\in t}(\sum_{i\in \{i\in s \mid g(i) = j\}}(f(i))) = \sum_{i\in s}(f(i))\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}\paperlink{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}{P7.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}\textbf{Sum at most sum fiberwise of sum fiber nonpositive.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(\iota^{'}\) be a type. Assume equality on \(\iota^{'}\) is decidable. Let \(t\) be a finite subset of \(\iota^{'}\). Let \(g\) be a function of type \(\iota \to \iota^{'}\). Let \(f\) be a function of type \(\iota \to N\). Assume \(\forall y\, :\, \iota^{'},\; y \notin t \implies \sum_{x\in \{x\in s \mid g(x) = y\}}(f(x)) \le 0\). Then \(\sum_{x\in s}(f(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid g(x) = y\}}(f(x)))\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f6e6f6e6e6567}\paperlink{premise:46696e7365742e73756d5f6e6f6e6e6567}{P8.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6e6f6e6e6567}\textbf{Sum nonnegative.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(f\) be a function of type \(\iota \to N\). Let \(s\) be a finite subset of \(\iota\). Assume \(\forall i\, :\, \iota,\; i \in s \implies 0 \le f\left(i\right)\). Then \(0 \le \sum_{i\in s}\left(f\left(i\right)\right)\).
+\item[\paperlineanchor{premise:46696e7365742e756e69765f6e6f6e656d707479}\paperlink{premise:46696e7365742e756e69765f6e6f6e656d707479}{P9.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e756e69765f6e6f6e656d707479}\textbf{Whole space nonempty.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Assume \(\alpha\text{ is nonempty}\). Then \(\alpha\ne\varnothing\).
+\item[\paperlineanchor{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}\paperlink{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}{P10.}] \refstepcounter{paperpremise}\label{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(\alpha\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Add\,Comm\,Monoid}\left(\alpha\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(\alpha\right)\). Assume \(\text{translation preserves and reflects order on }\alpha\). Then \(\text{translation preserves order on }\alpha\).
+\item[\paperlineanchor{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{P11.}] \refstepcounter{paperpremise}\label{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Then \(\text{translation preserves order on }R\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{P12.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{To is ordered cancel sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\text{translation preserves and reflects order on }R\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{P13.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\textbf{To is ordered ring.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}\paperlink{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}{P14.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}\textbf{To zero leone class.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Zero\,LEOne\,Class}\left(R\right)\).
+\item[\paperlineanchor{premise:4e61742e696e737449735374726963744f72646572656452696e67}\paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{P15.}] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449735374726963744f72646572656452696e67}\textbf{Strict order on the natural numbers.} \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+\item[\paperlineanchor{premise:4e61742e6d6f645f6c74}\paperlink{premise:4e61742e6d6f645f6c74}{P16.}] \refstepcounter{paperpremise}\label{premise:4e61742e6d6f645f6c74}\textbf{Mod less than.} Let \(x\) and \(y\) be natural numbers. Assume \(y > 0\). Then \(x \bmod y < y\).
+\item[\paperlineanchor{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}\paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{P17.}] \refstepcounter{paperpremise}\label{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}\textbf{Is ordered sum cancel monoid.} Let \(\alpha\) be a type. Equip \(\alpha\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves and reflects order on }\alpha\). Then \(\text{translation preserves and reflects order on }\alpha^{\mathrm{op}}\).
+\item[\paperlineanchor{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}\paperlink{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}{P18.}] \refstepcounter{paperpremise}\label{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}\textbf{Exists less than map equals of maps to.} Let \(\alpha\) and \(\beta\) be types. Equip \(\alpha\) with a linear order. Let \(s\) be a subset of \(\alpha\). Let \(t\) be a subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Assume \(s\text{ is infinite}\). Assume \(\operatorname{Maps\,To}\left(f, s, t\right)\). Assume \(\operatorname{Finite}\left(t\right)\). Then \(\exists x\, :\, \alpha,\; x \in s \land (\exists y\, :\, \alpha,\; y \in s \land (x < y \land f(x) = f(y)))\).
+\item[\paperlineanchor{premise:5365742e66696e6974655f6c745f6e6174}\paperlink{premise:5365742e66696e6974655f6c745f6e6174}{P19.}] \refstepcounter{paperpremise}\label{premise:5365742e66696e6974655f6c745f6e6174}\textbf{Finite less than nat.} Let \(n\) be a natural number. Then \(\operatorname{Finite}\left(\{i\in \mathbb{N} \mid i < n\}\right)\).
+\item[\paperlineanchor{premise:66756e657874}\paperlink{premise:66756e657874}{P20.}] \refstepcounter{paperpremise}\label{premise:66756e657874}\textbf{Function extensionality.} Let \(\alpha\) be a sort. Let \(\beta\) be a function of type \(\alpha \to \mathsf{Sort}\). Let \(f\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Let \(g\) be a function of type \(\Pi_{x\, :\, \alpha}\, \beta\left(x\right)\). Assume \(\forall x\, :\, \alpha,\; f\left(x\right) = g\left(x\right)\). Then \(f = g\).
+\item[\paperlineanchor{premise:7a65726f5f6c655f6f6e65}\paperlink{premise:7a65726f5f6c655f6f6e65}{P21.}] \refstepcounter{paperpremise}\label{premise:7a65726f5f6c655f6f6e65}\textbf{Zero at most one.} Let \(\alpha\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Zero}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{1}\) of type \(\operatorname{One}\left(\alpha\right)\). Fix a structure \(\mathit{inst}_{2}\) of type \(\operatorname{LE}\left(\alpha\right)\). Let \(\mathit{inst}_{3}\) be a proof of \(\operatorname{Zero\,LEOne\,Class}\left(\alpha\right)\). Then \(0 \le 1\).
 \end{description}
 
 \section{Finite sets}
 \begin{lemma}[{A fiber with weight above the bound for maps into the target}]\label{theorem:1}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(\sum_{k=1}^{\left|t\right|}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -49,14 +84,13 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-Use the hypothesis \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(w\left(x\right)\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} and Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f} (using \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\)) in the preceding result gives \(\sum_{i\in t}(b) < \sum_{i\in t}(\sum_{x\in \{x\in s \mid f(x) = i\}}(w(x)))\).
-By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
-
+Use the hypothesis \(\sum_{k=1}^{\left|t\right|}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} and \paperlink{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}} (using \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\)) in the preceding result gives \(\sum_{i\in t}(b) < \sum_{i\in t}(\sum_{x\in \{x\in s \mid f(x) = i\}}(w(x)))\).
+By \paperlink{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}{Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
 \end{proof}
 
 \begin{corollary}[{A fiber with weight below the bound for maps into the target}]\label{theorem:2}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) < \left|t\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) < \sum_{k=1}^{\left|t\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) < b.\)
 \end{center}
@@ -64,13 +98,12 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:1} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:1}{Lemma~\ref{theorem:1}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{lemma}[{A fiber with weight above the bound when fibers outside the target have nonpositive weight}]\label{theorem:3}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\). Assume \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\). Assume \(\sum_{k=1}^{\left|t\right|}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -78,19 +111,18 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-Use the hypothesis \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(w\left(x\right)\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} in the preceding result gives \(\sum_{x\in t}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\).
+Use the hypothesis \(\sum_{k=1}^{\left|t\right|}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} in the preceding result gives \(\sum_{x\in t}\left(b\right) < \sum_{x\in s}\left(w\left(x\right)\right)\).
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }M\).
+By \paperlink{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }M\).
 Use the hypothesis \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}, we obtain \(\sum_{x\in s}(w(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
+By \paperlink{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}}, we obtain \(\sum_{x\in s}(w(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
 By transitivity of the displayed relations, we obtain \(\sum_{x\in t}(b) < \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
-By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
-
+By \paperlink{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}{Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c745f6f665f73756d5f6c74}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
 \end{proof}
 
 \begin{corollary}[{A fiber with weight below the bound when fibers outside the target have nonnegative weight}]\label{theorem:4}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies 0 \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) < \left|t\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies 0 \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) < \sum_{k=1}^{\left|t\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) < b.\)
 \end{center}
@@ -98,13 +130,12 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:3} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:3}{Lemma~\ref{theorem:3}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{lemma}[{A fiber with weight at least the bound for maps into the target}]\label{theorem:5}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(t\ne\varnothing\). Assume \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(t\ne\varnothing\). Assume \(\sum_{k=1}^{\left|t\right|}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -113,14 +144,13 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
 Use the hypothesis \(t\ne\varnothing\).
-Use the hypothesis \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(w\left(x\right)\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} and Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f} (using \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\)) in the preceding result gives \(\sum_{i\in t}(b) \le \sum_{i\in t}(\sum_{x\in \{x\in s \mid f(x) = i\}}(w(x)))\).
-By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
-
+Use the hypothesis \(\sum_{k=1}^{\left|t\right|}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} and \paperlink{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6669626572776973655f6f665f6d6170735f746f}} (using \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\)) in the preceding result gives \(\sum_{i\in t}(b) \le \sum_{i\in t}(\sum_{x\in \{x\in s \mid f(x) = i\}}(w(x)))\).
+By \paperlink{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}{Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
 \end{proof}
 
 \begin{corollary}[{A fiber with weight at most the bound for maps into the target}]\label{theorem:6}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(t\ne\varnothing\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) \le \left|t\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies f\left(a\right) \in t\). Assume \(t\ne\varnothing\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) \le \sum_{k=1}^{\left|t\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le b.\)
 \end{center}
@@ -128,13 +158,12 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:5} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:5}{Lemma~\ref{theorem:5}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{lemma}[{A fiber with weight at least the bound when fibers outside the target have nonpositive weight}]\label{theorem:7}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\). Assume \(t\ne\varnothing\). Assume \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\). Assume \(t\ne\varnothing\). Assume \(\sum_{k=1}^{\left|t\right|}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -143,19 +172,18 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
 Use the hypothesis \(t\ne\varnothing\).
-Use the hypothesis \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(w\left(x\right)\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} in the preceding result gives \(\sum_{x\in t}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\).
+Use the hypothesis \(\sum_{k=1}^{\left|t\right|}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} in the preceding result gives \(\sum_{x\in t}\left(b\right) \le \sum_{x\in s}\left(w\left(x\right)\right)\).
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }M\).
+By \paperlink{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656443616e63656c4164644d6f6e6f69642e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }M\).
 Use the hypothesis \(\forall y\, :\, \beta,\; y \notin t \implies \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le 0\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}, we obtain \(\sum_{x\in s}(w(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
+By \paperlink{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f73756d5f6669626572776973655f6f665f73756d5f66696265725f6e6f6e706f73}}, we obtain \(\sum_{x\in s}(w(x)) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
 By transitivity of the displayed relations, we obtain \(\sum_{x\in t}(b) \le \sum_{y\in t}(\sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)))\).
-By Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
-
+By \paperlink{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}{Prerequisite~P\ref{premise:46696e7365742e6578697374735f6c655f6f665f73756d5f6c65}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\).
 \end{proof}
 
 \begin{corollary}[{A fiber with weight at most the bound when fibers outside the target have nonnegative weight}]\label{theorem:8}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies 0 \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\). Assume \(t\ne\varnothing\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) \le \left|t\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\forall y\, :\, \beta,\; y \notin t \implies 0 \le \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x))\). Assume \(t\ne\varnothing\). Assume \(\sum_{x\in s}\left(w\left(x\right)\right) \le \sum_{k=1}^{\left|t\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(w(x)) \le b.\)
 \end{center}
@@ -163,9 +191,8 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:7} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:7}{Lemma~\ref{theorem:7}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size above the bound for maps into the target}]\label{theorem:9}
@@ -179,16 +206,15 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
+By \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
 Applying the same function to equal arguments, we obtain \((y \in t \land b < \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)) = (y \in t \land b < \sum_{x\in \{x\in s \mid f(x) = y\}}(1))\).
 \end{proofstep}
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M\).
 Use the hypothesis \(\left|t\right| \mathbin{\bullet} b < \operatorname{cast}_{M}\left(\left|s\right|\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} in the preceding result gives \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(1\right)\).
-By Lemma~\ref{theorem:1}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right)\).
-Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land b < \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)\).
-
+Rewriting with \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} in the preceding result gives \(\left|t\right| \mathbin{\bullet} b < \sum_{x\in s}\left(1\right)\).
+By \paperlink{theorem:1}{Lemma~\ref{theorem:1}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b < \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right)\).
+Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land b < \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)\).
 \end{proof}
 
 \begin{corollary}[{A fiber with size above the natural-number bound for maps into the target}]\label{theorem:10}
@@ -199,9 +225,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:9} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:9}{Lemma~\ref{theorem:9}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size below the bound}]\label{theorem:11}
@@ -215,33 +240,32 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
+By \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
 Applying the same function to equal arguments, we obtain \((y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) < b) = (y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(1) < b)\).
 \end{proofstep}
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
 Assume \(x \notin t\).
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(M\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(M\right)\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }M\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x_{2}\) in \(\alpha\).
 Assume \(x_{2} \in \{x_{4}\in s \mid f\left(x_{4}\right) = x\}\).
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}, we obtain \(\operatorname{Zero\,LEOne\,Class}\left(M\right)\).
-By Prerequisite~P\ref{premise:7a65726f5f6c655f6f6e65}, we obtain \(0 \le 1\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}}, we obtain \(\operatorname{Zero\,LEOne\,Class}\left(M\right)\).
+By \paperlink{premise:7a65726f5f6c655f6f6e65}{Prerequisite~P\ref{premise:7a65726f5f6c655f6f6e65}}, we obtain \(0 \le 1\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6e6f6e6e6567}, we obtain \(0 \le \sum_{i\in \{x_{2}\in s \mid f\left(x_{2}\right) = x\}}\left(1\right)\).
+By \paperlink{premise:46696e7365742e73756d5f6e6f6e6e6567}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6e6f6e6e6567}}, we obtain \(0 \le \sum_{i\in \{x_{2}\in s \mid f\left(x_{2}\right) = x\}}\left(1\right)\).
 \end{proofstep}
 Use the hypothesis \(\operatorname{cast}_{M}\left(\left|s\right|\right) < \left|t\right| \mathbin{\bullet} b\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} in the preceding result gives \(\sum_{x\in s}\left(1\right) < \left|t\right| \mathbin{\bullet} b\).
-By Corollary~\ref{theorem:4}, we obtain \(\exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right) < b\).
-Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) < b\).
-
+Rewriting with \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} in the preceding result gives \(\sum_{x\in s}\left(1\right) < \left|t\right| \mathbin{\bullet} b\).
+By \paperlink{theorem:4}{Corollary~\ref{theorem:4}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right) < b\).
+Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) < b\).
 \end{proof}
 
 \begin{corollary}[{A fiber with size below the natural-number bound}]\label{theorem:12}
@@ -252,9 +276,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:11} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:11}{Lemma~\ref{theorem:11}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size at least the bound for maps into the target}]\label{theorem:13}
@@ -268,16 +291,15 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
+By \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
 Applying the same function to equal arguments, we obtain \((y \in t \land b \le \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)) = (y \in t \land b \le \sum_{x\in \{x\in s \mid f(x) = y\}}(1))\).
 \end{proofstep}
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M\).
 Use the hypothesis \(\left|t\right| \mathbin{\bullet} b \le \operatorname{cast}_{M}\left(\left|s\right|\right)\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} in the preceding result gives \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(1\right)\).
-By Lemma~\ref{theorem:5}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right)\).
-Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land b \le \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)\).
-
+Rewriting with \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} in the preceding result gives \(\left|t\right| \mathbin{\bullet} b \le \sum_{x\in s}\left(1\right)\).
+By \paperlink{theorem:5}{Lemma~\ref{theorem:5}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land b \le \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right)\).
+Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land b \le \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|)\).
 \end{proof}
 
 \begin{corollary}[{A fiber with size at least the natural-number bound for maps into the target}]\label{theorem:14}
@@ -288,9 +310,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:13} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:13}{Lemma~\ref{theorem:13}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size at most the bound}]\label{theorem:15}
@@ -304,33 +325,32 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
+By \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} with \(\{x\in s \mid f\left(x\right) = y\}\) in place of its parameter \(s\), we obtain \(\operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) = \sum_{x\in \{x\in s \mid f(x) = y\}}(1)\).
 Applying the same function to equal arguments, we obtain \((y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) \le b) = (y \in t \land \sum_{x\in \{x\in s \mid f(x) = y\}}(1) \le b)\).
 \end{proofstep}
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
 Assume \(x \notin t\).
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(M\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }M\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(M\right)\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }M\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x_{2}\) in \(\alpha\).
 Assume \(x_{2} \in \{x_{4}\in s \mid f\left(x_{4}\right) = x\}\).
 Use the hypothesis \(M\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}, we obtain \(\operatorname{Zero\,LEOne\,Class}\left(M\right)\).
-By Prerequisite~P\ref{premise:7a65726f5f6c655f6f6e65}, we obtain \(0 \le 1\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f5a65726f4c454f6e65436c617373}}, we obtain \(\operatorname{Zero\,LEOne\,Class}\left(M\right)\).
+By \paperlink{premise:7a65726f5f6c655f6f6e65}{Prerequisite~P\ref{premise:7a65726f5f6c655f6f6e65}}, we obtain \(0 \le 1\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6e6f6e6e6567}, we obtain \(0 \le \sum_{i\in \{x_{2}\in s \mid f\left(x_{2}\right) = x\}}\left(1\right)\).
+By \paperlink{premise:46696e7365742e73756d5f6e6f6e6e6567}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6e6f6e6e6567}}, we obtain \(0 \le \sum_{i\in \{x_{2}\in s \mid f\left(x_{2}\right) = x\}}\left(1\right)\).
 \end{proofstep}
 Use the hypothesis \(\operatorname{cast}_{M}\left(\left|s\right|\right) \le \left|t\right| \mathbin{\bullet} b\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e636173745f63617264} in the preceding result gives \(\sum_{x\in s}\left(1\right) \le \left|t\right| \mathbin{\bullet} b\).
-By Corollary~\ref{theorem:8}, we obtain \(\exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right) \le b\).
-Rewriting with Prerequisite~P\ref{premise:66756e657874} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) \le b\).
-
+Rewriting with \paperlink{premise:46696e7365742e636173745f63617264}{Prerequisite~P\ref{premise:46696e7365742e636173745f63617264}} in the preceding result gives \(\sum_{x\in s}\left(1\right) \le \left|t\right| \mathbin{\bullet} b\).
+By \paperlink{theorem:8}{Corollary~\ref{theorem:8}}, we obtain \(\exists y\, :\, \beta,\; y \in t \land \sum_{x\in \{x\in s \mid f\left(x\right) = y\}}\left(1\right) \le b\).
+Rewriting with \paperlink{premise:66756e657874}{Prerequisite~P\ref{premise:66756e657874}} and the identity established above in the preceding result gives \(\exists y\, :\, \beta,\; y \in t \land \operatorname{cast}_{M}(|\{x\in s \mid f(x) = y\}|) \le b\).
 \end{proof}
 
 \begin{corollary}[{A fiber with size at most the natural-number bound}]\label{theorem:16}
@@ -341,14 +361,13 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:15} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:15}{Lemma~\ref{theorem:15}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \section{Finite types}
 \begin{lemma}[{A fiber with weight above the bound for maps between finite types}]\label{theorem:17}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\left|\beta\right| \mathbin{\bullet} b < \sum_{x\in \alpha}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\sum_{k=1}^{\left|\beta\right|}\left(b\right) < \sum_{x\in \alpha}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; b < \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -359,9 +378,9 @@ For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in \alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
 \end{proofstep}
-By Lemma~\ref{theorem:1} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b < \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x))\).
+By \paperlink{theorem:1}{Lemma~\ref{theorem:1}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b < \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x))\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -372,11 +391,10 @@ Use the hypothesis \(b < \sum_{x\in \{x\in \alpha \mid f\left(x\right) = y\}}\le
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; b < \sum_{x\in \{x\in \alpha \mid f(x) = y_{1}\}}(w(x))\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; b < \sum_{x\in \{x\in \alpha \mid f\left(x\right) = y\}}\left(w\left(x\right)\right)\).
-
 \end{proof}
 
 \begin{lemma}[{A fiber with weight at least the bound for maps between finite types}]\label{theorem:18}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\beta\text{ is nonempty}\). Assume \(\left|\beta\right| \mathbin{\bullet} b \le \sum_{x\in \alpha}\left(w\left(x\right)\right)\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\beta\text{ is nonempty}\). Assume \(\sum_{k=1}^{\left|\beta\right|}\left(b\right) \le \sum_{x\in \alpha}\left(w\left(x\right)\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; b \le \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x)).\)
 \end{center}
@@ -387,11 +405,11 @@ For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in \alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
 \end{proofstep}
 Use the hypothesis \(\beta\text{ is nonempty}\).
-By Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}, we obtain \(\beta\ne\varnothing\).
-By Lemma~\ref{theorem:5} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b \le \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x))\).
+By \paperlink{premise:46696e7365742e756e69765f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}}, we obtain \(\beta\ne\varnothing\).
+By \paperlink{theorem:5}{Lemma~\ref{theorem:5}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b \le \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x))\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -402,11 +420,10 @@ Use the hypothesis \(b \le \sum_{x\in \{x\in \alpha \mid f\left(x\right) = y\}}\
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; b \le \sum_{x\in \{x\in \alpha \mid f(x) = y_{1}\}}(w(x))\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; b \le \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x))\).
-
 \end{proof}
 
 \begin{corollary}[{A fiber with weight below the bound for maps between finite types}]\label{theorem:19}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\sum_{x\in \alpha}\left(w\left(x\right)\right) < \left|\beta\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\sum_{x\in \alpha}\left(w\left(x\right)\right) < \sum_{k=1}^{\left|\beta\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x)) < b.\)
 \end{center}
@@ -414,13 +431,12 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:17} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:17}{Lemma~\ref{theorem:17}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{corollary}[{A fiber with weight at most the bound for maps between finite types}]\label{theorem:20}
-Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\beta\text{ is nonempty}\). Assume \(\sum_{x\in \alpha}\left(w\left(x\right)\right) \le \left|\beta\right| \mathbin{\bullet} b\). Then
+Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is decidable. Fix a finite enumeration of \(\alpha\). Fix a finite enumeration of \(\beta\). Let \(f\) be a function of type \(\alpha \to \beta\). Let \(w\) be a function of type \(\alpha \to M\). Let \(b\) be an element of \(M\). Equip \(M\) with a commutative additive monoid structure and a linear order. Assume \(\text{translation preserves and reflects order on }M\). Assume \(\beta\text{ is nonempty}\). Assume \(\sum_{x\in \alpha}\left(w\left(x\right)\right) \le \sum_{k=1}^{\left|\beta\right|}\left(b\right)\). Then
 \begin{center}
 \(\displaystyle \exists y\, :\, \beta,\; \sum_{x\in \{x\in \alpha \mid f(x) = y\}}(w(x)) \le b.\)
 \end{center}
@@ -428,9 +444,8 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\text{translation preserves and reflects order on }M\).
-By Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
-Apply Lemma~\ref{theorem:18} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
-
+By \paperlink{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}{Prerequisite~P\ref{premise:4f726465724475616c2e69734f72646572656441646443616e63656c4d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }M^{\mathrm{op}}\).
+Apply \paperlink{theorem:18}{Lemma~\ref{theorem:18}} with \(M^{\mathrm{op}}\) as its type parameter \(M\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size above the bound for maps between finite types}]\label{theorem:21}
@@ -445,9 +460,9 @@ For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in \alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
 \end{proofstep}
-By Lemma~\ref{theorem:9} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b < \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
+By \paperlink{theorem:9}{Lemma~\ref{theorem:9}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b < \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -458,7 +473,6 @@ Use the hypothesis \(b < \operatorname{cast}_{M}\left(\left|\{x\in \alpha \mid f
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; b < \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y_{1}\}|)\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; b < \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
-
 \end{proof}
 
 \begin{corollary}[{A fiber with size above the natural-number bound for maps between finite types}]\label{theorem:22}
@@ -466,9 +480,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:21} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:21}{Lemma~\ref{theorem:21}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size below the bound for maps between finite types}]\label{theorem:23}
@@ -479,7 +492,7 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 \end{lemma}
 
 \begin{proof}
-By Lemma~\ref{theorem:11} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) < b\).
+By \paperlink{theorem:11}{Lemma~\ref{theorem:11}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) < b\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -490,7 +503,6 @@ Use the hypothesis \(\operatorname{cast}_{M}\left(\left|\{x\in \alpha \mid f\lef
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y_{1}\}|) < b\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) < b\).
-
 \end{proof}
 
 \begin{corollary}[{A fiber with size below the natural-number bound for maps between finite types}]\label{theorem:24}
@@ -498,9 +510,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:23} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:23}{Lemma~\ref{theorem:23}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size at least the bound for maps between finite types}]\label{theorem:25}
@@ -515,11 +526,11 @@ For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in \alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(f\left(x\right)\) in place of its parameter \(x\), we obtain \(f\left(x\right) \in \beta\).
 \end{proofstep}
 Use the hypothesis \(\beta\text{ is nonempty}\).
-By Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}, we obtain \(\beta\ne\varnothing\).
-By Lemma~\ref{theorem:13} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b \le \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
+By \paperlink{premise:46696e7365742e756e69765f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}}, we obtain \(\beta\ne\varnothing\).
+By \paperlink{theorem:13}{Lemma~\ref{theorem:13}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land b \le \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -530,7 +541,6 @@ Use the hypothesis \(b \le \operatorname{cast}_{M}\left(\left|\{x\in \alpha \mid
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; b \le \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y_{1}\}|)\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; b \le \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|)\).
-
 \end{proof}
 
 \begin{corollary}[{A fiber with size at least the natural-number bound for maps between finite types}]\label{theorem:26}
@@ -538,9 +548,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:25} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:25}{Lemma~\ref{theorem:25}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \begin{lemma}[{A fiber with size at most the bound for maps between finite types}]\label{theorem:27}
@@ -552,8 +561,8 @@ Let \(\alpha\), \(\beta\), and \(M\) be types. Assume equality on \(\beta\) is d
 
 \begin{proof}
 Use the hypothesis \(\beta\text{ is nonempty}\).
-By Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}, we obtain \(\beta\ne\varnothing\).
-By Lemma~\ref{theorem:15} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) \le b\).
+By \paperlink{premise:46696e7365742e756e69765f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e756e69765f6e6f6e656d707479}}, we obtain \(\beta\ne\varnothing\).
+By \paperlink{theorem:15}{Lemma~\ref{theorem:15}} with \(s = \alpha\) and \(t = \beta\), we obtain \(\exists y\, :\, \beta,\; y \in \beta \land \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) \le b\).
 Take the witnesses from the preceding result.
 \begin{proofstep}
 Fix \(y\) in \(\beta\).
@@ -564,7 +573,6 @@ Use the hypothesis \(\operatorname{cast}_{M}\left(\left|\{x\in \alpha \mid f\lef
 This witness proves existence. Hence \(\exists y_{1}\, :\, \beta,\; \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y_{1}\}|) \le b\).
 \end{proofstep}
 Using the witnesses and their properties, we obtain \(\exists y\, :\, \beta,\; \operatorname{cast}_{M}(|\{x\in \alpha \mid f(x) = y\}|) \le b\).
-
 \end{proof}
 
 \begin{corollary}[{A fiber with size at most the natural-number bound for maps between finite types}]\label{theorem:28}
@@ -572,9 +580,8 @@ Let \(\alpha\) and \(\beta\) be types. Assume equality on \(\beta\) is decidable
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-Apply Lemma~\ref{theorem:27} with \(M = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+Apply \paperlink{theorem:27}{Lemma~\ref{theorem:27}} with \(M = \mathbb{N}\).
 \end{proof}
 
 \section{Natural numbers}
@@ -592,12 +599,11 @@ For the required implication, argue as follows.
 Fix \(n\) in \(\mathbb{N}\).
 Assume \(n \in s\).
 Use the hypothesis \(0 < k\).
-By Prerequisite~P\ref{premise:4e61742e6d6f645f6c74} with \(n\) in place of its parameter \(x\), we obtain \(n \bmod k \in \operatorname{Iio}\left(k\right)\).
+By \paperlink{premise:4e61742e6d6f645f6c74}{Prerequisite~P\ref{premise:4e61742e6d6f645f6c74}} with \(n\) in place of its parameter \(x\), we obtain \(n \bmod k \in \operatorname{Iio}\left(k\right)\).
 Use the previously proved fact \(n \bmod k \in \operatorname{Iio}\left(k\right)\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:5365742e66696e6974655f6c745f6e6174} with \(n = k\), we obtain \(\operatorname{Finite}\left(\{i\in \mathbb{N} \mid i < k\}\right)\).
-By Prerequisite~P\ref{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f} with \(\alpha = \mathbb{N}\) and \(\beta = \mathbb{N}\), we obtain \(\exists m\, :\, \mathbb{N},\; m \in s \land (\exists n\, :\, \mathbb{N},\; n \in s \land (m < n \land m \equiv n \pmod{k}))\).
-
+By \paperlink{premise:5365742e66696e6974655f6c745f6e6174}{Prerequisite~P\ref{premise:5365742e66696e6974655f6c745f6e6174}} with \(n = k\), we obtain \(\operatorname{Finite}\left(\{i\in \mathbb{N} \mid i < k\}\right)\).
+By \paperlink{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}{Prerequisite~P\ref{premise:5365742e496e66696e6974652e6578697374735f6c745f6d61705f65715f6f665f6d617073546f}} with \(\alpha = \mathbb{N}\) and \(\beta = \mathbb{N}\), we obtain \(\exists m\, :\, \mathbb{N},\; m \in s \land (\exists n\, :\, \mathbb{N},\; n \in s \land (m < n \land m \equiv n \pmod{k}))\).
 \end{proof}
 
 \end{document}

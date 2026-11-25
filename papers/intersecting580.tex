@@ -1,13 +1,48 @@
 \documentclass{article}
 \usepackage{amsmath,amssymb,amsthm}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheoremstyle{paperresult}{8pt}{5pt}{\normalfont\raggedright}{}{\bfseries}{.}{\newline}{}
+\theoremstyle{paperresult}
+\newtheorem{theorem}{\paperresultname{Theorem}}
 \newcounter{paperpremise}
+\newtheorem{lemma}[theorem]{\paperresultname{Lemma}}
+\newtheorem{corollary}[theorem]{\paperresultname{Corollary}}
 \newcounter{definingequation}
 \newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0in}
+\AddToHook{env/proof/begin}{\raggedright}
 \setlength{\emergencystretch}{\linewidth}
 \title{The sharp bound for an intersecting family}
 \author{}
@@ -19,38 +54,38 @@ Fix a ground set of n plus one points, with one distinguished point. How many su
 \end{abstract}
 
 \section*{Definitions}
-\paragraph{Search.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Then \(\operatorname{search}\left(p, 0\right) = 0\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Let \(k\) be a natural number. Then \(\operatorname{search}(p,\allowbreak{} k + 1) = \begin{cases}k + 1 &\text{if } p(k + 1)\\ \operatorname{search}(p,\allowbreak{} k) &\text{otherwise}\end{cases}\).
+\paragraph{Search.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\paperlineanchor{defeq:1}\textup{(\paperlink{defeq:1}{D1})} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Then \(\operatorname{search}\left(p, 0\right) = 0\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(p\) be a function of type \(\mathbb{N} \to \mathsf{Prop}\). Let \(k\) be a natural number. Then \(\operatorname{search}(p,\allowbreak{} k + 1) = \begin{cases}k + 1 &\text{if } p(k + 1)\\ \operatorname{search}(p,\allowbreak{} k) &\text{otherwise}\end{cases}\).
 
-\paragraph{Word.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\textup{(D3)} \(\operatorname{Word} = \operatorname{List}(\mathbb{B})\).
+\paragraph{Word.} \par\noindent\refstepcounter{definingequation}\label{defeq:3}\paperlineanchor{defeq:3}\textup{(\paperlink{defeq:3}{D3})} \(\operatorname{Word} = \operatorname{List}(\mathbb{B})\).
 
-\paragraph{Family.} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\textup{(D4)} \(\operatorname{Family} = \left(\operatorname{Word} \to \mathbb{B}\right)\).
+\paragraph{Family.} \par\noindent\refstepcounter{definingequation}\label{defeq:4}\paperlineanchor{defeq:4}\textup{(\paperlink{defeq:4}{D4})} \(\operatorname{Family} = \left(\operatorname{Word} \to \mathbb{B}\right)\).
 
-\paragraph{Share.} \par\noindent\refstepcounter{definingequation}\label{defeq:5}\textup{(D5)} Let \(x\) be a Boolean value. Let \(\mathit{xs}\) be a list of elements of \(\mathbb{B}\). Let \(y\) be a Boolean value. Let \(\mathit{ys}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{share}(\langle x\rangle \mathbin{\Vert} \mathit{xs},\allowbreak{} \langle y\rangle \mathbin{\Vert} \mathit{ys}) = (x \land y \lor \operatorname{share}(\mathit{xs},\allowbreak{} \mathit{ys}))\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:6}\textup{(D6)} Let \(x\) and \(x_{1}\) be elements of \(\operatorname{Word}\). Assume \(\forall x_{3}\, :\, \mathbb{B},\; \forall \mathit{xs}\, :\, \operatorname{List}(\mathbb{B}),\; \forall y\, :\, \mathbb{B},\; \forall \mathit{ys}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle x_{3}\rangle \mathbin{\Vert} \mathit{xs} \implies x_{1} = \langle y\rangle \mathbin{\Vert} \mathit{ys} \implies \mathrm{False}\). Then \(\operatorname{share}\left(x, x_{1}\right) = \mathrm{false}\).
+\paragraph{Share.} \par\noindent\refstepcounter{definingequation}\label{defeq:5}\paperlineanchor{defeq:5}\textup{(\paperlink{defeq:5}{D5})} Let \(x\) be a Boolean value. Let \(\mathit{xs}\) be a list of elements of \(\mathbb{B}\). Let \(y\) be a Boolean value. Let \(\mathit{ys}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{share}(\langle x\rangle \mathbin{\Vert} \mathit{xs},\allowbreak{} \langle y\rangle \mathbin{\Vert} \mathit{ys}) = (x \land y \lor \operatorname{share}(\mathit{xs},\allowbreak{} \mathit{ys}))\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:6}\paperlineanchor{defeq:6}\textup{(\paperlink{defeq:6}{D6})} Let \(x\) and \(x_{1}\) be elements of \(\operatorname{Word}\). Assume \(\forall x_{3}\, :\, \mathbb{B},\; \forall \mathit{xs}\, :\, \operatorname{List}(\mathbb{B}),\; \forall y\, :\, \mathbb{B},\; \forall \mathit{ys}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle x_{3}\rangle \mathbin{\Vert} \mathit{xs} \implies x_{1} = \langle y\rangle \mathbin{\Vert} \mathit{ys} \implies \mathrm{False}\). Then \(\operatorname{share}\left(x, x_{1}\right) = \mathrm{false}\).
 
-\paragraph{Intersects.} \par\noindent\refstepcounter{definingequation}\label{defeq:7}\textup{(D7)} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{Intersects}(n,\allowbreak{} f) = (\forall u\, :\, \operatorname{Word},\; \forall v\, :\, \operatorname{Word},\; \operatorname{length}(u) = n + 1 \implies \operatorname{length}(v) = n + 1 \implies f(u) = \mathrm{true} \implies f(v) = \mathrm{true} \implies \operatorname{share}(u,\allowbreak{} v) = \mathrm{true})\).
+\paragraph{Intersects.} \par\noindent\refstepcounter{definingequation}\label{defeq:7}\paperlineanchor{defeq:7}\textup{(\paperlink{defeq:7}{D7})} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{Intersects}(n,\allowbreak{} f) = (\forall u\, :\, \operatorname{Word},\; \forall v\, :\, \operatorname{Word},\; \operatorname{length}(u) = n + 1 \implies \operatorname{length}(v) = n + 1 \implies f(u) = \mathrm{true} \implies f(v) = \mathrm{true} \implies \operatorname{share}(u,\allowbreak{} v) = \mathrm{true})\).
 
-\paragraph{Left.} \par\noindent\refstepcounter{definingequation}\label{defeq:8}\textup{(D8)} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{left}\left(t\right) = \langle \mathrm{true}\rangle \mathbin{\Vert} t\).
+\paragraph{Left.} \par\noindent\refstepcounter{definingequation}\label{defeq:8}\paperlineanchor{defeq:8}\textup{(\paperlink{defeq:8}{D8})} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{left}\left(t\right) = \langle \mathrm{true}\rangle \mathbin{\Vert} t\).
 
-\paragraph{Sample.} \par\noindent\refstepcounter{definingequation}\label{defeq:9}\textup{(D9)} \(\operatorname{sample}\left(0\right) = \langle \langle\,\rangle\rangle\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:10}\textup{(D10)} Let \(n\) be a natural number. Then \(\operatorname{sample}(n + 1) = \langle \langle \mathrm{false}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle \mathbin{\Vert} \langle \langle \mathrm{true}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle\).
+\paragraph{Sample.} \par\noindent\refstepcounter{definingequation}\label{defeq:9}\paperlineanchor{defeq:9}\textup{(\paperlink{defeq:9}{D9})} \(\operatorname{sample}\left(0\right) = \langle \langle\,\rangle\rangle\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:10}\paperlineanchor{defeq:10}\textup{(\paperlink{defeq:10}{D10})} Let \(n\) be a natural number. Then \(\operatorname{sample}(n + 1) = \langle \langle \mathrm{false}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle \mathbin{\Vert} \langle \langle \mathrm{true}\rangle \mathbin{\Vert} x \mid x\in \operatorname{sample}(n)\rangle\).
 
-\paragraph{Complement.} \par\noindent\refstepcounter{definingequation}\label{defeq:11}\textup{(D11)} Let \(w\) be an element of \(\operatorname{Word}\). Then \(\operatorname{complement}\left(w\right) = \langle \operatorname{not}(x) \mid x\in w\rangle\).
+\paragraph{Complement.} \par\noindent\refstepcounter{definingequation}\label{defeq:11}\paperlineanchor{defeq:11}\textup{(\paperlink{defeq:11}{D11})} Let \(w\) be an element of \(\operatorname{Word}\). Then \(\operatorname{complement}\left(w\right) = \langle \operatorname{not}(x) \mid x\in w\rangle\).
 
-\paragraph{Right.} \par\noindent\refstepcounter{definingequation}\label{defeq:12}\textup{(D12)} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{right}(t) = \langle \mathrm{false}\rangle \mathbin{\Vert} \operatorname{complement}(t)\).
+\paragraph{Right.} \par\noindent\refstepcounter{definingequation}\label{defeq:12}\paperlineanchor{defeq:12}\textup{(\paperlink{defeq:12}{D12})} Let \(t\) be an element of \(\operatorname{Word}\). Then \(\operatorname{right}(t) = \langle \mathrm{false}\rangle \mathbin{\Vert} \operatorname{complement}(t)\).
 
-\paragraph{Cardinality.} \par\noindent\refstepcounter{definingequation}\label{defeq:13}\textup{(D13)} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{card}(n,\allowbreak{} f) = \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{left}(t))\rangle) + \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{right}(t))\rangle)\).
+\paragraph{Cardinality.} \par\noindent\refstepcounter{definingequation}\label{defeq:13}\paperlineanchor{defeq:13}\textup{(\paperlink{defeq:13}{D13})} Let \(n\) be a natural number. Let \(f\) be an element of \(\operatorname{Family}\). Then \(\operatorname{card}(n,\allowbreak{} f) = \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{left}(t))\rangle) + \operatorname{length}(\langle t\in \operatorname{sample}(n) \mid f(\operatorname{right}(t))\rangle)\).
 
-\paragraph{Attains.} \par\noindent\refstepcounter{definingequation}\label{defeq:14}\textup{(D14)} Let \(n\) and \(k\) be natural numbers. Then \(\operatorname{Attains}(n,\allowbreak{} k) = (\exists f\, :\, \operatorname{Family},\; \operatorname{Intersects}(n,\allowbreak{} f) \land \operatorname{card}(n,\allowbreak{} f) = k)\).
+\paragraph{Attains.} \par\noindent\refstepcounter{definingequation}\label{defeq:14}\paperlineanchor{defeq:14}\textup{(\paperlink{defeq:14}{D14})} Let \(n\) and \(k\) be natural numbers. Then \(\operatorname{Attains}(n,\allowbreak{} k) = (\exists f\, :\, \operatorname{Family},\; \operatorname{Intersects}(n,\allowbreak{} f) \land \operatorname{card}(n,\allowbreak{} f) = k)\).
 
-\paragraph{Maximum size (\(M\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:15}\textup{(D15)} Let \(n\) be a natural number. Then \(M(n) = \operatorname{search}(\operatorname{Attains}(n),\allowbreak{} 2 \cdot \operatorname{length}(\operatorname{sample}(n)))\).
+\paragraph{Maximum size (\(M\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:15}\paperlineanchor{defeq:15}\textup{(\paperlink{defeq:15}{D15})} Let \(n\) be a natural number. Then \(M(n) = \operatorname{search}(\operatorname{Attains}(n),\allowbreak{} 2 \cdot \operatorname{length}(\operatorname{sample}(n)))\).
 
-\paragraph{Star.} \par\noindent\refstepcounter{definingequation}\label{defeq:16}\textup{(D16)} Let \(\mathit{tail}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{star}\left(\langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail}\right) = \mathrm{true}\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:17}\textup{(D17)} Let \(x\) be an element of \(\operatorname{Word}\). Assume \(\forall \mathit{tail}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail} \implies \mathrm{False}\). Then \(\operatorname{star}\left(x\right) = \mathrm{false}\).
+\paragraph{Star.} \par\noindent\refstepcounter{definingequation}\label{defeq:16}\paperlineanchor{defeq:16}\textup{(\paperlink{defeq:16}{D16})} Let \(\mathit{tail}\) be a list of elements of \(\mathbb{B}\). Then \(\operatorname{star}\left(\langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail}\right) = \mathrm{true}\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:17}\paperlineanchor{defeq:17}\textup{(\paperlink{defeq:17}{D17})} Let \(x\) be an element of \(\operatorname{Word}\). Assume \(\forall \mathit{tail}\, :\, \operatorname{List}(\mathbb{B}),\; x = \langle \mathrm{true}\rangle \mathbin{\Vert} \mathit{tail} \implies \mathrm{False}\). Then \(\operatorname{star}\left(x\right) = \mathrm{false}\).
 
-\paragraph{Star size (\(S\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:18}\textup{(D18)} Let \(n\) be a natural number. Then \(S\left(n\right) = \operatorname{card}\left(n, \operatorname{star}\right)\).
-\par\noindent\refstepcounter{definingequation}\label{defeq:19}\textup{(D19)} \(S\left(0\right) = 1\).
+\paragraph{Star size (\(S\)).} \par\noindent\refstepcounter{definingequation}\label{defeq:18}\paperlineanchor{defeq:18}\textup{(\paperlink{defeq:18}{D18})} Let \(n\) be a natural number. Then \(S\left(n\right) = \operatorname{card}\left(n, \operatorname{star}\right)\).
+\par\noindent\refstepcounter{definingequation}\label{defeq:19}\paperlineanchor{defeq:19}\textup{(\paperlink{defeq:19}{D19})} \(S\left(0\right) = 1\).
 
 \subsection*{Glossary}
 \begin{description}
@@ -62,14 +97,14 @@ Fix a ground set of n plus one points, with one distinguished point. How many su
 
 \subsection*{Prerequisites}
 \begin{description}
-\item[P1.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6164645f7269676874}\textbf{Adding a natural number can only increase a sum.} Let \(n\) and \(k\) be natural numbers. Then \(n \le n + k\).
-\item[P2.] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f7a65726f}\textbf{Adding zero on the right.} Let \(n\) be a natural number. Then \(n + 0 = n\).
-\item[P3.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e63656e737573}\textbf{Counting occupied places in complementary pairs.} Let \(n\) be a natural number. Then \(M(n) + E(n) = 2^{n} + D(n)\).
-\item[P4.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}\textbf{An intersecting family excludes simultaneous complements.} Let \(n\) be a natural number. Then \(D(n) = 0\).
-\item[P5.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f696e697469616c}\textbf{The star on one point.} \(S(0) = 1\).
-\item[P6.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f646f75626c6573}\textbf{Adding a point doubles the star.} Let \(n\) be a natural number. Then \(S(n + 1) = S(n) \cdot 2\).
-\item[P7.] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}\textbf{The star is an admissible family.} Let \(n\) be a natural number. Then \(S(n) \le M(n)\).
-\item[P8.] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f616e746973796d6d}\textbf{Opposite inequalities imply equality.} Let \(n\) and \(m\) be natural numbers. If \(n \le m\) and \(m \le n\), then \(n = m\).
+\item[\paperlineanchor{premise:4e61742e6c655f6164645f7269676874}\paperlink{premise:4e61742e6c655f6164645f7269676874}{P1.}] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f6164645f7269676874}\textbf{Adding a natural number can only increase a sum.} Let \(n\) and \(k\) be natural numbers. Then \(n \le n + k\).
+\item[\paperlineanchor{premise:4e61742e6164645f7a65726f}\paperlink{premise:4e61742e6164645f7a65726f}{P2.}] \refstepcounter{paperpremise}\label{premise:4e61742e6164645f7a65726f}\textbf{Adding zero on the right.} Let \(n\) be a natural number. Then \(n + 0 = n\).
+\item[\paperlineanchor{premise:496e74657273656374696e673538302e63656e737573}\paperlink{premise:496e74657273656374696e673538302e63656e737573}{P3.}] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e63656e737573}\textbf{Counting occupied places in complementary pairs.} Let \(n\) be a natural number. Then \(M(n) + E(n) = 2^{n} + D(n)\).
+\item[\paperlineanchor{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}\paperlink{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}{P4.}] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}\textbf{An intersecting family excludes simultaneous complements.} Let \(n\) be a natural number. Then \(D(n) = 0\).
+\item[\paperlineanchor{premise:496e74657273656374696e673538302e737461725f696e697469616c}\paperlink{premise:496e74657273656374696e673538302e737461725f696e697469616c}{P5.}] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f696e697469616c}\textbf{The star on one point.} \(S(0) = 1\).
+\item[\paperlineanchor{premise:496e74657273656374696e673538302e737461725f646f75626c6573}\paperlink{premise:496e74657273656374696e673538302e737461725f646f75626c6573}{P6.}] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f646f75626c6573}\textbf{Adding a point doubles the star.} Let \(n\) be a natural number. Then \(S(n + 1) = S(n) \cdot 2\).
+\item[\paperlineanchor{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}\paperlink{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}{P7.}] \refstepcounter{paperpremise}\label{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}\textbf{The star is an admissible family.} Let \(n\) be a natural number. Then \(S(n) \le M(n)\).
+\item[\paperlineanchor{premise:4e61742e6c655f616e746973796d6d}\paperlink{premise:4e61742e6c655f616e746973796d6d}{P8.}] \refstepcounter{paperpremise}\label{premise:4e61742e6c655f616e746973796d6d}\textbf{Opposite inequalities imply equality.} Let \(n\) and \(m\) be natural numbers. If \(n \le m\) and \(m \le n\), then \(n = m\).
 \end{description}
 
 \section{One place per complementary pair}
@@ -81,10 +116,10 @@ Let \(s\), \(e\), \(p\) and \(d\) be natural numbers. If \(s + e = p + d\) and \
 
 \begin{proof}
 \begin{align*}
-s &\le s + e && \text{by Prerequisite~P\ref{premise:4e61742e6c655f6164645f7269676874}} \\
+s &\le s + e && \text{by \paperlink{premise:4e61742e6c655f6164645f7269676874}{Prerequisite~P\ref{premise:4e61742e6c655f6164645f7269676874}}} \\
  &= p + d && \text{by hypothesis} \\
  &= p + 0 && \text{by hypothesis} \\
- &= p. && \text{by Prerequisite~P\ref{premise:4e61742e6164645f7a65726f}}
+ &= p. && \text{by \paperlink{premise:4e61742e6164645f7a65726f}{Prerequisite~P\ref{premise:4e61742e6164645f7a65726f}}}
 \end{align*}
 \end{proof}
 
@@ -93,12 +128,12 @@ Let \(n\) be a natural number. Then \(M(n) \le 2^{n}\).
 \end{lemma}
 
 \begin{proof}
-Applying \emph{Counting occupied places in complementary pairs} gives
+Applying \paperlink{premise:496e74657273656374696e673538302e63656e737573}{\emph{Counting occupied places in complementary pairs}} gives
 \[
 M(n) + E(n) = 2^{n} + D(n).
 \]
-Applying \emph{An intersecting family excludes simultaneous complements} gives \(D(n) = 0\).
-Apply Lemma~\ref{theorem:1} with \(s = M(n)\), \(e = E(n)\), \(p = 2^{n}\) and \(d = D(n)\) using \(M(n) + E(n) = 2^{n} + D(n)\) and \(D(n) = 0\).
+Applying \paperlink{premise:496e74657273656374696e673538302e636f6d706c656d656e74735f6578636c75646564}{\emph{An intersecting family excludes simultaneous complements}} gives \(D(n) = 0\).
+Apply \paperlink{theorem:1}{Lemma~\ref{theorem:1}} with \(s = M(n)\), \(e = E(n)\), \(p = 2^{n}\) and \(d = D(n)\) using \(M(n) + E(n) = 2^{n} + D(n)\) and \(D(n) = 0\).
 \end{proof}
 
 \section{A star attains the bound}
@@ -111,7 +146,7 @@ Let \(n\) be a natural number. Then \(S(n) = 2^{n}\).
 \begin{proof}
 We proceed by induction on \(n\).
 \begin{description}
-\item[Base case.] Applying \emph{The star on one point} gives \(S(0) = 1\).
+\item[Base case.] Applying \paperlink{premise:496e74657273656374696e673538302e737461725f696e697469616c}{\emph{The star on one point}} gives \(S(0) = 1\).
 By the defining equations, this gives
 \[
 S(0) = 2^{0}.
@@ -122,7 +157,7 @@ As the induction hypothesis, assume
 S(i) = 2^{i}.
 \]
 \begin{align*}
-S(i + 1) &= S(i) \cdot 2 && \text{by Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f646f75626c6573}} \\
+S(i + 1) &= S(i) \cdot 2 && \text{by \paperlink{premise:496e74657273656374696e673538302e737461725f646f75626c6573}{Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f646f75626c6573}}} \\
  &= 2^{i + 1}. && \text{by the induction hypothesis}
 \end{align*}
 \end{description}
@@ -134,15 +169,15 @@ Let \(n\) be a natural number. Then \(M(n) = 2^{n}\).
 \end{theorem}
 
 \begin{proof}
-Applying Lemma~\ref{theorem:2} gives
+Applying \paperlink{theorem:2}{Lemma~\ref{theorem:2}} gives
 \[
 M(n) \le 2^{n}.
 \]
 \begin{align*}
-2^{n} &= S(n) && \text{by Lemma~\ref{theorem:3}} \\
- &\le M(n). && \text{by Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}}
+2^{n} &= S(n) && \text{by \paperlink{theorem:3}{Lemma~\ref{theorem:3}}} \\
+ &\le M(n). && \text{by \paperlink{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}{Prerequisite~P\ref{premise:496e74657273656374696e673538302e737461725f636f6d7065746573}}}
 \end{align*}
-Applying \emph{Opposite inequalities imply equality} to \(M(n) \le 2^{n}\) and \(2^{n} \le M(n)\) gives
+Applying \paperlink{premise:4e61742e6c655f616e746973796d6d}{\emph{Opposite inequalities imply equality}} to \(M(n) \le 2^{n}\) and \(2^{n} \le M(n)\) gives
 \[
 M(n) = 2^{n}.
 \]

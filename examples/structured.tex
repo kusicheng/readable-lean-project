@@ -1,17 +1,50 @@
 \documentclass{article}
 \usepackage{amsmath,amssymb,amsthm}
-\newtheorem{theorem}{Theorem}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheorem{theorem}{\paperresultname{Theorem}}
+\newcounter{paperpremise}
 \begin{document}
 \section*{Proofs in elementary number theory}
 
 \subsection*{Prerequisites}
 \begin{description}
-\item[P1.] \textbf{Doubling by addition.} Let \(n\) be a natural number. Then \(2 \cdot n = n + n\).
-\item[P2.] \textbf{Multiplication by zero.} Let \(n\) be a natural number. Then \(n \cdot 0 = 0\).
-\item[P3.] \textbf{Divisibility of zero.} Let \(a\) be a natural number. Then \(a \mid 0\).
-\item[P4.] \textbf{Divisibility of a sum.} Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\) and \(a \mid c\), then \(a \mid b + c\).
-\item[P5.] \textbf{Multiplication by a successor.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot (m + 1) = n \cdot m + n\).
-\item[P6.] \textbf{Multiplication associativity.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n \cdot m \cdot k = n \cdot (m \cdot k)\).
+\item[\paperlineanchor{premise:4e61742e74776f5f6d756c}\paperlink{premise:4e61742e74776f5f6d756c}{P1.}] \refstepcounter{paperpremise}\label{premise:4e61742e74776f5f6d756c}\textbf{Doubling by addition.} Let \(n\) be a natural number. Then \(2 \cdot n = n + n\).
+\item[\paperlineanchor{premise:4e61742e6d756c5f7a65726f}\paperlink{premise:4e61742e6d756c5f7a65726f}{P2.}] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f7a65726f}\textbf{Multiplication by zero.} Let \(n\) be a natural number. Then \(n \cdot 0 = 0\).
+\item[\paperlineanchor{premise:4e61742e6476645f7a65726f}\paperlink{premise:4e61742e6476645f7a65726f}{P3.}] \refstepcounter{paperpremise}\label{premise:4e61742e6476645f7a65726f}\textbf{Divisibility of zero.} Let \(a\) be a natural number. Then \(a \mid 0\).
+\item[\paperlineanchor{premise:4e61742e6476645f616464}\paperlink{premise:4e61742e6476645f616464}{P4.}] \refstepcounter{paperpremise}\label{premise:4e61742e6476645f616464}\textbf{Divisibility of a sum.} Let \(a\), \(b\) and \(c\) be natural numbers. If \(a \mid b\) and \(a \mid c\), then \(a \mid b + c\).
+\item[\paperlineanchor{premise:4e61742e6d756c5f73756363}\paperlink{premise:4e61742e6d756c5f73756363}{P5.}] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f73756363}\textbf{Multiplication by a successor.} Let \(n\) and \(m\) be natural numbers. Then \(n \cdot (m + 1) = n \cdot m + n\).
+\item[\paperlineanchor{premise:4e61742e6d756c5f6173736f63}\paperlink{premise:4e61742e6d756c5f6173736f63}{P6.}] \refstepcounter{paperpremise}\label{premise:4e61742e6d756c5f6173736f63}\textbf{Multiplication associativity.} Let \(n\), \(m\) and \(k\) be natural numbers. Then \(n \cdot m \cdot k = n \cdot (m \cdot k)\).
 \end{description}
 
 \begin{theorem}\label{theorem:1}
@@ -20,7 +53,7 @@ Let \(n\) be a natural number. Then \(2 \mid n + n\).
 
 \begin{proof}
 Let \(n\) be a natural number.
-By Prerequisite~P1, we have \(2 \cdot n = n + n\)~(1).
+By \paperlink{premise:4e61742e74776f5f6d756c}{Prerequisite~P\ref{premise:4e61742e74776f5f6d756c}}, we have \(2 \cdot n = n + n\)~(1).
 Reversing the equality in (1) gives
 \begin{equation}\tag{2}
 n + n = 2 \cdot n.
@@ -36,7 +69,7 @@ Let \(n\) be a natural number. If \(2 \mid n\), then \(\exists k \in \mathbb{N}\
 Let \(n\) be a natural number.
 Assume \(2 \mid n\)~(1).
 By (1), choose a natural number \(k\) such that \(n = 2 \cdot k\)~(2).
-By Prerequisite~P1, we have \(2 \cdot k = k + k\)~(3).
+By \paperlink{premise:4e61742e74776f5f6d756c}{Prerequisite~P\ref{premise:4e61742e74776f5f6d756c}}, we have \(2 \cdot k = k + k\)~(3).
 Combining (2) and (3) gives \(n = k + k\)~(4).
 With witness \(k\), (4) shows that
 \[
@@ -50,12 +83,12 @@ Let \(a\) and \(n\) be natural numbers. Then \(2 \mid (a + a) \cdot n\).
 
 \begin{proof}
 Let \(a\) and \(n\) be natural numbers.
-Record the instance of Theorem~\ref{theorem:1} with \(n = a\) as (1).
+Record the instance of \paperlink{theorem:1}{Theorem~\ref{theorem:1}} with \(n = a\) as (1).
 We proceed by induction on \(n\).
 \begin{description}
 \item[Base case.] We must show \(2 \mid (a + a) \cdot 0\).
-By Prerequisite~P2, we have \((a + a) \cdot 0 = 0\)~(2).
-By Prerequisite~P3, we have \(2 \mid 0\)~(3).
+By \paperlink{premise:4e61742e6d756c5f7a65726f}{Prerequisite~P\ref{premise:4e61742e6d756c5f7a65726f}}, we have \((a + a) \cdot 0 = 0\)~(2).
+By \paperlink{premise:4e61742e6476645f7a65726f}{Prerequisite~P\ref{premise:4e61742e6476645f7a65726f}}, we have \(2 \mid 0\)~(3).
 Rewriting (3) using (2) gives
 \[
 2 \mid (a + a) \cdot 0.
@@ -66,8 +99,8 @@ As the induction hypothesis, assume
 2 \mid (a + a) \cdot m.
 \end{equation}
 We must show \(2 \mid (a + a) \cdot (m + 1)\).
-By Prerequisite~P4, using (4) and (1), we have \(2 \mid (a + a) \cdot m + (a + a)\)~(5).
-By Prerequisite~P5, we have \((a + a) \cdot (m + 1) = (a + a) \cdot m + (a + a)\)~(6).
+By \paperlink{premise:4e61742e6476645f616464}{Prerequisite~P\ref{premise:4e61742e6476645f616464}}, using (4) and (1), we have \(2 \mid (a + a) \cdot m + (a + a)\)~(5).
+By \paperlink{premise:4e61742e6d756c5f73756363}{Prerequisite~P\ref{premise:4e61742e6d756c5f73756363}}, we have \((a + a) \cdot (m + 1) = (a + a) \cdot m + (a + a)\)~(6).
 Rewriting (5) using (6) gives
 \[
 2 \mid (a + a) \cdot (m + 1).
@@ -82,9 +115,9 @@ Let \(a\), \(b\) and \(n\) be natural numbers. Then \(2 \mid (a + a) \cdot n + (
 
 \begin{proof}
 Let \(a\), \(b\) and \(n\) be natural numbers.
-Record the instance of Theorem~\ref{theorem:3} with \(a = a\) and \(n = n\) as (1).
-Record the instance of Theorem~\ref{theorem:1} with \(n = b\) as (2).
-The claim follows from Prerequisite~P4, using (1) and (2).
+Record the instance of \paperlink{theorem:3}{Theorem~\ref{theorem:3}} with \(a = a\) and \(n = n\) as (1).
+Record the instance of \paperlink{theorem:1}{Theorem~\ref{theorem:1}} with \(n = b\) as (2).
+The claim follows from \paperlink{premise:4e61742e6476645f616464}{Prerequisite~P\ref{premise:4e61742e6476645f616464}}, using (1) and (2).
 \end{proof}
 
 \begin{theorem}\label{theorem:5}
@@ -99,7 +132,7 @@ Applying \(k_{1} \mapsto k_{1} \cdot m\) to both sides of (2) gives
 \begin{equation}\tag{3}
 n \cdot m = 2 \cdot k \cdot m.
 \end{equation}
-By Prerequisite~P6, we have \(2 \cdot k \cdot m = 2 \cdot (k \cdot m)\)~(4).
+By \paperlink{premise:4e61742e6d756c5f6173736f63}{Prerequisite~P\ref{premise:4e61742e6d756c5f6173736f63}}, we have \(2 \cdot k \cdot m = 2 \cdot (k \cdot m)\)~(4).
 Combining (3) and (4) gives
 \begin{equation}\tag{5}
 n \cdot m = 2 \cdot (k \cdot m).

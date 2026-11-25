@@ -1,13 +1,48 @@
 \documentclass{article}
 \usepackage{amsmath,amssymb,amsthm}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
+\IfFileExists{hyperref.sty}{%
+  \IfFileExists{color.sty}{\usepackage{color}\definecolor{paperlinkblue}{rgb}{0.10,0.25,0.42}%
+    \usepackage[colorlinks=true,linkcolor=paperlinkblue]{hyperref}}{\usepackage[hidelinks]{hyperref}}%
+}{}
+\ifdefined\hyperlink
+  \newcommand{\paperanchor}[1]{\hypertarget{#1}{}}%
+  \newcommand{\paperlink}[2]{\hyperlink{#1}{\begin{NoHyper}#2\end{NoHyper}}}%
+\else
+  \ifdefined\pdfextension
+    \ifnum\outputmode>0
+      \def\paperdest{\pdfextension dest}\def\paperstart{\pdfextension startlink}%
+      \def\paperend{\pdfextension endlink}\def\papercolor{\pdfextension colorstack}%
+    \fi
+  \else\ifdefined\pdfstartlink
+    \ifnum\pdfoutput>0
+      \let\paperdest\pdfdest\let\paperstart\pdfstartlink\let\paperend\pdfendlink\let\papercolor\pdfcolorstack
+    \fi
+  \fi\fi
+  \ifdefined\paperdest
+    \newcommand{\paperanchor}[1]{\paperdest name{#1} xyz}%
+    \newcommand{\paperlink}[2]{\leavevmode\paperstart attr{/Border [0 0 0]} goto name{#1}%
+      \papercolor 0 push {0.10 0.25 0.42 rg 0.10 0.25 0.42 RG}#2\papercolor 0 pop\paperend}%
+  \else\ifdefined\XeTeXversion
+    \newcommand{\paperanchor}[1]{\special{pdf:dest (#1) [@thispage /XYZ null @ypos null]}}%
+    \newcommand{\paperlink}[2]{\leavevmode\special{pdf:bann << /Subtype /Link /Border [0 0 0] /A << /S /GoTo /D (#1) >> >>}%
+      \special{color push rgb 0.10 0.25 0.42}#2\special{color pop}\special{pdf:eann}}%
+  \else
+    \PackageError{lean-to-latex}{No PDF hyperlink backend available}{Use XeLaTeX, pdfLaTeX, LuaLaTeX, or install hyperref.}%
+  \fi\fi
+\fi
+\newcommand{\paperlineanchor}[1]{\raisebox{10pt}[0pt][0pt]{\paperanchor{#1}}}
+\DeclareRobustCommand{\paperresultname}[1]{\paperlineanchor{theorem:\arabic{theorem}}#1}
+\newtheoremstyle{paperresult}{8pt}{5pt}{\normalfont\raggedright}{}{\bfseries}{.}{\newline}{}
+\theoremstyle{paperresult}
+\newtheorem{theorem}{\paperresultname{Theorem}}
 \newcounter{paperpremise}
+\newtheorem{lemma}[theorem]{\paperresultname{Lemma}}
+\newtheorem{corollary}[theorem]{\paperresultname{Corollary}}
 \newcounter{definingequation}
 \newenvironment{proofstep}{\par\smallskip\ifdim\leftskip<3em\relax\advance\leftskip by 1em\relax\fi\noindent\ignorespaces}{\par\smallskip}
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0in}
+\AddToHook{env/proof/begin}{\raggedright}
 \setlength{\emergencystretch}{\linewidth}
 \title{Double counting in finite relations}
 \author{}
@@ -15,46 +50,46 @@
 \begin{document}
 \maketitle
 \section*{Definitions}
-\paragraph{Bipartite below.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\textup{(D1)} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(b\) be an element of \(\beta\). Fix a structure \(\mathit{inst}\) of type \(\Pi_{a\, :\, \alpha}\, \operatorname{Decidable}\left(r\left(a, b\right)\right)\). Then \(N^{-}_{r, s}(b) = \{a\in s \mid r\left(a, b\right)\}\).
+\paragraph{Bipartite below.} \par\noindent\refstepcounter{definingequation}\label{defeq:1}\paperlineanchor{defeq:1}\textup{(\paperlink{defeq:1}{D1})} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(b\) be an element of \(\beta\). Fix a structure \(\mathit{inst}\) of type \(\Pi_{a\, :\, \alpha}\, \operatorname{Decidable}\left(r\left(a, b\right)\right)\). Then \(N^{-}_{r, s}(b) = \{a\in s \mid r\left(a, b\right)\}\).
 
-\paragraph{Bipartite above.} \par\noindent\refstepcounter{definingequation}\label{defeq:2}\textup{(D2)} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(t\) be a finite subset of \(\beta\). Let \(a\) be an element of \(\alpha\). Assume the predicate \(r\left(a\right)\) is decidable. Then \(N^{+}_{r, t}(a) = \{b\in t \mid r\left(a, b\right)\}\).
+\paragraph{Bipartite above.} \par\noindent\refstepcounter{definingequation}\label{defeq:2}\paperlineanchor{defeq:2}\textup{(\paperlink{defeq:2}{D2})} Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(t\) be a finite subset of \(\beta\). Let \(a\) be an element of \(\alpha\). Assume the predicate \(r\left(a\right)\) is decidable. Then \(N^{+}_{r, t}(a) = \{b\in t \mid r\left(a, b\right)\}\).
 
 \subsection*{Prerequisites}
 \begin{description}
-\item[P1.] \refstepcounter{paperpremise}\label{premise:45712e6765}\textbf{Equality implies the reverse weak inequality.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a = b\). Then \(b \le a\).
-\item[P2.] \refstepcounter{paperpremise}\label{premise:45712e6c65}\textbf{Equality implies a weak inequality.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a = b\). Then \(a \le b\).
-\item[P3.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}\textbf{Cardinality as a sum of ones.} Let \(\iota\) be a type. Let \(s\) be a finite subset of \(\iota\). Then \(\left|s\right| = \sum_{x\in s}\left(1\right)\).
-\item[P4.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6c655f6f6e65}\textbf{Cardinality at most one.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(|s| \le 1 \iff (\forall a\, :\, \alpha,\; a \in s \implies (\forall b\, :\, \alpha,\; b \in s \implies a = b))\).
-\item[P5.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}\textbf{Cardinality repeated addition at most sum.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(f\) be a function of type \(\iota \to N\). Let \(n\) be an element of \(N\). Assume \(\forall x\, :\, \iota,\; x \in s \implies n \le f\left(x\right)\). Then \(\left|s\right| \mathbin{\bullet} n \le \sum_{i\in s}\left(f(i)\right)\).
-\item[P6.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f706f73}\textbf{Cardinality positivity.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(0 < \left|s\right| \iff s\ne\varnothing\).
-\item[P7.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636f655f66696c746572}\textbf{Coercion filter.} Let \(\alpha\) be a type. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{underlying\,set}(\{x\in s \mid p(x)\}) = \{x\in \alpha \mid x \in s \land p\left(x\right)\}\).
-\item[P8.] \refstepcounter{paperpremise}\label{premise:46696e7365742e636f655f6e6f6e656d707479}\textbf{Coercion nonempty.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{underlying\,set}(s)\ne\varnothing \iff s\ne\varnothing\).
-\item[P9.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f66696c746572}\textbf{Membership filter.} Let \(\alpha\) be a type. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(a \in \{x\in s \mid p(x)\} \iff a \in s \land p\left(a\right)\).
-\item[P10.] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f756e6976}\textbf{Membership in the full set.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be an element of \(\alpha\). Then \(x \in \alpha\).
-\item[P11.] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f636f6d6d}\textbf{Interchanging two finite products.} Let \(\alpha\), \(\beta\), and \(\gamma\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(\beta\right)\). Let \(s\) be a finite subset of \(\gamma\). Let \(t\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\gamma \to \alpha \to \beta\). Then \(\prod_{x\in s}(\prod_{y\in t}(f(x,\allowbreak{} y))) = \prod_{y\in t}(\prod_{x\in s}(f(x,\allowbreak{} y)))\).
-\item[P12.] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f636f6e6772}\textbf{Equality of products with equal factors.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(M\right)\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\prod_{i\in s_{1}}\left(f(i)\right) = \prod_{i\in s_{2}}\left(g(i)\right)\).
-\item[P13.] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f66696c746572}\textbf{Product filter.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(M\right)\). Let \(p\) be a function of type \(\iota \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(f\) be a function of type \(\iota \to M\). Then \(\prod_{a\in \{a\in s \mid p(a)\}}(f(a)) = \prod_{a\in s}(\begin{cases}f(a) &\text{if } p(a)\\ 1 &\text{otherwise}\end{cases})\).
-\item[P14.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6d6d}\textbf{Interchanging two finite sums.} Let \(\alpha\), \(\beta\), and \(\gamma\) be types. Equip \(\beta\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\gamma\). Let \(t\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\gamma \to \alpha \to \beta\). Then \(\sum_{x\in s}(\sum_{y\in t}(f(x,\allowbreak{} y))) = \sum_{y\in t}(\sum_{x\in s}(f(x,\allowbreak{} y)))\).
-\item[P15.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e6772}\textbf{Equality of sums with equal summands.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\sum_{i\in s_{1}}\left(f(i)\right) = \sum_{i\in s_{2}}\left(g(i)\right)\).
-\item[P16.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \left|s\right| \mathbin{\bullet} b\).
-\item[P17.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f66696c746572}\textbf{Sum filter.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(p\) be a function of type \(\iota \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(f\) be a function of type \(\iota \to M\). Then \(\sum_{a\in \{a\in s \mid p(a)\}}(f(a)) = \sum_{a\in s}(\begin{cases}f(a) &\text{if } p(a)\\ 0 &\text{otherwise}\end{cases})\).
-\item[P18.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}\textbf{Sum at most cardinality repeated addition.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(f\) be a function of type \(\iota \to N\). Let \(n\) be an element of \(N\). Assume \(\forall x\, :\, \iota,\; x \in s \implies f\left(x\right) \le n\). Then \(\sum_{i\in s}\left(f(i)\right) \le \left|s\right| \mathbin{\bullet} n\).
-\item[P19.] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}\textbf{Sum less than sum of nonempty.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(s\ne\varnothing\). Assume \(\forall i\, :\, \iota,\; i \in s \implies f\left(i\right) < g\left(i\right)\). Then \(\sum_{i\in s}\left(f\left(i\right)\right) < \sum_{i\in s}\left(g\left(i\right)\right)\).
-\item[P20.] \refstepcounter{paperpremise}\label{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Then \(\text{translation preserves order on }R\).
-\item[P21.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}\textbf{To char zero.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Char\,Zero}\left(R\right)\).
-\item[P22.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{To is ordered cancel sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\text{translation preserves and reflects order on }R\).
-\item[P23.] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\textbf{To is ordered ring.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-\item[P24.] \refstepcounter{paperpremise}\label{premise:4c452e6c652e616e746973796d6d}\textbf{Antisymm.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le a\). Then \(a = b\).
-\item[P25.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f696e6a}\textbf{Cast injectivity.} Let \(R\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(R\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Char\,Zero}\left(R\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{R}\left(m\right) = \operatorname{cast}_{R}\left(n\right) \iff m = n\).
-\item[P26.] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f73756d}\textbf{Cast sum.} Let \(\alpha\) and \(\beta\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Comm\,Monoid\,With\,One}\left(\beta\right)\). Let \(s\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \mathbb{N}\). Then \(\operatorname{cast}_{\beta}(\sum_{x\in s}(f(x))) = \sum_{x\in s}(\operatorname{cast}_{\beta}(f(x)))\).
-\item[P27.] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449735374726963744f72646572656452696e67}\textbf{Strict order on the natural numbers.} \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-\item[P28.] \refstepcounter{paperpremise}\label{premise:65715f74727565}\textbf{Equals true.} Let \(p\) be a proposition. Assume \(p\). Then \(p = \mathrm{True}\).
-\item[P29.] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e6772}\textbf{Forall congruence.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) = q\left(a\right)\). Then \((\forall a\, :\, \alpha,\; p(a)) = (\forall a\, :\, \alpha,\; q(a))\).
-\item[P30.] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e7374}\textbf{Forall constant.} Let \(b\) be a proposition. Let \(\alpha\) be a sort. Assume \(\alpha\text{ is nonempty}\). Then \(\left(\forall a\, :\, \alpha,\; b\right) \iff b\).
-\item[P31.] \refstepcounter{paperpremise}\label{premise:696d706c6965735f636f6e6772}\textbf{Implies congruence.} Let \(p_{1}\) and \(p_{2}\) be sorts. Let \(q_{1}\) and \(q_{2}\) be sorts. Assume \(p_{1} = p_{2}\). Assume \(q_{1} = q_{2}\). Then \(\left(p_{1} \to q_{1}\right) = \left(p_{2} \to q_{2}\right)\).
-\item[P32.] \refstepcounter{paperpremise}\label{premise:696e73744e6f6e656d7074794f66496e68616269746564}\textbf{Inst nonempty of inhabited.} Let \(\alpha\) be a sort. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Inhabited}\left(\alpha\right)\). Then \(\alpha\text{ is nonempty}\).
-\item[P33.] \refstepcounter{paperpremise}\label{premise:6d756c5f6f6e65}\textbf{Product one.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,One\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(a \cdot 1 = a\).
-\item[P34.] \refstepcounter{paperpremise}\label{premise:747275655f616e64}\textbf{True and.} Let \(p\) be a proposition. Then \(\left(\mathrm{True} \land p\right) = p\).
+\item[\paperlineanchor{premise:45712e6765}\paperlink{premise:45712e6765}{P1.}] \refstepcounter{paperpremise}\label{premise:45712e6765}\textbf{Equality implies the reverse weak inequality.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a = b\). Then \(b \le a\).
+\item[\paperlineanchor{premise:45712e6c65}\paperlink{premise:45712e6c65}{P2.}] \refstepcounter{paperpremise}\label{premise:45712e6c65}\textbf{Equality implies a weak inequality.} Let \(\alpha\) be a type. Equip \(\alpha\) with a preorder. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a = b\). Then \(a \le b\).
+\item[\paperlineanchor{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}\paperlink{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}{P3.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}\textbf{Cardinality as a sum of ones.} Let \(\iota\) be a type. Let \(s\) be a finite subset of \(\iota\). Then \(\left|s\right| = \sum_{x\in s}\left(1\right)\).
+\item[\paperlineanchor{premise:46696e7365742e636172645f6c655f6f6e65}\paperlink{premise:46696e7365742e636172645f6c655f6f6e65}{P4.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6c655f6f6e65}\textbf{Cardinality at most one.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(|s| \le 1 \iff (\forall a\, :\, \alpha,\; a \in s \implies (\forall b\, :\, \alpha,\; b \in s \implies a = b))\).
+\item[\paperlineanchor{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}\paperlink{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}{P5.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}\textbf{Cardinality repeated addition at most sum.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(f\) be a function of type \(\iota \to N\). Let \(n\) be an element of \(N\). Assume \(\forall x\, :\, \iota,\; x \in s \implies n \le f\left(x\right)\). Then \(\sum_{k=1}^{\left|s\right|}\left(n\right) \le \sum_{i\in s}\left(f(i)\right)\).
+\item[\paperlineanchor{premise:46696e7365742e636172645f706f73}\paperlink{premise:46696e7365742e636172645f706f73}{P6.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636172645f706f73}\textbf{Cardinality positivity.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(0 < \left|s\right| \iff s\ne\varnothing\).
+\item[\paperlineanchor{premise:46696e7365742e636f655f66696c746572}\paperlink{premise:46696e7365742e636f655f66696c746572}{P7.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636f655f66696c746572}\textbf{Coercion filter.} Let \(\alpha\) be a type. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{underlying\,set}(\{x\in s \mid p(x)\}) = \{x\in \alpha \mid x \in s \land p\left(x\right)\}\).
+\item[\paperlineanchor{premise:46696e7365742e636f655f6e6f6e656d707479}\paperlink{premise:46696e7365742e636f655f6e6f6e656d707479}{P8.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e636f655f6e6f6e656d707479}\textbf{Coercion nonempty.} Let \(\alpha\) be a type. Let \(s\) be a finite subset of \(\alpha\). Then \(\operatorname{underlying\,set}(s)\ne\varnothing \iff s\ne\varnothing\).
+\item[\paperlineanchor{premise:46696e7365742e6d656d5f66696c746572}\paperlink{premise:46696e7365742e6d656d5f66696c746572}{P9.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f66696c746572}\textbf{Membership filter.} Let \(\alpha\) be a type. Let \(p\) be a function of type \(\alpha \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(s\) be a finite subset of \(\alpha\). Let \(a\) be an element of \(\alpha\). Then \(a \in \{x\in s \mid p(x)\} \iff a \in s \land p\left(a\right)\).
+\item[\paperlineanchor{premise:46696e7365742e6d656d5f756e6976}\paperlink{premise:46696e7365742e6d656d5f756e6976}{P10.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e6d656d5f756e6976}\textbf{Membership in the full set.} Let \(\alpha\) be a type. Fix a finite enumeration of \(\alpha\). Let \(x\) be an element of \(\alpha\). Then \(x \in \alpha\).
+\item[\paperlineanchor{premise:46696e7365742e70726f645f636f6d6d}\paperlink{premise:46696e7365742e70726f645f636f6d6d}{P11.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f636f6d6d}\textbf{Interchanging two finite products.} Let \(\alpha\), \(\beta\), and \(\gamma\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(\beta\right)\). Let \(s\) be a finite subset of \(\gamma\). Let \(t\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\gamma \to \alpha \to \beta\). Then \(\prod_{x\in s}(\prod_{y\in t}(f(x,\allowbreak{} y))) = \prod_{y\in t}(\prod_{x\in s}(f(x,\allowbreak{} y)))\).
+\item[\paperlineanchor{premise:46696e7365742e70726f645f636f6e6772}\paperlink{premise:46696e7365742e70726f645f636f6e6772}{P12.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f636f6e6772}\textbf{Equality of products with equal factors.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(M\right)\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\prod_{i\in s_{1}}\left(f(i)\right) = \prod_{i\in s_{2}}\left(g(i)\right)\).
+\item[\paperlineanchor{premise:46696e7365742e70726f645f66696c746572}\paperlink{premise:46696e7365742e70726f645f66696c746572}{P13.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e70726f645f66696c746572}\textbf{Product filter.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Fix a structure \(\mathit{inst}\) of type \(\operatorname{Comm\,Monoid}\left(M\right)\). Let \(p\) be a function of type \(\iota \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(f\) be a function of type \(\iota \to M\). Then \(\prod_{a\in \{a\in s \mid p(a)\}}(f(a)) = \prod_{a\in s}(\begin{cases}f(a) &\text{if } p(a)\\ 1 &\text{otherwise}\end{cases})\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f636f6d6d}\paperlink{premise:46696e7365742e73756d5f636f6d6d}{P14.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6d6d}\textbf{Interchanging two finite sums.} Let \(\alpha\), \(\beta\), and \(\gamma\) be types. Equip \(\beta\) with a commutative additive monoid structure. Let \(s\) be a finite subset of \(\gamma\). Let \(t\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\gamma \to \alpha \to \beta\). Then \(\sum_{x\in s}(\sum_{y\in t}(f(x,\allowbreak{} y))) = \sum_{y\in t}(\sum_{x\in s}(f(x,\allowbreak{} y)))\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f636f6e6772}\paperlink{premise:46696e7365742e73756d5f636f6e6772}{P15.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e6772}\textbf{Equality of sums with equal summands.} Let \(\iota\) and \(M\) be types. Let \(s_{1}\) and \(s_{2}\) be finite subsets of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(f\) and \(g\) be functions of type \(\iota \to M\). Assume \(s_{1} = s_{2}\). Assume \(\forall x\, :\, \iota,\; x \in s_{2} \implies f\left(x\right) = g\left(x\right)\). Then \(\sum_{i\in s_{1}}\left(f(i)\right) = \sum_{i\in s_{2}}\left(g(i)\right)\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f636f6e7374}\paperlink{premise:46696e7365742e73756d5f636f6e7374}{P16.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f636f6e7374}\textbf{The sum of a constant.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(b\) be an element of \(M\). Then \(\sum_{x\in s}\left(b\right) = \sum_{k=1}^{\left|s\right|}\left(b\right)\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f66696c746572}\paperlink{premise:46696e7365742e73756d5f66696c746572}{P17.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f66696c746572}\textbf{Sum filter.} Let \(\iota\) and \(M\) be types. Let \(s\) be a finite subset of \(\iota\). Equip \(M\) with a commutative additive monoid structure. Let \(p\) be a function of type \(\iota \to \mathsf{Prop}\). Assume the predicate \(p\) is decidable. Let \(f\) be a function of type \(\iota \to M\). Then \(\sum_{a\in \{a\in s \mid p(a)\}}(f(a)) = \sum_{a\in s}(\begin{cases}f(a) &\text{if } p(a)\\ 0 &\text{otherwise}\end{cases})\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}\paperlink{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}{P18.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}\textbf{Sum at most cardinality repeated addition.} Let \(\iota\) and \(N\) be types. Equip \(N\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves order on }N\). Let \(s\) be a finite subset of \(\iota\). Let \(f\) be a function of type \(\iota \to N\). Let \(n\) be an element of \(N\). Assume \(\forall x\, :\, \iota,\; x \in s \implies f\left(x\right) \le n\). Then \(\sum_{i\in s}\left(f(i)\right) \le \sum_{k=1}^{\left|s\right|}\left(n\right)\).
+\item[\paperlineanchor{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}\paperlink{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}{P19.}] \refstepcounter{paperpremise}\label{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}\textbf{Sum less than sum of nonempty.} Let \(\iota\) and \(M\) be types. Equip \(M\) with a commutative additive monoid structure and a partial order. Assume \(\text{translation preserves and reflects order on }M\). Let \(f\) and \(g\) be functions of type \(\iota \to M\). Let \(s\) be a finite subset of \(\iota\). Assume \(s\ne\varnothing\). Assume \(\forall i\, :\, \iota,\; i \in s \implies f\left(i\right) < g\left(i\right)\). Then \(\sum_{i\in s}\left(f\left(i\right)\right) < \sum_{i\in s}\left(g\left(i\right)\right)\).
+\item[\paperlineanchor{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{P20.}] \refstepcounter{paperpremise}\label{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}\textbf{To is ordered sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Let \(\mathit{self}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Then \(\text{translation preserves order on }R\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}\paperlink{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}{P21.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}\textbf{To char zero.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Char\,Zero}\left(R\right)\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{P22.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}\textbf{To is ordered cancel sum monoid.} Let \(R\) be a type. Let \(\mathit{inst}\) be an element of \(\operatorname{Semiring}\left(R\right)\). Let \(\mathit{inst}_{1}\) be an element of \(\operatorname{Partial\,Order}\left(R\right)\). Assume \(R\text{ is a strictly ordered semiring}\). Then \(\text{translation preserves and reflects order on }R\).
+\item[\paperlineanchor{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{P23.}] \refstepcounter{paperpremise}\label{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}\textbf{To is ordered ring.} Let \(R\) be a type. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Then \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
+\item[\paperlineanchor{premise:4c452e6c652e616e746973796d6d}\paperlink{premise:4c452e6c652e616e746973796d6d}{P24.}] \refstepcounter{paperpremise}\label{premise:4c452e6c652e616e746973796d6d}\textbf{Antisymm.} Let \(\alpha\) be a type. Equip \(\alpha\) with a partial order. Let \(a\) and \(b\) be elements of \(\alpha\). Assume \(a \le b\). Assume \(b \le a\). Then \(a = b\).
+\item[\paperlineanchor{premise:4e61742e636173745f696e6a}\paperlink{premise:4e61742e636173745f696e6a}{P25.}] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f696e6a}\textbf{Cast injectivity.} Let \(R\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Monoid\,With\,One}\left(R\right)\). Let \(\mathit{inst}_{1}\) be a proof of \(\operatorname{Char\,Zero}\left(R\right)\). Let \(m\) and \(n\) be natural numbers. Then \(\operatorname{cast}_{R}\left(m\right) = \operatorname{cast}_{R}\left(n\right) \iff m = n\).
+\item[\paperlineanchor{premise:4e61742e636173745f73756d}\paperlink{premise:4e61742e636173745f73756d}{P26.}] \refstepcounter{paperpremise}\label{premise:4e61742e636173745f73756d}\textbf{Cast sum.} Let \(\alpha\) and \(\beta\) be types. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Add\,Comm\,Monoid\,With\,One}\left(\beta\right)\). Let \(s\) be a finite subset of \(\alpha\). Let \(f\) be a function of type \(\alpha \to \mathbb{N}\). Then \(\operatorname{cast}_{\beta}(\sum_{x\in s}(f(x))) = \sum_{x\in s}(\operatorname{cast}_{\beta}(f(x)))\).
+\item[\paperlineanchor{premise:4e61742e696e737449735374726963744f72646572656452696e67}\paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{P27.}] \refstepcounter{paperpremise}\label{premise:4e61742e696e737449735374726963744f72646572656452696e67}\textbf{Strict order on the natural numbers.} \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+\item[\paperlineanchor{premise:65715f74727565}\paperlink{premise:65715f74727565}{P28.}] \refstepcounter{paperpremise}\label{premise:65715f74727565}\textbf{Equals true.} Let \(p\) be a proposition. Assume \(p\). Then \(p = \mathrm{True}\).
+\item[\paperlineanchor{premise:666f72616c6c5f636f6e6772}\paperlink{premise:666f72616c6c5f636f6e6772}{P29.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e6772}\textbf{Forall congruence.} Let \(\alpha\) be a sort. Let \(p\) and \(q\) be functions of type \(\alpha \to \mathsf{Prop}\). Assume \(\forall a\, :\, \alpha,\; p\left(a\right) = q\left(a\right)\). Then \((\forall a\, :\, \alpha,\; p(a)) = (\forall a\, :\, \alpha,\; q(a))\).
+\item[\paperlineanchor{premise:666f72616c6c5f636f6e7374}\paperlink{premise:666f72616c6c5f636f6e7374}{P30.}] \refstepcounter{paperpremise}\label{premise:666f72616c6c5f636f6e7374}\textbf{Forall constant.} Let \(b\) be a proposition. Let \(\alpha\) be a sort. Assume \(\alpha\text{ is nonempty}\). Then \(\left(\forall a\, :\, \alpha,\; b\right) \iff b\).
+\item[\paperlineanchor{premise:696d706c6965735f636f6e6772}\paperlink{premise:696d706c6965735f636f6e6772}{P31.}] \refstepcounter{paperpremise}\label{premise:696d706c6965735f636f6e6772}\textbf{Implies congruence.} Let \(p_{1}\) and \(p_{2}\) be sorts. Let \(q_{1}\) and \(q_{2}\) be sorts. Assume \(p_{1} = p_{2}\). Assume \(q_{1} = q_{2}\). Then \(\left(p_{1} \to q_{1}\right) = \left(p_{2} \to q_{2}\right)\).
+\item[\paperlineanchor{premise:696e73744e6f6e656d7074794f66496e68616269746564}\paperlink{premise:696e73744e6f6e656d7074794f66496e68616269746564}{P32.}] \refstepcounter{paperpremise}\label{premise:696e73744e6f6e656d7074794f66496e68616269746564}\textbf{Inst nonempty of inhabited.} Let \(\alpha\) be a sort. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Inhabited}\left(\alpha\right)\). Then \(\alpha\text{ is nonempty}\).
+\item[\paperlineanchor{premise:6d756c5f6f6e65}\paperlink{premise:6d756c5f6f6e65}{P33.}] \refstepcounter{paperpremise}\label{premise:6d756c5f6f6e65}\textbf{Product one.} Let \(M\) be a type. Fix a structure \(\mathit{inst}\) of type \(\operatorname{Mul\,One\,Class}\left(M\right)\). Let \(a\) be an element of \(M\). Then \(a \cdot 1 = a\).
+\item[\paperlineanchor{premise:747275655f616e64}\paperlink{premise:747275655f616e64}{P34.}] \refstepcounter{paperpremise}\label{premise:747275655f616e64}\textbf{True and.} Let \(p\) be a proposition. Then \(\left(\mathrm{True} \land p\right) = p\).
 \end{description}
 
 \section{Bipartite relations}
@@ -64,7 +99,6 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 
 \begin{proof}
 By definition, we obtain \(N^{-}_{\operatorname{swap}\left(r\right), t}(a) = N^{+}_{r, t}(a)\).
-
 \end{proof}
 
 \begin{theorem}[{Bipartite above swap}]\label{theorem:2}
@@ -73,7 +107,6 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 
 \begin{proof}
 By definition, we obtain \(N^{+}_{\operatorname{swap}\left(r\right), s}(b) = N^{-}_{r, s}(b)\).
-
 \end{proof}
 
 \begin{theorem}[{Coercion bipartite below}]\label{theorem:3}
@@ -84,8 +117,7 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 \end{theorem}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:46696e7365742e636f655f66696c746572} with \(p = a \mapsto r\left(a, b\right)\), we obtain \(\operatorname{underlying\,set}(N^{-}_{r, s}(b)) = \{a\in \alpha \mid a \in s \land r\left(a, b\right)\}\).
-
+By \paperlink{premise:46696e7365742e636f655f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e636f655f66696c746572}} with \(p = a \mapsto r\left(a, b\right)\), we obtain \(\operatorname{underlying\,set}(N^{-}_{r, s}(b)) = \{a\in \alpha \mid a \in s \land r\left(a, b\right)\}\).
 \end{proof}
 
 \begin{lemma}[{Coercion bipartite above}]\label{theorem:4}
@@ -96,8 +128,7 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 \end{lemma}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:46696e7365742e636f655f66696c746572} with \(p = b \mapsto r\left(a, b\right)\) and \(s = t\), we obtain \(\operatorname{underlying\,set}(N^{+}_{r, t}(a)) = \{b\in \beta \mid b \in t \land r\left(a, b\right)\}\).
-
+By \paperlink{premise:46696e7365742e636f655f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e636f655f66696c746572}} with \(p = b \mapsto r\left(a, b\right)\) and \(s = t\), we obtain \(\operatorname{underlying\,set}(N^{+}_{r, t}(a)) = \{b\in \beta \mid b \in t \land r\left(a, b\right)\}\).
 \end{proof}
 
 \begin{lemma}[{Membership bipartite below}]\label{theorem:5}
@@ -105,8 +136,7 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 \end{lemma}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f66696c746572}, we obtain \(a \in N^{-}_{r, s}(b) \iff a \in s \land r\left(a, b\right)\).
-
+By \paperlink{premise:46696e7365742e6d656d5f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f66696c746572}}, we obtain \(a \in N^{-}_{r, s}(b) \iff a \in s \land r\left(a, b\right)\).
 \end{proof}
 
 \begin{theorem}[{Membership bipartite above}]\label{theorem:6}
@@ -114,8 +144,7 @@ Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) t
 \end{theorem}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f66696c746572}, we obtain \(b \in N^{+}_{r, t}(a) \iff b \in t \land r\left(a, b\right)\).
-
+By \paperlink{premise:46696e7365742e6d656d5f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f66696c746572}}, we obtain \(b \in N^{+}_{r, t}(a) \iff b \in t \land r\left(a, b\right)\).
 \end{proof}
 
 \begin{lemma}[{A sum over incidences in two orders}]\label{theorem:7}
@@ -142,19 +171,18 @@ The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in s\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f66696c746572} with \(p = r\left(x\right)\) and \(f\left(x\right)\) in place of its parameter \(f\), we obtain \(\sum_{a_{1}\in \{a_{1}\in t \mid r(x,\allowbreak{} a_{1})\}}(f(x,\allowbreak{} a_{1})) = \sum_{a_{1}\in t}(\begin{cases}f(x,\allowbreak{} a_{1}) &\text{if } r(x,\allowbreak{} a_{1})\\ 0 &\text{otherwise}\end{cases})\).
+By \paperlink{premise:46696e7365742e73756d5f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e73756d5f66696c746572}} with \(p = r\left(x\right)\) and \(f\left(x\right)\) in place of its parameter \(f\), we obtain \(\sum_{a_{1}\in \{a_{1}\in t \mid r(x,\allowbreak{} a_{1})\}}(f(x,\allowbreak{} a_{1})) = \sum_{a_{1}\in t}(\begin{cases}f(x,\allowbreak{} a_{1}) &\text{if } r(x,\allowbreak{} a_{1})\\ 0 &\text{otherwise}\end{cases})\).
 \end{proofstep}
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
 Assume \(x \in t\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f66696c746572} with \(p = a_{1} \mapsto r\left(a_{1}, x\right)\) and \(a_{1} \mapsto f\left(a_{1}, x\right)\) in place of its parameter \(f\), we obtain \(\sum_{a_{1}\in \{a_{1}\in s \mid r(a_{1},\allowbreak{} x)\}}(f(a_{1},\allowbreak{} x)) = \sum_{a_{1}\in s}(\begin{cases}f(a_{1},\allowbreak{} x) &\text{if } r(a_{1},\allowbreak{} x)\\ 0 &\text{otherwise}\end{cases})\).
+By \paperlink{premise:46696e7365742e73756d5f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e73756d5f66696c746572}} with \(p = a_{1} \mapsto r\left(a_{1}, x\right)\) and \(a_{1} \mapsto f\left(a_{1}, x\right)\) in place of its parameter \(f\), we obtain \(\sum_{a_{1}\in \{a_{1}\in s \mid r(a_{1},\allowbreak{} x)\}}(f(a_{1},\allowbreak{} x)) = \sum_{a_{1}\in s}(\begin{cases}f(a_{1},\allowbreak{} x) &\text{if } r(a_{1},\allowbreak{} x)\\ 0 &\text{otherwise}\end{cases})\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6d6d}, we obtain \(\sum_{x\in s}(\sum_{a\in t}(\begin{cases}f(x,\allowbreak{} a) &\text{if } r(x,\allowbreak{} a)\\ 0 &\text{otherwise}\end{cases})) = \sum_{x\in t}(\sum_{a\in s}(\begin{cases}f(a,\allowbreak{} x) &\text{if } r(a,\allowbreak{} x)\\ 0 &\text{otherwise}\end{cases}))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772} and the two identities established above in the preceding result gives \(\sum_{x\in s}(\sum_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \sum_{x\in t}(\sum_{a\in \{a\in s \mid r(a,\allowbreak{} x)\}}(f(a,\allowbreak{} x)))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772} and the identity established above in the preceding result gives \(\sum_{x\in s}(\sum_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \sum_{b\in t}(\sum_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772} and the identity established above in the preceding result gives \(\sum_{a\in s}(\sum_{b\in N^{+}_{r,\allowbreak{} t}(a)}(f(a,\allowbreak{} b))) = \sum_{b\in t}(\sum_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
-
+By \paperlink{premise:46696e7365742e73756d5f636f6d6d}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6d6d}}, we obtain \(\sum_{x\in s}(\sum_{a\in t}(\begin{cases}f(x,\allowbreak{} a) &\text{if } r(x,\allowbreak{} a)\\ 0 &\text{otherwise}\end{cases})) = \sum_{x\in t}(\sum_{a\in s}(\begin{cases}f(a,\allowbreak{} x) &\text{if } r(a,\allowbreak{} x)\\ 0 &\text{otherwise}\end{cases}))\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}} and the two identities established above in the preceding result gives \(\sum_{x\in s}(\sum_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \sum_{x\in t}(\sum_{a\in \{a\in s \mid r(a,\allowbreak{} x)\}}(f(a,\allowbreak{} x)))\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}} and the identity established above in the preceding result gives \(\sum_{x\in s}(\sum_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \sum_{b\in t}(\sum_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}} and the identity established above in the preceding result gives \(\sum_{a\in s}(\sum_{b\in N^{+}_{r,\allowbreak{} t}(a)}(f(a,\allowbreak{} b))) = \sum_{b\in t}(\sum_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
 \end{proof}
 
 \begin{theorem}[{A product over incidences in two orders}]\label{theorem:8}
@@ -181,19 +209,18 @@ The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in s\).
-By Prerequisite~P\ref{premise:46696e7365742e70726f645f66696c746572} with \(p = r\left(x\right)\) and \(f\left(x\right)\) in place of its parameter \(f\), we obtain \(\prod_{a_{1}\in \{a_{1}\in t \mid r(x,\allowbreak{} a_{1})\}}(f(x,\allowbreak{} a_{1})) = \prod_{a_{1}\in t}(\begin{cases}f(x,\allowbreak{} a_{1}) &\text{if } r(x,\allowbreak{} a_{1})\\ 1 &\text{otherwise}\end{cases})\).
+By \paperlink{premise:46696e7365742e70726f645f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e70726f645f66696c746572}} with \(p = r\left(x\right)\) and \(f\left(x\right)\) in place of its parameter \(f\), we obtain \(\prod_{a_{1}\in \{a_{1}\in t \mid r(x,\allowbreak{} a_{1})\}}(f(x,\allowbreak{} a_{1})) = \prod_{a_{1}\in t}(\begin{cases}f(x,\allowbreak{} a_{1}) &\text{if } r(x,\allowbreak{} a_{1})\\ 1 &\text{otherwise}\end{cases})\).
 \end{proofstep}
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
 Assume \(x \in t\).
-By Prerequisite~P\ref{premise:46696e7365742e70726f645f66696c746572} with \(p = a_{1} \mapsto r\left(a_{1}, x\right)\) and \(a_{1} \mapsto f\left(a_{1}, x\right)\) in place of its parameter \(f\), we obtain \(\prod_{a_{1}\in \{a_{1}\in s \mid r(a_{1},\allowbreak{} x)\}}(f(a_{1},\allowbreak{} x)) = \prod_{a_{1}\in s}(\begin{cases}f(a_{1},\allowbreak{} x) &\text{if } r(a_{1},\allowbreak{} x)\\ 1 &\text{otherwise}\end{cases})\).
+By \paperlink{premise:46696e7365742e70726f645f66696c746572}{Prerequisite~P\ref{premise:46696e7365742e70726f645f66696c746572}} with \(p = a_{1} \mapsto r\left(a_{1}, x\right)\) and \(a_{1} \mapsto f\left(a_{1}, x\right)\) in place of its parameter \(f\), we obtain \(\prod_{a_{1}\in \{a_{1}\in s \mid r(a_{1},\allowbreak{} x)\}}(f(a_{1},\allowbreak{} x)) = \prod_{a_{1}\in s}(\begin{cases}f(a_{1},\allowbreak{} x) &\text{if } r(a_{1},\allowbreak{} x)\\ 1 &\text{otherwise}\end{cases})\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6d6d}, we obtain \(\prod_{x\in s}(\prod_{a\in t}(\begin{cases}f(x,\allowbreak{} a) &\text{if } r(x,\allowbreak{} a)\\ 1 &\text{otherwise}\end{cases})) = \prod_{x\in t}(\prod_{a\in s}(\begin{cases}f(a,\allowbreak{} x) &\text{if } r(a,\allowbreak{} x)\\ 1 &\text{otherwise}\end{cases}))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772} and the two identities established above in the preceding result gives \(\prod_{x\in s}(\prod_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \prod_{x\in t}(\prod_{a\in \{a\in s \mid r(a,\allowbreak{} x)\}}(f(a,\allowbreak{} x)))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772} and the identity established above in the preceding result gives \(\prod_{x\in s}(\prod_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \prod_{b\in t}(\prod_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772} and the identity established above in the preceding result gives \(\prod_{a\in s}(\prod_{b\in N^{+}_{r,\allowbreak{} t}(a)}(f(a,\allowbreak{} b))) = \prod_{b\in t}(\prod_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
-
+By \paperlink{premise:46696e7365742e70726f645f636f6d6d}{Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6d6d}}, we obtain \(\prod_{x\in s}(\prod_{a\in t}(\begin{cases}f(x,\allowbreak{} a) &\text{if } r(x,\allowbreak{} a)\\ 1 &\text{otherwise}\end{cases})) = \prod_{x\in t}(\prod_{a\in s}(\begin{cases}f(a,\allowbreak{} x) &\text{if } r(a,\allowbreak{} x)\\ 1 &\text{otherwise}\end{cases}))\).
+Rewriting with \paperlink{premise:46696e7365742e70726f645f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772}} and the two identities established above in the preceding result gives \(\prod_{x\in s}(\prod_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \prod_{x\in t}(\prod_{a\in \{a\in s \mid r(a,\allowbreak{} x)\}}(f(a,\allowbreak{} x)))\).
+Rewriting with \paperlink{premise:46696e7365742e70726f645f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772}} and the identity established above in the preceding result gives \(\prod_{x\in s}(\prod_{b\in \{b\in t \mid r(x,\allowbreak{} b)\}}(f(x,\allowbreak{} b))) = \prod_{b\in t}(\prod_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
+Rewriting with \paperlink{premise:46696e7365742e70726f645f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e70726f645f636f6e6772}} and the identity established above in the preceding result gives \(\prod_{a\in s}(\prod_{b\in N^{+}_{r,\allowbreak{} t}(a)}(f(a,\allowbreak{} b))) = \prod_{b\in t}(\prod_{a\in N^{-}_{r,\allowbreak{} s}(b)}(f(a,\allowbreak{} b)))\).
 \end{proof}
 
 \begin{lemma}[{Counting incidences by rows and columns}]\label{theorem:9}
@@ -208,135 +235,126 @@ The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
 Assume \(x \in s\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f65715f73756d5f6f6e6573} with \(N^{+}_{r, t}(x)\) in place of its parameter \(s\), we obtain \(\left|N^{+}_{r, t}(x)\right| = \sum_{x_{1}\in N^{+}_{r, t}(x)}\left(1\right)\).
+By \paperlink{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}{Prerequisite~P\ref{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}} with \(N^{+}_{r, t}(x)\) in place of its parameter \(s\), we obtain \(\left|N^{+}_{r, t}(x)\right| = \sum_{x_{1}\in N^{+}_{r, t}(x)}\left(1\right)\).
 \end{proofstep}
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
 Assume \(x \in t\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f65715f73756d5f6f6e6573} with \(N^{-}_{r, s}(x)\) in place of its parameter \(s\), we obtain \(\left|N^{-}_{r, s}(x)\right| = \sum_{x_{1}\in N^{-}_{r, s}(x)}\left(1\right)\).
+By \paperlink{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}{Prerequisite~P\ref{premise:46696e7365742e636172645f65715f73756d5f6f6e6573}} with \(N^{-}_{r, s}(x)\) in place of its parameter \(s\), we obtain \(\left|N^{-}_{r, s}(x)\right| = \sum_{x_{1}\in N^{-}_{r, s}(x)}\left(1\right)\).
 \end{proofstep}
-Rewriting with Lemma~\ref{theorem:7} gives \(\sum_{x\in s}(\sum_{x_{1}\in N^{+}_{r,\allowbreak{} t}(x)}(1)) = \sum_{x\in t}(\sum_{x_{1}\in N^{-}_{r,\allowbreak{} s}(x)}(1))\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772} and the two identities established above in the preceding result gives \(\sum_{a\in s}(|N^{+}_{r,\allowbreak{} t}(a)|) = \sum_{b\in t}(|N^{-}_{r,\allowbreak{} s}(b)|)\).
-
+Rewriting with \paperlink{theorem:7}{Lemma~\ref{theorem:7}} gives \(\sum_{x\in s}(\sum_{x_{1}\in N^{+}_{r,\allowbreak{} t}(x)}(1)) = \sum_{x\in t}(\sum_{x_{1}\in N^{-}_{r,\allowbreak{} s}(x)}(1))\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e6772}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e6772}} and the two identities established above in the preceding result gives \(\sum_{a\in s}(|N^{+}_{r,\allowbreak{} t}(a)|) = \sum_{b\in t}(|N^{-}_{r,\allowbreak{} s}(b)|)\).
 \end{proof}
 
 \subsection{Bounds in ordered semirings}
-\begin{lemma}[{Double counting}]\label{theorem:10}
+\begin{lemma}[{Double counting with a scalar lower bound on row degrees}]\label{theorem:10}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(\forall a\, :\, \alpha,\; a \in s \implies m \le \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\). Assume \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|) \le n\). Then \(\left|s\right| \mathbin{\bullet} m \le \left|t\right| \mathbin{\bullet} n\).
 \end{lemma}
 
 \begin{proof}
 Use the hypothesis \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }R\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }R\).
 Use the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies m \le \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d} with \(f = a \mapsto \operatorname{cast}_{R}\left(\left|N^{+}_{r, t}(a)\right|\right)\) and \(m\) in place of its parameter \(n\), we obtain \(|s| \mathbin{\bullet} m \le \sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|))\).
-Rewriting with Lemma~\ref{theorem:9} and Prerequisite~P\ref{premise:4e61742e636173745f73756d} gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
+By \paperlink{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}{Prerequisite~P\ref{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}} with \(f = a \mapsto \operatorname{cast}_{R}\left(\left|N^{+}_{r, t}(a)\right|\right)\) and \(m\) in place of its parameter \(n\), we obtain \(|s| \mathbin{\bullet} m \le \sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|))\).
+Rewriting with \paperlink{theorem:9}{Lemma~\ref{theorem:9}} and \paperlink{premise:4e61742e636173745f73756d}{Prerequisite~P\ref{premise:4e61742e636173745f73756d}} gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 By transitivity of the displayed relations, we obtain \(|s| \mathbin{\bullet} m \le \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 Use the hypothesis \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }R\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }R\).
 Use the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|) \le n\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c} with \(t\) in place of its parameter \(s\) and \(f = b \mapsto \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right)\), we obtain \(\sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)) \le |t| \mathbin{\bullet} n\).
+By \paperlink{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}} with \(t\) in place of its parameter \(s\) and \(f = b \mapsto \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right)\), we obtain \(\sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)) \le |t| \mathbin{\bullet} n\).
 By transitivity of the displayed relations, we obtain \(\left|s\right| \mathbin{\bullet} m \le \left|t\right| \mathbin{\bullet} n\).
-
 \end{proof}
 
-\begin{corollary}[{Double counting}]\label{theorem:11}
+\begin{corollary}[{Double counting with a scalar lower bound on column degrees}]\label{theorem:11}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Let \(\mathit{inst}_{2}\) be a proof of \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(\forall b\, :\, \beta,\; b \in t \implies n \le \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|) \le m\). Then \(\left|t\right| \mathbin{\bullet} n \le \left|s\right| \mathbin{\bullet} m\).
 \end{corollary}
 
 \begin{proof}
-Apply Lemma~\ref{theorem:10} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
-
+Apply \paperlink{theorem:10}{Lemma~\ref{theorem:10}} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
 \end{proof}
 
 \subsection{Strict bounds in ordered semirings}
-\begin{lemma}[{Double counting}]\label{theorem:12}
+\begin{lemma}[{Double counting with a strict lower bound on row degrees}]\label{theorem:12}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(s\ne\varnothing\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies m < \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\). Assume \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|) \le n\). Then \(\left|s\right| \mathbin{\bullet} m < \left|t\right| \mathbin{\bullet} n\).
 \end{lemma}
 
 \begin{proof}
 By definition, we obtain \(\left|s\right| \mathbin{\bullet} m = \left|s\right| \mathbin{\bullet} m\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} in the preceding result gives \(\left|s\right| \mathbin{\bullet} m = \sum_{x\in s}\left(m\right)\).
+Rewriting with \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} in the preceding result gives \(\left|s\right| \mathbin{\bullet} m = \sum_{x\in s}\left(m\right)\).
 Use the hypothesis \(R\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }R\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }R\).
 Use the hypothesis \(s\ne\varnothing\).
 Use the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies m < \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}, we obtain \(\sum_{i\in s}(m) < \sum_{i\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(i)|))\).
+By \paperlink{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}}, we obtain \(\sum_{i\in s}(m) < \sum_{i\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(i)|))\).
 By transitivity of the displayed relations, we obtain \(|s| \mathbin{\bullet} m < \sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|))\).
-Rewriting with Lemma~\ref{theorem:9}, Prerequisite~P\ref{premise:4e61742e636173745f73756d}, Prerequisite~P\ref{premise:4e61742e636173745f696e6a} and Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(R\text{ is a strictly ordered semiring}\)) gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
+Rewriting with \paperlink{theorem:9}{Lemma~\ref{theorem:9}}, \paperlink{premise:4e61742e636173745f73756d}{Prerequisite~P\ref{premise:4e61742e636173745f73756d}}, \paperlink{premise:4e61742e636173745f696e6a}{Prerequisite~P\ref{premise:4e61742e636173745f696e6a}} and \paperlink{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}} (using \(R\text{ is a strictly ordered semiring}\)) gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 By transitivity of the displayed relations, we obtain \(|s| \mathbin{\bullet} m < \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 Use the hypothesis \(R\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }R\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }R\).
 Use the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|) \le n\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c} with \(t\) in place of its parameter \(s\) and \(f = b \mapsto \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right)\), we obtain \(\sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)) \le |t| \mathbin{\bullet} n\).
+By \paperlink{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c655f636172645f6e736d756c}} with \(t\) in place of its parameter \(s\) and \(f = b \mapsto \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right)\), we obtain \(\sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)) \le |t| \mathbin{\bullet} n\).
 By transitivity of the displayed relations, we obtain \(\left|s\right| \mathbin{\bullet} m < \left|t\right| \mathbin{\bullet} n\).
-
 \end{proof}
 
-\begin{lemma}[{Double counting}]\label{theorem:13}
+\begin{lemma}[{Double counting with a strict upper bound on column degrees}]\label{theorem:13}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(t\ne\varnothing\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies m \le \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\). Assume \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right) < n\). Then \(\left|s\right| \mathbin{\bullet} m < \left|t\right| \mathbin{\bullet} n\).
 \end{lemma}
 
 \begin{proof}
 Use the hypothesis \(R\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
-By Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}, we obtain \(\text{translation preserves order on }R\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}}, we obtain \(\operatorname{Is\,Ordered\,Ring}\left(R\right)\).
+By \paperlink{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}{Prerequisite~P\ref{premise:49734f72646572656452696e672e746f49734f7264657265644164644d6f6e6f6964}}, we obtain \(\text{translation preserves order on }R\).
 Use the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies m \le \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d} with \(f = a \mapsto \operatorname{cast}_{R}\left(\left|N^{+}_{r, t}(a)\right|\right)\) and \(m\) in place of its parameter \(n\), we obtain \(|s| \mathbin{\bullet} m \le \sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|))\).
-Rewriting with Lemma~\ref{theorem:9}, Prerequisite~P\ref{premise:4e61742e636173745f73756d}, Prerequisite~P\ref{premise:4e61742e636173745f696e6a} and Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f} (using \(R\text{ is a strictly ordered semiring}\)) gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
+By \paperlink{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}{Prerequisite~P\ref{premise:46696e7365742e636172645f6e736d756c5f6c655f73756d}} with \(f = a \mapsto \operatorname{cast}_{R}\left(\left|N^{+}_{r, t}(a)\right|\right)\) and \(m\) in place of its parameter \(n\), we obtain \(|s| \mathbin{\bullet} m \le \sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|))\).
+Rewriting with \paperlink{theorem:9}{Lemma~\ref{theorem:9}}, \paperlink{premise:4e61742e636173745f73756d}{Prerequisite~P\ref{premise:4e61742e636173745f73756d}}, \paperlink{premise:4e61742e636173745f696e6a}{Prerequisite~P\ref{premise:4e61742e636173745f696e6a}} and \paperlink{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f436861725a65726f}} (using \(R\text{ is a strictly ordered semiring}\)) gives \(\sum_{a\in s}(\operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|)) = \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 By transitivity of the displayed relations, we obtain \(|s| \mathbin{\bullet} m \le \sum_{b\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|))\).
 Use the hypothesis \(R\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}, we obtain \(\text{translation preserves and reflects order on }R\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656443616e63656c4164644d6f6e6f6964}}, we obtain \(\text{translation preserves and reflects order on }R\).
 Use the hypothesis \(t\ne\varnothing\).
 Use the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right) < n\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}, we obtain \(\sum_{i\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(i)|)) < \sum_{i\in t}(n)\).
+By \paperlink{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e73756d5f6c745f73756d5f6f665f6e6f6e656d707479}}, we obtain \(\sum_{i\in t}(\operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(i)|)) < \sum_{i\in t}(n)\).
 By transitivity of the displayed relations, we obtain \(\left|s\right| \mathbin{\bullet} m < \sum_{x\in t}\left(n\right)\).
-By Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374} with \(b = n\), we obtain \(\sum_{x\in t}\left(n\right) = \left|t\right| \mathbin{\bullet} n\).
+By \paperlink{premise:46696e7365742e73756d5f636f6e7374}{Prerequisite~P\ref{premise:46696e7365742e73756d5f636f6e7374}} with \(b = n\), we obtain \(\sum_{x\in t}\left(n\right) = \left|t\right| \mathbin{\bullet} n\).
 By transitivity of the displayed relations, we obtain \(\left|s\right| \mathbin{\bullet} m < \left|t\right| \mathbin{\bullet} n\).
-
 \end{proof}
 
-\begin{corollary}[{Double counting}]\label{theorem:14}
+\begin{corollary}[{Double counting with a strict lower bound on column degrees}]\label{theorem:14}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(t\ne\varnothing\). Assume \(\forall b\, :\, \beta,\; b \in t \implies n < \operatorname{cast}_{R}\left(\left|N^{-}_{r, s}(b)\right|\right)\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|) \le m\). Then \(\left|t\right| \mathbin{\bullet} n < \left|s\right| \mathbin{\bullet} m\).
 \end{corollary}
 
 \begin{proof}
-Apply Lemma~\ref{theorem:12} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
-
+Apply \paperlink{theorem:12}{Lemma~\ref{theorem:12}} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
 \end{proof}
 
-\begin{corollary}[{Double counting}]\label{theorem:15}
+\begin{corollary}[{Double counting with a strict upper bound on row degrees}]\label{theorem:15}
 Let \(R\), \(\alpha\), and \(\beta\) be types. Equip \(R\) with a semiring structure. Equip \(R\) with a partial order. Assume \(R\text{ is a strictly ordered semiring}\). Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be elements of \(R\). Assume the relation \(r\) is decidable. Assume \(s\ne\varnothing\). Assume \(\forall b\, :\, \beta,\; b \in t \implies n \le \operatorname{cast}_{R}(|N^{-}_{r,\allowbreak{} s}(b)|)\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \operatorname{cast}_{R}(|N^{+}_{r,\allowbreak{} t}(a)|) < m\). Then \(\left|t\right| \mathbin{\bullet} n < \left|s\right| \mathbin{\bullet} m\).
 \end{corollary}
 
 \begin{proof}
-Apply Lemma~\ref{theorem:13} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
-
+Apply \paperlink{theorem:13}{Lemma~\ref{theorem:13}} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
 \end{proof}
 
 \subsection{Further results}
-\begin{corollary}[{Double counting}]\label{theorem:16}
+\begin{corollary}[{Double counting with a natural-number lower bound on row degrees}]\label{theorem:16}
 Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be natural numbers. Assume the relation \(r\) is decidable. Assume \(\forall a\, :\, \alpha,\; a \in s \implies m \le \left|N^{+}_{r, t}(a)\right|\). Assume \(\forall b\, :\, \beta,\; b \in t \implies \left|N^{-}_{r, s}(b)\right| \le n\). Then \(\left|s\right| \cdot m \le \left|t\right| \cdot n\).
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{N}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{N}\right)\).
-Apply Lemma~\ref{theorem:10} with \(R = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}} with \(R = \mathbb{N}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{N}\right)\).
+Apply \paperlink{theorem:10}{Lemma~\ref{theorem:10}} with \(R = \mathbb{N}\).
 \end{proof}
 
-\begin{corollary}[{A bound on weighted cardinalities}]\label{theorem:17}
+\begin{corollary}[{Double counting with a natural-number lower bound on column degrees}]\label{theorem:17}
 Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Let \(m\) and \(n\) be natural numbers. Assume the relation \(r\) is decidable. Assume \(\forall b\, :\, \beta,\; b \in t \implies n \le \left|N^{-}_{r, s}(b)\right|\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \left|N^{+}_{r, t}(a)\right| \le m\). Then \(\left|t\right| \cdot n \le \left|s\right| \cdot m\).
 \end{corollary}
 
 \begin{proof}
-By Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
-By Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67} with \(R = \mathbb{N}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{N}\right)\).
-Apply Corollary~\ref{theorem:11} with \(R = \mathbb{N}\).
-
+By \paperlink{premise:4e61742e696e737449735374726963744f72646572656452696e67}{Prerequisite~P\ref{premise:4e61742e696e737449735374726963744f72646572656452696e67}}, we obtain \(\mathbb{N}\text{ is a strictly ordered semiring}\).
+By \paperlink{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}{Prerequisite~P\ref{premise:49735374726963744f72646572656452696e672e746f49734f72646572656452696e67}} with \(R = \mathbb{N}\), we obtain \(\operatorname{Is\,Ordered\,Ring}\left(\mathbb{N}\right)\).
+Apply \paperlink{theorem:11}{Corollary~\ref{theorem:11}} with \(R = \mathbb{N}\).
 \end{proof}
 
 \begin{theorem}[{An equality of weighted cardinalities}]\label{theorem:18}
@@ -350,7 +368,7 @@ Fix \(a\) in \(\alpha\).
 Assume \(a \in s\).
 Use the hypothesis \(a \in s\).
 Applying the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies \left|N^{+}_{r, t}(a)\right| = m\), we obtain \(\left|N^{+}_{r, t}(a)\right| = m\).
-By Prerequisite~P\ref{premise:45712e6765} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(m \le \left|N^{+}_{r, t}(a)\right|\).
+By \paperlink{premise:45712e6765}{Prerequisite~P\ref{premise:45712e6765}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(m \le \left|N^{+}_{r, t}(a)\right|\).
 \end{proofstep}
 For the required implication, argue as follows.
 \begin{proofstep}
@@ -358,16 +376,16 @@ Fix \(b\) in \(\beta\).
 Assume \(b \in t\).
 Use the hypothesis \(b \in t\).
 Applying the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \left|N^{-}_{r, s}(b)\right| = n\), we obtain \(\left|N^{-}_{r, s}(b)\right| = n\).
-By Prerequisite~P\ref{premise:45712e6c65} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|N^{-}_{r, s}(b)\right| \le n\).
+By \paperlink{premise:45712e6c65}{Prerequisite~P\ref{premise:45712e6c65}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|N^{-}_{r, s}(b)\right| \le n\).
 \end{proofstep}
-By Corollary~\ref{theorem:16}, we obtain \(\left|s\right| \cdot m \le \left|t\right| \cdot n\).
+By \paperlink{theorem:16}{Corollary~\ref{theorem:16}}, we obtain \(\left|s\right| \cdot m \le \left|t\right| \cdot n\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(a\) in \(\beta\).
 Assume \(a \in t\).
 Use the hypothesis \(a \in t\).
 Applying the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \left|N^{-}_{r, s}(b)\right| = n\), we obtain \(\left|N^{-}_{r, s}(a)\right| = n\).
-By Prerequisite~P\ref{premise:45712e6765} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(n \le \left|N^{-}_{r, s}(a)\right|\).
+By \paperlink{premise:45712e6765}{Prerequisite~P\ref{premise:45712e6765}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(n \le \left|N^{-}_{r, s}(a)\right|\).
 \end{proofstep}
 For the required implication, argue as follows.
 \begin{proofstep}
@@ -375,14 +393,13 @@ Fix \(b\) in \(\alpha\).
 Assume \(b \in s\).
 Use the hypothesis \(b \in s\).
 Applying the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies \left|N^{+}_{r, t}(a)\right| = m\), we obtain \(\left|N^{+}_{r, t}(b)\right| = m\).
-By Prerequisite~P\ref{premise:45712e6c65} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|N^{+}_{r, t}(b)\right| \le m\).
+By \paperlink{premise:45712e6c65}{Prerequisite~P\ref{premise:45712e6c65}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|N^{+}_{r, t}(b)\right| \le m\).
 \end{proofstep}
-By Corollary~\ref{theorem:17}, we obtain \(\left|t\right| \cdot n \le \left|s\right| \cdot m\).
-By Prerequisite~P\ref{premise:4c452e6c652e616e746973796d6d} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|s\right| \cdot m = \left|t\right| \cdot n\).
-
+By \paperlink{theorem:17}{Corollary~\ref{theorem:17}}, we obtain \(\left|t\right| \cdot n \le \left|s\right| \cdot m\).
+By \paperlink{premise:4c452e6c652e616e746973796d6d}{Prerequisite~P\ref{premise:4c452e6c652e616e746973796d6d}} with \(\mathbb{N}\) as its type parameter \(\alpha\), we obtain \(\left|s\right| \cdot m = \left|t\right| \cdot n\).
 \end{proof}
 
-\begin{lemma}[{A cardinality bound from fibers of size at most one}]\label{theorem:19}
+\begin{lemma}[{Bounding nonempty rows by columns of degree at most one}]\label{theorem:19}
 Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies (\exists b\, :\, \beta,\; b \in t \land r(a,\allowbreak{} b))\). Assume \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{Subsingleton}(\{a_{1}\in \alpha \mid a_{1} \in s \land r(a_{1},\allowbreak{} b)\})\). Then \(\left|s\right| \le \left|t\right|\).
 \end{lemma}
 
@@ -391,52 +408,50 @@ For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(a\) in \(\alpha\).
 Assume \(a \in s\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f706f73}, we obtain \(0 < \left|N^{+}_{r, t}(a)\right| \iff N^{+}_{r, t}(a)\ne\varnothing\).
+By \paperlink{premise:46696e7365742e636172645f706f73}{Prerequisite~P\ref{premise:46696e7365742e636172645f706f73}}, we obtain \(0 < \left|N^{+}_{r, t}(a)\right| \iff N^{+}_{r, t}(a)\ne\varnothing\).
 Use the hypothesis \(a \in s\).
 Applying the hypothesis \(\forall a\, :\, \alpha,\; a \in s \implies (\exists b\, :\, \beta,\; b \in t \land r(a,\allowbreak{} b))\), we obtain \(\{b\in \beta \mid b \in t \land r\left(a, b\right)\}\ne\varnothing\).
-Rewriting with Lemma~\ref{theorem:4} in the preceding result gives \(\operatorname{underlying\,set}(N^{+}_{r, t}(a))\ne\varnothing\).
-Rewriting with Prerequisite~P\ref{premise:46696e7365742e636f655f6e6f6e656d707479} in the preceding result gives \(N^{+}_{r, t}(a)\ne\varnothing\).
+Rewriting with \paperlink{theorem:4}{Lemma~\ref{theorem:4}} in the preceding result gives \(\operatorname{underlying\,set}(N^{+}_{r, t}(a))\ne\varnothing\).
+Rewriting with \paperlink{premise:46696e7365742e636f655f6e6f6e656d707479}{Prerequisite~P\ref{premise:46696e7365742e636f655f6e6f6e656d707479}} in the preceding result gives \(N^{+}_{r, t}(a)\ne\varnothing\).
 By the reverse implication, we obtain \(0 < \left|N^{+}_{r, t}(a)\right|\).
 \end{proofstep}
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(b\) in \(\beta\).
 Assume \(b \in t\).
-By Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f6f6e65}, we obtain \(|N^{-}_{r,\allowbreak{} s}(b)| \le 1 \iff (\forall a\, :\, \alpha,\; a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall b_{1}\, :\, \alpha,\; b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1}))\).
+By \paperlink{premise:46696e7365742e636172645f6c655f6f6e65}{Prerequisite~P\ref{premise:46696e7365742e636172645f6c655f6f6e65}}, we obtain \(|N^{-}_{r,\allowbreak{} s}(b)| \le 1 \iff (\forall a\, :\, \alpha,\; a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall b_{1}\, :\, \alpha,\; b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1}))\).
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(a\) in \(\alpha\).
-By Lemma~\ref{theorem:5}, we obtain \(a \in N^{-}_{r, s}(b) \iff a \in s \land r\left(a, b\right)\).
+By \paperlink{theorem:5}{Lemma~\ref{theorem:5}}, we obtain \(a \in N^{-}_{r, s}(b) \iff a \in s \land r\left(a, b\right)\).
 By propositional extensionality, we obtain \(\left(a \in N^{-}_{r, s}(b)\right) = \left(a \in s \land r\left(a, b\right)\right)\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(b_{1}\) in \(\alpha\).
-By Lemma~\ref{theorem:5}, we obtain \(b_{1} \in N^{-}_{r, s}(b) \iff b_{1} \in s \land r\left(b_{1}, b\right)\).
+By \paperlink{theorem:5}{Lemma~\ref{theorem:5}}, we obtain \(b_{1} \in N^{-}_{r, s}(b) \iff b_{1} \in s \land r\left(b_{1}, b\right)\).
 By propositional extensionality, we obtain \(\left(b_{1} \in N^{-}_{r, s}(b)\right) = \left(b_{1} \in s \land r\left(b_{1}, b\right)\right)\).
 By definition, we obtain \(\left(a = b_{1}\right) = \left(a = b_{1}\right)\).
-By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = b_{1} \in N^{-}_{r, s}(b)\) and \(p_{2} = b_{1} \in s \land r\left(b_{1}, b\right)\) and \(q_{1} = a = b_{1}\) and \(q_{2} = a = b_{1}\), we obtain \((b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1}) = (b_{1} \in s \land r(b_{1},\allowbreak{} b) \implies a = b_{1})\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = b_{1} \in N^{-}_{r, s}(b)\) and \(p_{2} = b_{1} \in s \land r\left(b_{1}, b\right)\) and \(q_{1} = a = b_{1}\) and \(q_{2} = a = b_{1}\), we obtain \((b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1}) = (b_{1} \in s \land r(b_{1},\allowbreak{} b) \implies a = b_{1})\).
 \end{proofstep}
-By Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}, we obtain \((\forall a_{1}\, :\, \alpha,\; a_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = a_{1}) = (\forall a_{1}\, :\, \alpha,\; a_{1} \in s \land r(a_{1},\allowbreak{} b) \implies a = a_{1})\).
-By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = a \in N^{-}_{r, s}(b)\) and \(p_{2} = a \in s \land r\left(a, b\right)\) and \(q_{1} = \forall a_{1}\, :\, \alpha,\; a_{1} \in N^{-}_{r, s}(b) \implies a = a_{1}\) and \(q_{2} = \forall a_{1}\, :\, \alpha,\; a_{1} \in s \land r\left(a_{1}, b\right) \implies a = a_{1}\), we obtain \((a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall a_{2}\, :\, \alpha,\; a_{2} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = a_{2})) = (a \in s \land r(a,\allowbreak{} b) \implies (\forall a_{2}\, :\, \alpha,\; a_{2} \in s \land r(a_{2},\allowbreak{} b) \implies a = a_{2}))\).
+By \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}}, we obtain \((\forall a_{1}\, :\, \alpha,\; a_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = a_{1}) = (\forall a_{1}\, :\, \alpha,\; a_{1} \in s \land r(a_{1},\allowbreak{} b) \implies a = a_{1})\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = a \in N^{-}_{r, s}(b)\) and \(p_{2} = a \in s \land r\left(a, b\right)\) and \(q_{1} = \forall a_{1}\, :\, \alpha,\; a_{1} \in N^{-}_{r, s}(b) \implies a = a_{1}\) and \(q_{2} = \forall a_{1}\, :\, \alpha,\; a_{1} \in s \land r\left(a_{1}, b\right) \implies a = a_{1}\), we obtain \((a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall a_{2}\, :\, \alpha,\; a_{2} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = a_{2})) = (a \in s \land r(a,\allowbreak{} b) \implies (\forall a_{2}\, :\, \alpha,\; a_{2} \in s \land r(a_{2},\allowbreak{} b) \implies a = a_{2}))\).
 \end{proofstep}
 Use the hypothesis \(b \in t\).
 Applying the hypothesis \(\forall b\, :\, \beta,\; b \in t \implies \operatorname{Subsingleton}(\{a_{1}\in \alpha \mid a_{1} \in s \land r(a_{1},\allowbreak{} b)\})\), we obtain \(\forall a\, :\, \alpha,\; a \in s \land r(a,\allowbreak{} b) \implies (\forall b_{1}\, :\, \alpha,\; b_{1} \in s \land r(b_{1},\allowbreak{} b) \implies a = b_{1})\).
-Rewriting with Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772} and the identity established above in the preceding result gives \(\forall a\, :\, \alpha,\; a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall b_{1}\, :\, \alpha,\; b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1})\).
+Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}} and the identity established above in the preceding result gives \(\forall a\, :\, \alpha,\; a \in N^{-}_{r,\allowbreak{} s}(b) \implies (\forall b_{1}\, :\, \alpha,\; b_{1} \in N^{-}_{r,\allowbreak{} s}(b) \implies a = b_{1})\).
 By the reverse implication, we obtain \(\left|N^{-}_{r, s}(b)\right| \le 1\).
 \end{proofstep}
-By Corollary~\ref{theorem:16}, we obtain \(\left|s\right| \cdot 1 \le \left|t\right| \cdot 1\).
-Rewriting with Prerequisite~P\ref{premise:6d756c5f6f6e65} in the preceding result gives \(\left|s\right| \cdot 1 \le \left|t\right|\).
-Rewriting with Prerequisite~P\ref{premise:6d756c5f6f6e65} in the preceding result gives \(\left|s\right| \le \left|t\right|\).
-
+By \paperlink{theorem:16}{Corollary~\ref{theorem:16}}, we obtain \(\left|s\right| \cdot 1 \le \left|t\right| \cdot 1\).
+Rewriting with \paperlink{premise:6d756c5f6f6e65}{Prerequisite~P\ref{premise:6d756c5f6f6e65}} in the preceding result gives \(\left|s\right| \cdot 1 \le \left|t\right|\).
+Rewriting with \paperlink{premise:6d756c5f6f6e65}{Prerequisite~P\ref{premise:6d756c5f6f6e65}} in the preceding result gives \(\left|s\right| \le \left|t\right|\).
 \end{proof}
 
-\begin{corollary}[{A cardinality bound from fibers of size at most one}]\label{theorem:20}
+\begin{corollary}[{Bounding nonempty columns by rows of degree at most one}]\label{theorem:20}
 Let \(\alpha\) and \(\beta\) be types. Let \(r\) be a relation from \(\alpha\) to \(\beta\). Let \(s\) be a finite subset of \(\alpha\). Let \(t\) be a finite subset of \(\beta\). Assume \(\forall b\, :\, \beta,\; b \in t \implies (\exists a_{1}\, :\, \alpha,\; a_{1} \in s \land r(a_{1},\allowbreak{} b))\). Assume \(\forall a\, :\, \alpha,\; a \in s \implies \operatorname{Subsingleton}(\{b\in \beta \mid b \in t \land r(a,\allowbreak{} b)\})\). Then \(\left|t\right| \le \left|s\right|\).
 \end{corollary}
 
 \begin{proof}
-Apply Lemma~\ref{theorem:19} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
-
+Apply \paperlink{theorem:19}{Lemma~\ref{theorem:19}} with \(\operatorname{swap}\left(r\right)\) in place of its parameter \(r\).
 \end{proof}
 
 \section{Finite types}
@@ -448,27 +463,27 @@ Let \(\alpha\) and \(\beta\) be types. Fix a finite enumeration of \(\alpha\). F
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(a\) in \(\alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(x = a\), we obtain \(a \in \alpha\).
-By Prerequisite~P\ref{premise:65715f74727565}, we obtain \(\left(a \in \alpha\right) = \mathrm{True}\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(x = a\), we obtain \(a \in \alpha\).
+By \paperlink{premise:65715f74727565}{Prerequisite~P\ref{premise:65715f74727565}}, we obtain \(\left(a \in \alpha\right) = \mathrm{True}\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(b\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(x = b\), we obtain \(b \in \beta\).
-By Prerequisite~P\ref{premise:65715f74727565}, we obtain \(\left(b \in \beta\right) = \mathrm{True}\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(x = b\), we obtain \(b \in \beta\).
+By \paperlink{premise:65715f74727565}{Prerequisite~P\ref{premise:65715f74727565}}, we obtain \(\left(b \in \beta\right) = \mathrm{True}\).
 Applying the same function to equal arguments, we obtain \(\left(b \in \beta \land r\left(a, b\right)\right) = \left(\mathrm{True} \land r\left(a, b\right)\right)\).
-By Prerequisite~P\ref{premise:747275655f616e64} with \(p = r\left(a, b\right)\), we obtain \(\left(\mathrm{True} \land r\left(a, b\right)\right) = r\left(a, b\right)\).
+By \paperlink{premise:747275655f616e64}{Prerequisite~P\ref{premise:747275655f616e64}} with \(p = r\left(a, b\right)\), we obtain \(\left(\mathrm{True} \land r\left(a, b\right)\right) = r\left(a, b\right)\).
 Chaining the equalities, we obtain \(\left(b \in \beta \land r\left(a, b\right)\right) = r\left(a, b\right)\).
 \end{proofstep}
 By function extensionality, we obtain \(\left(x \mapsto x \in \beta \land r\left(a, x\right)\right) = r\left(a\right)\).
 Applying the same function to equal arguments, we obtain \((\exists x\, :\, \beta,\; x \in \beta \land r(a,\allowbreak{} x)) = (\exists x\, :\, \beta,\; r(a)(x))\).
-By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = a \in \alpha\) and \(p_{2} = \mathrm{True}\) and \(q_{1} = \exists x\, :\, \beta,\; x \in \beta \land r\left(a, x\right)\) and \(q_{2} = \exists x\, :\, \beta,\; r\left(a\right)(x)\), we obtain \((a \in \alpha \implies (\exists x\, :\, \beta,\; x \in \beta \land r(a,\allowbreak{} x))) = (\mathrm{True} \implies (\exists x\, :\, \beta,\; r(a)(x)))\).
-By Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \(\mathrm{True}\text{ is nonempty}\).
-By Prerequisite~P\ref{premise:666f72616c6c5f636f6e7374} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \((\forall a_{1}\, :\, \mathrm{True},\; \exists b\, :\, \beta,\; r(a,\allowbreak{} b)) \iff (\exists b\, :\, \beta,\; r(a,\allowbreak{} b))\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = a \in \alpha\) and \(p_{2} = \mathrm{True}\) and \(q_{1} = \exists x\, :\, \beta,\; x \in \beta \land r\left(a, x\right)\) and \(q_{2} = \exists x\, :\, \beta,\; r\left(a\right)(x)\), we obtain \((a \in \alpha \implies (\exists x\, :\, \beta,\; x \in \beta \land r(a,\allowbreak{} x))) = (\mathrm{True} \implies (\exists x\, :\, \beta,\; r(a)(x)))\).
+By \paperlink{premise:696e73744e6f6e656d7074794f66496e68616269746564}{Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564}} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \(\mathrm{True}\text{ is nonempty}\).
+By \paperlink{premise:666f72616c6c5f636f6e7374}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e7374}} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \((\forall a_{1}\, :\, \mathrm{True},\; \exists b\, :\, \beta,\; r(a,\allowbreak{} b)) \iff (\exists b\, :\, \beta,\; r(a,\allowbreak{} b))\).
 By propositional extensionality, we obtain \((\mathrm{True} \implies (\exists b\, :\, \beta,\; r(a,\allowbreak{} b))) = (\exists b\, :\, \beta,\; r(a,\allowbreak{} b))\).
 Chaining the equalities, we obtain \((a \in \alpha \implies (\exists x\, :\, \beta,\; x \in \beta \land r(a,\allowbreak{} x))) = (\exists b\, :\, \beta,\; r(a,\allowbreak{} b))\).
 \end{proofstep}
 Use the hypothesis \(\forall a\, :\, \alpha,\; \exists b\, :\, \beta,\; r(a, b)\).
-Rewriting with Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772} and the identity established above in the preceding result gives \(\forall a\, :\, \alpha,\; a \in \alpha \implies (\exists b\, :\, \beta,\; b \in \beta \land r(a,\allowbreak{} b))\).
+Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}} and the identity established above in the preceding result gives \(\forall a\, :\, \alpha,\; a \in \alpha \implies (\exists b\, :\, \beta,\; b \in \beta \land r(a,\allowbreak{} b))\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\beta\).
@@ -483,8 +498,7 @@ Use the hypothesis \(x_{3} \in \{a\in \alpha \mid a \in \alpha \land r\left(a, x
 Taking the second conjunct, we obtain \(r\left(x_{3}, x\right)\).
 Applying the hypothesis \(\forall b\, :\, \beta,\; \forall a, a^{'}\, :\, \alpha,\; r(a, b) \land r(a^{'}, b) \implies a = a^{'}\), we obtain \(x_{2} = x_{3}\).
 \end{proofstep}
-Apply Lemma~\ref{theorem:19} with \(s = \alpha\) and \(t = \beta\).
-
+Apply \paperlink{theorem:19}{Lemma~\ref{theorem:19}} with \(s = \alpha\) and \(t = \beta\).
 \end{proof}
 
 \begin{theorem}[{A cardinality bound from a right-total relation}]\label{theorem:22}
@@ -495,27 +509,27 @@ Let \(\alpha\) and \(\beta\) be types. Fix a finite enumeration of \(\alpha\). F
 The substitution uses the following argument.
 \begin{proofstep}
 Fix \(b\) in \(\beta\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(x = b\), we obtain \(b \in \beta\).
-By Prerequisite~P\ref{premise:65715f74727565}, we obtain \(\left(b \in \beta\right) = \mathrm{True}\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(x = b\), we obtain \(b \in \beta\).
+By \paperlink{premise:65715f74727565}{Prerequisite~P\ref{premise:65715f74727565}}, we obtain \(\left(b \in \beta\right) = \mathrm{True}\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(a\) in \(\alpha\).
-By Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976} with \(x = a\), we obtain \(a \in \alpha\).
-By Prerequisite~P\ref{premise:65715f74727565}, we obtain \(\left(a \in \alpha\right) = \mathrm{True}\).
+By \paperlink{premise:46696e7365742e6d656d5f756e6976}{Prerequisite~P\ref{premise:46696e7365742e6d656d5f756e6976}} with \(x = a\), we obtain \(a \in \alpha\).
+By \paperlink{premise:65715f74727565}{Prerequisite~P\ref{premise:65715f74727565}}, we obtain \(\left(a \in \alpha\right) = \mathrm{True}\).
 Applying the same function to equal arguments, we obtain \(\left(a \in \alpha \land r\left(a, b\right)\right) = \left(\mathrm{True} \land r\left(a, b\right)\right)\).
-By Prerequisite~P\ref{premise:747275655f616e64} with \(p = r\left(a, b\right)\), we obtain \(\left(\mathrm{True} \land r\left(a, b\right)\right) = r\left(a, b\right)\).
+By \paperlink{premise:747275655f616e64}{Prerequisite~P\ref{premise:747275655f616e64}} with \(p = r\left(a, b\right)\), we obtain \(\left(\mathrm{True} \land r\left(a, b\right)\right) = r\left(a, b\right)\).
 Chaining the equalities, we obtain \(\left(a \in \alpha \land r\left(a, b\right)\right) = r\left(a, b\right)\).
 \end{proofstep}
 By function extensionality, we obtain \(\left(x \mapsto x \in \alpha \land r\left(x, b\right)\right) = \left(x \mapsto r\left(x, b\right)\right)\).
 Applying the same function to equal arguments, we obtain \((\exists x\, :\, \alpha,\; x \in \alpha \land r(x,\allowbreak{} b)) = (\exists x\, :\, \alpha,\; r(x,\allowbreak{} b))\).
-By Prerequisite~P\ref{premise:696d706c6965735f636f6e6772} with \(p_{1} = b \in \beta\) and \(p_{2} = \mathrm{True}\) and \(q_{1} = \exists x\, :\, \alpha,\; x \in \alpha \land r\left(x, b\right)\) and \(q_{2} = \exists x\, :\, \alpha,\; r\left(x, b\right)\), we obtain \((b \in \beta \implies (\exists x\, :\, \alpha,\; x \in \alpha \land r(x,\allowbreak{} b))) = (\mathrm{True} \implies (\exists x\, :\, \alpha,\; r(x,\allowbreak{} b)))\).
-By Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \(\mathrm{True}\text{ is nonempty}\).
-By Prerequisite~P\ref{premise:666f72616c6c5f636f6e7374} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \((\forall a\, :\, \mathrm{True},\; \exists a_{1}\, :\, \alpha,\; r(a_{1},\allowbreak{} b)) \iff (\exists a\, :\, \alpha,\; r(a,\allowbreak{} b))\).
+By \paperlink{premise:696d706c6965735f636f6e6772}{Prerequisite~P\ref{premise:696d706c6965735f636f6e6772}} with \(p_{1} = b \in \beta\) and \(p_{2} = \mathrm{True}\) and \(q_{1} = \exists x\, :\, \alpha,\; x \in \alpha \land r\left(x, b\right)\) and \(q_{2} = \exists x\, :\, \alpha,\; r\left(x, b\right)\), we obtain \((b \in \beta \implies (\exists x\, :\, \alpha,\; x \in \alpha \land r(x,\allowbreak{} b))) = (\mathrm{True} \implies (\exists x\, :\, \alpha,\; r(x,\allowbreak{} b)))\).
+By \paperlink{premise:696e73744e6f6e656d7074794f66496e68616269746564}{Prerequisite~P\ref{premise:696e73744e6f6e656d7074794f66496e68616269746564}} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \(\mathrm{True}\text{ is nonempty}\).
+By \paperlink{premise:666f72616c6c5f636f6e7374}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e7374}} with \(\mathrm{True}\) as its type parameter \(\alpha\), we obtain \((\forall a\, :\, \mathrm{True},\; \exists a_{1}\, :\, \alpha,\; r(a_{1},\allowbreak{} b)) \iff (\exists a\, :\, \alpha,\; r(a,\allowbreak{} b))\).
 By propositional extensionality, we obtain \((\mathrm{True} \implies (\exists a_{1}\, :\, \alpha,\; r(a_{1},\allowbreak{} b))) = (\exists a\, :\, \alpha,\; r(a,\allowbreak{} b))\).
 Chaining the equalities, we obtain \((b \in \beta \implies (\exists x\, :\, \alpha,\; x \in \alpha \land r(x,\allowbreak{} b))) = (\exists a\, :\, \alpha,\; r(a,\allowbreak{} b))\).
 \end{proofstep}
 Use the hypothesis \(\forall b\, :\, \beta,\; \exists a\, :\, \alpha,\; r(a, b)\).
-Rewriting with Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772} and the identity established above in the preceding result gives \(\forall b\, :\, \beta,\; b \in \beta \implies (\exists a_{1}\, :\, \alpha,\; a_{1} \in \alpha \land r(a_{1},\allowbreak{} b))\).
+Rewriting with \paperlink{premise:666f72616c6c5f636f6e6772}{Prerequisite~P\ref{premise:666f72616c6c5f636f6e6772}} and the identity established above in the preceding result gives \(\forall b\, :\, \beta,\; b \in \beta \implies (\exists a_{1}\, :\, \alpha,\; a_{1} \in \alpha \land r(a_{1},\allowbreak{} b))\).
 For the required implication, argue as follows.
 \begin{proofstep}
 Fix \(x\) in \(\alpha\).
@@ -530,8 +544,7 @@ Use the hypothesis \(x_{3} \in \{b\in \beta \mid b \in \beta \land r\left(x, b\r
 Taking the second conjunct, we obtain \(r\left(x, x_{3}\right)\).
 Applying the hypothesis \(\forall a\, :\, \alpha,\; \forall b, b^{'}\, :\, \beta,\; r(a, b) \land r(a, b^{'}) \implies b = b^{'}\), we obtain \(x_{2} = x_{3}\).
 \end{proofstep}
-Apply Corollary~\ref{theorem:20} with \(s = \alpha\) and \(t = \beta\).
-
+Apply \paperlink{theorem:20}{Corollary~\ref{theorem:20}} with \(s = \alpha\) and \(t = \beta\).
 \end{proof}
 
 \end{document}
