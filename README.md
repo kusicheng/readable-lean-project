@@ -46,6 +46,19 @@ In the rational example the theorem scores 222 and its `linarith` call scores 21
 
 Both published arithmetic LaTeX files reproduce byte for byte with their respective compiler builds. The expanded edition uses an earlier build. Its document body matches the current output and its preamble predates one unused counter.
 
+## Grading a generated proof
+
+Readability and gradeability are the current development priorities. The reading tests ask whether a reader can reconstruct the argument, identify what the author proved or imported, and assign credit for the requested method using only the generated paper.
+
+For the weighted pigeonhole exercise, let $s,t$ be finite sets, let $f$ map $s$ into $t$, and assign each $x\in s$ a natural weight $w(x)$. Given $|t|b<\sum_{x\in s}w(x)$, prove that some $y\in t$ has fiber weight greater than $b$. The exercise asks for a proof by comparison of finite sums.
+
+The project uses the following four-point rubric for this reading experiment. Each point requires visible evidence in the proof. Citing an identity or general sum comparison with its premises is sufficient. A citation of the weighted pigeonhole theorem itself can earn the conclusion point.
+
+1. Regroup the total weight as a sum over fibers indexed by $t$, using the maps-into hypothesis.
+2. Rewrite $|t|b$ as a constant sum and obtain a strict comparison of two sums over $t$.
+3. Use that strict comparison to establish that one summand exceeds $b$.
+4. Obtain a witness in $t$ and the claimed bound on its fiber weight.
+
 ## Whole Mathlib files
 
 Each paper below uses the complete original Mathlib source file and a document title. Section headings follow the named scopes in the source. The compiler states imported prerequisites before their use, labels direct consequences as corollaries and puts the reasons beside the lines of short calculations. Tectonic typesets the emitted LaTeX directly.
@@ -68,11 +81,13 @@ An AI reader received only the double-counting PDF and reconstructed results 9, 
 
 A second PDF-only AI reader reconstructed results 11, 13 and 19 in the powerset paper. It identified an ambiguous union with a set difference. The formula printer now renders both possible groupings explicitly. In the two counting proofs the reader had to infer where a universal premise was discharged.
 
-The eleven complete files contain 304 narrated declarations. The first eight supplied 261 development proofs. An earlier run completed 217/261. Turán's theorem improved from 9/19 during development. The first translation of the separate derangements source completed 9/9 before any changes prompted by that paper. The unchanged compiler also completed all 12 theorems and three aliases in the LYM file on its first run. The 26-page paper took 23.68 seconds from Lean source to PDF with the imports already built. Its final cardinality calculation cites 14 prerequisites in one sentence. [Current measurements](benchmarks/mathlib-paper-coverage.tsv) · [Earlier measurements](benchmarks/mathlib-coverage.tsv)
+The eleven complete files contain 304 narrated declarations. The first eight supplied 261 development proofs. An earlier run completed 217/261. Turán's theorem improved from 9/19 during development. The first translation of the separate derangements source completed 9/9 before any changes prompted by that paper. The compiler also completed all 12 theorems and three aliases in the LYM file on its first run. [Current measurements](benchmarks/mathlib-paper-coverage.tsv) · [Earlier measurements](benchmarks/mathlib-coverage.tsv)
+
+An earlier edition of Sperner's theorem grouped fourteen prerequisite citations and a positivity condition in a single sentence. The 27-page edition displays the quotient of the family size by the middle binomial coefficient as a bound in the nonnegative rationals. Its next step uses the strict positivity of that coefficient to clear the denominator. A PDF-only AI reader recovered both steps, the preceding application of the LYM inequality and the final return to natural-number cardinalities. In the pigeonhole paper, all 29 results have distinct titles. A separate reader distinguished a map into the target from a hypothesis on the weights of exterior fibers, and located the precise citation that used the maps-into hypothesis. [Sperner paper](papers/mathlib-lym.pdf) · [Pigeonhole paper](papers/mathlib-pigeonhole.pdf)
 
 Two more AI readers worked from the Hall and inclusion–exclusion PDFs alone. They recovered both inductive cases of Hall's theorem and all five equalities proving the weighted union formula. The Hall reader needed to cross-reference five lemmas and flagged a choice whose membership was introduced late. The inclusion–exclusion reader found a missing visible bound inside an indexed intersection. The compiler now binds the chosen representative immediately and prints the intersection with its precise index set. These are direct translations of full library files. Formal narration counts do not measure how readily a professor can grade them.
 
-A PDF-only AI reader recovered the forward direction of Turán's theorem, including the part-preserving bijection, its adjacency test and both cases for the number of vertices. The first reading flagged a missing justification in the converse. The revised proof states the two equalities identifying the cardinalities of the vertex sets before it composes the isomorphisms. The same reader verified those steps on page 167. The full paper is 168 pages. Its 12 lemmas and two corollaries accompany five theorems.
+A PDF-only AI reader recovered the forward direction of Turán's theorem, including the part-preserving bijection, its adjacency test and both cases for the number of vertices. The first reading flagged a missing justification in the converse. The revised proof states the two equalities identifying the cardinalities of the vertex sets before it composes the isomorphisms. The same reader verified those steps in that edition. The current paper is 169 pages. Its 12 lemmas and two corollaries accompany five theorems.
 
 Another PDF-only AI reader recovered the initial values, recurrence and alternating sum for derangements. Lemma 2 on page 9 identifies the imported recursion bijection, its domain and both alternatives in its range. The source uses this bijection as a library result. The compiler introduces the notation \(D\) for the counting function and labels the base case and induction hypothesis in its proof of the alternating sum. The paper is 35 pages.
 
